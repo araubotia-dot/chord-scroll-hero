@@ -274,6 +274,12 @@ export default function CifrasApp() {
             <div className="flex items-center justify-between mb-4">
               <h1 className="text-xl font-bold">Últimas cifras adicionadas</h1>
               <div className="flex items-center gap-3">
+                <button
+                  onClick={newSong}
+                  className="px-4 py-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary-hover font-medium"
+                >
+                  + Adicionar Música
+                </button>
                 <input
                   type="text"
                   placeholder="Pesquisar por artista, música ou ritmo..."
