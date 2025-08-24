@@ -207,7 +207,7 @@ export default function CifrasApp() {
                 view === 'biblioteca' ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted-hover'
               }`}
             >
-              Biblioteca
+              Repertório
             </button>
             <button 
               onClick={() => selectedSong && setView("editar")} 
@@ -286,7 +286,7 @@ export default function CifrasApp() {
         {view === "biblioteca" && (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold">Biblioteca</h2>
+              <h2 className="font-semibold">Repertório</h2>
               <button 
                 onClick={newSong} 
                 className="px-3 py-2 rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover"
