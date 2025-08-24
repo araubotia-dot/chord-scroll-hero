@@ -82,6 +82,7 @@ export default function CifrasApp() {
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollSpeed, setScrollSpeed] = useState(30); // percentage
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSetlistModal, setShowSetlistModal] = useState(false);
 
   const showRef = React.useRef<HTMLDivElement>(null);
   const lastFrame = React.useRef<number | null>(null);
@@ -450,6 +451,12 @@ export default function CifrasApp() {
                   Salvar
                 </button>
                 <button 
+                  onClick={() => setShowSetlistModal(true)} 
+                  className="px-3 py-2 rounded bg-accent text-accent-foreground hover:bg-accent/80"
+                >
+                  Adicionar ao Repertório
+                </button>
+                <button 
                   onClick={() => setView("biblioteca")} 
                   className="px-3 py-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
                 >
@@ -584,6 +591,64 @@ export default function CifrasApp() {
           </div>
         )}
       </main>
+
+      {/* Modal para selecionar repertório */}
+      {showSetlistModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background border border-border rounded-xl p-6 max-w-md w-full mx-4 max-h-[70vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Adicionar ao Repertório</h3>
+              <button
+                onClick={() => setShowSetlistModal(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="space-y-2 mb-4">
+              {setlists.length > 0 ? (
+                setlists.map(setlist => (
+                  <button
+                    key={setlist.id}
+                    onClick={() => {
+                      if (selectedSong) {
+                        addToSetlist(selectedSong.id, setlist.id);
+                        setShowSetlistModal(false);
+                      }
+                    }}
+                    className="w-full text-left p-3 rounded-lg border border-border hover:bg-muted transition-colors"
+                  >
+                    <div className="font-medium">{setlist.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {setlist.songIds.length} música{setlist.songIds.length !== 1 ? 's' : ''}
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <div className="text-center py-4 text-muted-foreground">
+                  Nenhum repertório encontrado. Crie um repertório primeiro.
+                </div>
+              )}
+            </div>
+            
+            <div className="flex gap-2">
+              <button
+                onClick={newSetlist}
+                className="flex-1 px-3 py-2 rounded bg-primary text-primary-foreground hover:bg-primary-hover"
+              >
+                Criar Novo Repertório
+              </button>
+              <button
+                onClick={() => setShowSetlistModal(false)}
+                className="px-3 py-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
