@@ -42,8 +42,8 @@ const CHORD_SUFFIX = "(?:" +
   "ø|º|°|dim|" +
   // Augmented
   "aug|\\+|" +
-  // Extended chords with numbers
-  "(?:m?(?:maj)?[0-9]+(?:/[0-9]+[b#+-]*)*)|" +
+  // Seventh chords - expanded to catch variations
+  "(?:m?(?:maj)?[0-9]+[+M]?(?:/[0-9]+[b#+-]*)*)|" +
   // Complex alterations like m7/5b-, m7/5-, 7/5b, etc
   "(?:m?[0-9]+(?:/[0-9]+[b#+-]+)*)|" +
   // Alterações com parênteses como m7(5-), m7(5b-), etc
@@ -54,12 +54,12 @@ const CHORD_SUFFIX = "(?:" +
   "add[0-9]+|" +
   // Power chords
   "5|" +
-  // Numbers with alterations
-  "[0-9]+[+\\-#b]+" +
+  // Numbers with alterations and major seventh indicators
+  "[0-9]+[+\\-#bM]*" +
 ")?";
 
-// Simple and precise regex: matches chords with accidentals or suffixes, avoids isolated letters in words
-export const CHORD_REGEX = new RegExp(`(^|(?<=\\s))([A-G](?:[#b]|${CHORD_SUFFIX})(?:\\/[A-G][#b]?)?)(?=\\s|$|[,.]|\\n)(?![a-z])`,'g');
+// Enhanced regex: captures chords with flats/sharps and seventh variations
+export const CHORD_REGEX = new RegExp(`(^|(?<=\\s))([A-G][#b]?(?:${CHORD_SUFFIX})?(?:\\/[A-G][#b]?)?)(?=\\s|$|[,.]|\\n)(?![a-z])`,'g');
 
 export function transposeChordToken(token: string, semitones: number, preferFlats = false): string {
   const m = token.match(new RegExp(`^([A-G][#b]?)(${CHORD_SUFFIX})(?:\\/([A-G][#b]?))?$`));
