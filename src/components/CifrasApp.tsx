@@ -704,6 +704,7 @@ export default function CifrasApp() {
                         toast({
                           title: "Música adicionada com sucesso!",
                           description: `"${selectedSong.title}" foi adicionada ao repertório "${setlist.name}".`,
+                          variant: "success",
                         });
                         setShowSetlistModal(false);
                       }
