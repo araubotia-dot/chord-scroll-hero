@@ -91,6 +91,7 @@ export default function CifrasApp() {
   const [activeControl, setActiveControl] = useState<string | null>(null); // Active control panel
   const [currentRepertoireId, setCurrentRepertoireId] = useState<string | null>(null); // Current repertoire being played
   const [currentSongIndex, setCurrentSongIndex] = useState(0); // Current song index in repertoire
+  const [originalSong, setOriginalSong] = useState<Song | null>(null); // Track original song state for changes
 
   const showRef = React.useRef<HTMLDivElement>(null);
   const lastFrame = React.useRef<number | null>(null);
@@ -102,7 +103,23 @@ export default function CifrasApp() {
   const viewingSetlist = setlists.find(s => s.id === viewingSetlistId) || null;
   const currentRepertoire = setlists.find(s => s.id === currentRepertoireId) || null;
 
+  // Check if song has been modified
+  const songHasChanges = selectedSong && originalSong && (
+    selectedSong.title !== originalSong.title ||
+    selectedSong.artist !== originalSong.artist ||
+    selectedSong.genre !== originalSong.genre ||
+    selectedSong.key !== originalSong.key ||
+    selectedSong.content !== originalSong.content
+  );
+
   useEffect(() => { saveDB(db); }, [db]);
+  
+  // Track original song state when entering edit mode
+  useEffect(() => {
+    if (view === "editar" && selectedSong) {
+      setOriginalSong({ ...selectedSong });
+    }
+  }, [view, selectedSongId]);
   
   // Auto-start scrolling when entering show view
   useEffect(() => {
@@ -185,6 +202,8 @@ export default function CifrasApp() {
         ? d.songs.map(x => x.id === song.id ? song : x)
         : [song, ...d.songs]
     }));
+    // Update original song state after saving
+    setOriginalSong({ ...song });
     toast({
       title: "Salvo com sucesso!",
       description: `A música "${song.title}" foi salva.`,
@@ -628,7 +647,11 @@ export default function CifrasApp() {
               <div className="flex gap-2 flex-wrap">
                 <button 
                   onClick={() => saveSong(selectedSong)} 
-                  className="px-4 py-3 lg:px-3 lg:py-2 rounded bg-primary text-primary-foreground hover:bg-primary-hover font-medium"
+                  className={`px-4 py-3 lg:px-3 lg:py-2 rounded font-medium transition-colors ${
+                    songHasChanges 
+                      ? 'bg-primary text-primary-foreground hover:bg-primary-hover' 
+                      : 'bg-muted text-muted-foreground hover:bg-muted-hover'
+                  }`}
                 >
                   Salvar
                 </button>
