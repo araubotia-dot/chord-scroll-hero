@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { normalizeNote, NOTES_SHARP, Note } from '@/lib/music-utils';
 import { ChordRenderer } from './ChordRenderer';
 import { toast } from '@/hooks/use-toast';
-import { Trash2, ChevronUp, Play, Pause, RotateCcw } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Trash2, ChevronUp, Play, Pause, RotateCcw, LogOut } from 'lucide-react';
 
 // Types
 export type Song = {
@@ -74,6 +75,7 @@ function saveDB(db: DBShape) {
 }
 
 export default function CifrasApp() {
+  const { user, signOut } = useAuth();
   const [db, setDb] = useState<DBShape>(() => loadDB());
   const [view, setView] = useState<"home" | "biblioteca" | "editar" | "show" | "setlist">("home");
   const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
@@ -94,6 +96,12 @@ export default function CifrasApp() {
   const [originalSong, setOriginalSong] = useState<Song | null>(null); // Track original song state for changes
 
   const showRef = React.useRef<HTMLDivElement>(null);
+  
+  // Get user profile data or fallback to email/default
+  const userProfile = user ? {
+    id: user.id,
+    name: user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuário'
+  } : db.user;
   const lastFrame = React.useRef<number | null>(null);
 
   const songs = db.songs;
@@ -185,7 +193,7 @@ export default function CifrasApp() {
       categories: [],
       key: "C",
       content: "",
-      ownerId: db.user.id,
+      ownerId: userProfile.id,
       createdAt: now,
       updatedAt: now
     };
@@ -236,7 +244,7 @@ export default function CifrasApp() {
       songIds: [],
       createdAt: now,
       updatedAt: now,
-      ownerId: db.user.id
+      ownerId: userProfile.id
     };
     setDb(d => ({ ...d, setlists: [sl, ...d.setlists] }));
     setCurrentSetlistId(sl.id);
@@ -313,13 +321,38 @@ export default function CifrasApp() {
     setSelectedSongId(currentRepertoire.songIds[newIndex]);
   }
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso."
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao fazer logout",
+        description: "Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 backdrop-blur bg-background/70 border-b border-border">
         <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-2 md:mb-0">
-            <div className="text-lg font-bold tracking-tight">Minha Cifra</div>
-            <div className="text-xs md:text-sm text-muted-foreground md:hidden">Olá, {db.user.name}</div>
+            <div className="text-lg font-bold tracking-tight">CifraSet</div>
+            <div className="flex items-center gap-2 md:hidden">
+              <div className="text-xs text-muted-foreground">Olá, {userProfile.name}</div>
+              <button
+                onClick={handleSignOut}
+                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
+                title="Sair"
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
           </div>
           <div className="flex items-center justify-between">
             <nav className="flex items-center gap-1 md:gap-2 text-xs md:text-sm overflow-x-auto">
@@ -358,7 +391,16 @@ export default function CifrasApp() {
                 Show
               </button>
             </nav>
-            <div className="hidden md:block text-sm text-muted-foreground">Olá, {db.user.name}</div>
+            <div className="hidden md:flex md:items-center md:gap-2 text-sm text-muted-foreground">
+              <span>Olá, {userProfile.name}</span>
+              <button
+                onClick={handleSignOut}
+                className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
+                title="Sair"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
           </div>
         </div>
       </header>
