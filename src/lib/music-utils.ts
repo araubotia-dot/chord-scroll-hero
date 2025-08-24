@@ -10,19 +10,18 @@ export function normalizeNote(n: string): Note {
   const up = n.replace("H", "B").toUpperCase();
   if ((NOTES_SHARP as readonly string[]).includes(up)) return up as Note;
   if (FLAT_TO_SHARP[up]) return FLAT_TO_SHARP[up] as Note;
-  return "C";
+  
+  // Se não encontramos a correspondência, vamos tentar preservar a nota original
+  const baseNote = up.charAt(0);
+  if ((NOTES_SHARP as readonly string[]).includes(baseNote)) return baseNote as Note;
+  
+  return "C"; // fallback apenas se realmente não conseguirmos identificar
 }
 
 export function shiftNote(note: string, semitones: number, preferFlats = false): string {
-  // Se não há transposição e queremos manter o formato original
+  // Se não há transposição, preserva o formato original
   if (semitones === 0) {
-    const originalFlat = note.includes('b');
-    const base = normalizeNote(note);
-    // Se a nota original era bemol e preferimos bemóis, ou se era sustenido
-    if (originalFlat && preferFlats && SHARP_TO_FLAT[base]) {
-      return SHARP_TO_FLAT[base];
-    }
-    return preferFlats && SHARP_TO_FLAT[base] ? SHARP_TO_FLAT[base] : base;
+    return note; // Mantém exatamente como está
   }
   
   const base = normalizeNote(note);
