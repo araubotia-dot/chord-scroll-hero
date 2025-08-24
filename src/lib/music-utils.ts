@@ -27,24 +27,24 @@ const CHORD_CORE = "[A-G](?:[#b])?";
 const CHORD_SUFFIX = "(?:" +
   // Basic triads
   "m|M|maj|min|" +
-  // Extended chords
-  "(?:m?(?:maj)?[0-9]+)|" +
-  // Suspended chords
-  "sus[0-9]+|" +
-  // Diminished variations
-  "dim|º|°|ø|" +
+  // Meio diminuto e diminuto
+  "ø|º|°|dim|" +
   // Augmented
   "aug|\\+|" +
+  // Extended chords with alterations - more flexible pattern
+  "(?:m?(?:maj)?[0-9]+(?:/[0-9]+[b#+-]*)*)|" +
+  // Complex alterations like m7/5b-, m7/5-, 7/5b, etc
+  "(?:m?[0-9]*(?:/[0-9]+[b#+-]+)*)|" +
+  // Suspended chords
+  "sus[0-9]+|" +
   // Added tones
   "add[0-9]+|" +
-  // Alterations with numbers and symbols
-  "[0-9]+[+\\-#b]*|" +
-  // Complex alterations like /5-, /5b, /5#, etc
-  "(?:/[0-9]+[+\\-#b]*)*|" +
   // Power chords
   "5|" +
-  // Any combination of numbers, symbols, and slashes
-  "(?:[0-9]+|[+\\-#b/]|sus|add|maj|min|dim|aug|º|°|ø)+" +
+  // Catch-all for complex patterns: any sequence of letters, numbers, and symbols
+  "(?:[a-zA-Z]*[0-9]*[/#b+-]*)+|" +
+  // Individual alterations
+  "[0-9]+[+\\-#b]*" +
 ")?";
 
 export const CHORD_REGEX = new RegExp(`(^|(?<=\\s))(${CHORD_CORE})(${CHORD_SUFFIX})(?:\\/(${CHORD_CORE}))?(?=$|[\\s])`,'g');
