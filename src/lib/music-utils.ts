@@ -22,9 +22,31 @@ export function shiftNote(note: string, semitones: number, preferFlats = false):
   return preferFlats && SHARP_TO_FLAT[sharp] ? SHARP_TO_FLAT[sharp] : sharp;
 }
 
-// Regex for chord recognition
-const CHORD_CORE = "[A-G](?:#|b)?";
-const CHORD_SUFFIX = "(?:m|maj7|maj9|maj|m7|m9|m6|mmaj7|m|7|9|11|13|sus2|sus4|dim|aug|add9|add11|add13|6|5|º|°|ø)?";
+// Enhanced chord recognition for all chord types
+const CHORD_CORE = "[A-G](?:[#b])?";
+const CHORD_SUFFIX = "(?:" +
+  // Basic triads
+  "m|M|maj|min|" +
+  // Extended chords
+  "(?:m?(?:maj)?[0-9]+)|" +
+  // Suspended chords
+  "sus[0-9]+|" +
+  // Diminished variations
+  "dim|º|°|ø|" +
+  // Augmented
+  "aug|\\+|" +
+  // Added tones
+  "add[0-9]+|" +
+  // Alterations with numbers and symbols
+  "[0-9]+[+\\-#b]*|" +
+  // Complex alterations like /5-, /5b, /5#, etc
+  "(?:/[0-9]+[+\\-#b]*)*|" +
+  // Power chords
+  "5|" +
+  // Any combination of numbers, symbols, and slashes
+  "(?:[0-9]+|[+\\-#b/]|sus|add|maj|min|dim|aug|º|°|ø)+" +
+")?";
+
 export const CHORD_REGEX = new RegExp(`(^|(?<=\\s))(${CHORD_CORE})(${CHORD_SUFFIX})(?:\\/(${CHORD_CORE}))?(?=$|[\\s])`,'g');
 
 export function transposeChordToken(token: string, semitones: number, preferFlats = false): string {
