@@ -103,8 +103,12 @@ export default function CifrasApp() {
   // Auto-start scrolling when entering show view
   useEffect(() => {
     if (view === "show" && selectedSong) {
-      setIsScrolling(true);
       setScrollSpeed(2); // Start with slow speed
+      setIsScrolling(true);
+      // Reset scroll position to top
+      if (showRef.current) {
+        showRef.current.scrollTop = 0;
+      }
     } else {
       setIsScrolling(false);
     }
@@ -355,14 +359,6 @@ export default function CifrasApp() {
                       onClick={() => { 
                         setSelectedSongId(s.id); 
                         setView("show"); 
-                        setScrollSpeed(2); // lento 
-                        // Set scrolling after view changes
-                        setTimeout(() => {
-                          setIsScrolling(true);
-                          if (showRef.current) {
-                            showRef.current.scrollTop = 0;
-                          }
-                        }, 200);
                       }} 
                       className="flex-1 md:flex-none px-4 py-2 md:px-3 md:py-1.5 rounded bg-primary text-primary-foreground hover:bg-primary-hover font-medium"
                     >
