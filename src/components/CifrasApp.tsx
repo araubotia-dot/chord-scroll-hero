@@ -165,6 +165,10 @@ export default function CifrasApp() {
         ? d.songs.map(x => x.id === song.id ? song : x)
         : [song, ...d.songs]
     }));
+    toast({
+      title: "Salvo com sucesso!",
+      description: `A música "${song.title}" foi salva.`,
+    });
   }
 
   function deleteSong(songId: string) {
