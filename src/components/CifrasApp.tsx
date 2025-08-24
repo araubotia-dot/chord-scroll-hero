@@ -586,7 +586,7 @@ export default function CifrasApp() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="space-y-3">
               <input 
-                value={selectedSong.title} 
+                value={selectedSong.title === "Nova Música" ? "" : selectedSong.title} 
                 onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, title: e.target.value } : x) }))} 
                 className="w-full bg-input border border-border rounded-xl px-3 py-3 text-base" 
                 placeholder="Título"
