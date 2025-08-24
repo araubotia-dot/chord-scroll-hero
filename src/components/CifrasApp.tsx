@@ -83,7 +83,7 @@ export default function CifrasApp() {
   const [preferFlats, setPreferFlats] = useState(false);
   const [speed, setSpeed] = useState(40);
   const [isScrolling, setIsScrolling] = useState(false);
-  const [scrollSpeed, setScrollSpeed] = useState(30); // percentage
+  const [scrollSpeed, setScrollSpeed] = useState(3); // 1-5 scale
   const [searchQuery, setSearchQuery] = useState("");
   const [showSetlistModal, setShowSetlistModal] = useState(false);
 
@@ -108,9 +108,10 @@ export default function CifrasApp() {
       const deltaTime = timestamp - lastFrame.current;
       lastFrame.current = timestamp;
       
-      // Convert percentage to pixels per second with minimum viable speed
-      // 5% = 10 pixels/second, 15% = 30 pixels/second, 50% = 100 pixels/second
-      const pixelsPerSecond = Math.max(10, scrollSpeed * 2);
+      // Convert 1-5 scale to pixels per second
+      // 1=10px/s (muito lento), 2=20px/s (lento), 3=40px/s (moderado), 4=70px/s (rápido), 5=100px/s (muito rápido)
+      const speedMap = { 1: 10, 2: 20, 3: 40, 4: 70, 5: 100 };
+      const pixelsPerSecond = speedMap[scrollSpeed as keyof typeof speedMap] || 40;
       el.scrollTop += (pixelsPerSecond / 1000) * deltaTime;
       
       raf = requestAnimationFrame(step);
@@ -333,7 +334,7 @@ export default function CifrasApp() {
                       onClick={() => { 
                         setSelectedSongId(s.id); 
                         setView("show"); 
-                        setScrollSpeed(15); 
+                        setScrollSpeed(2); // lento 
                         // Set scrolling after view changes
                         setTimeout(() => {
                           setIsScrolling(true);
@@ -701,13 +702,18 @@ export default function CifrasApp() {
                 <span className="text-muted-foreground">Velocidade:</span>
                 <input 
                   type="range" 
-                  min={5} 
-                  max={100} 
+                  min={1} 
+                  max={5} 
                   value={scrollSpeed} 
                   onChange={e => setScrollSpeed(parseInt(e.target.value))}
                   className="w-24 accent-primary"
                 />
-                <span className="w-12 text-center font-mono text-sm">{scrollSpeed}%</span>
+                <span className="w-16 text-center font-mono text-sm">
+                  {scrollSpeed === 1 ? "Muito lento" : 
+                   scrollSpeed === 2 ? "Lento" : 
+                   scrollSpeed === 3 ? "Moderado" : 
+                   scrollSpeed === 4 ? "Rápido" : "Muito rápido"}
+                </span>
               </div>
               <button 
                 onClick={() => {
