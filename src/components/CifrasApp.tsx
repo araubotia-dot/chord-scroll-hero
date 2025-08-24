@@ -3,7 +3,8 @@ import { normalizeNote, NOTES_SHARP, Note } from '@/lib/music-utils';
 import { ChordRenderer } from './ChordRenderer';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { Trash2, ChevronUp, Play, Pause, RotateCcw, LogOut } from 'lucide-react';
+import { UserAvatar } from './UserAvatar';
+import { Trash2, ChevronUp, Play, Pause, RotateCcw } from 'lucide-react';
 
 // Types
 export type Song = {
@@ -75,7 +76,7 @@ function saveDB(db: DBShape) {
 }
 
 export default function CifrasApp() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [db, setDb] = useState<DBShape>(() => loadDB());
   const [view, setView] = useState<"home" | "biblioteca" | "editar" | "show" | "setlist">("home");
   const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
@@ -323,7 +324,7 @@ export default function CifrasApp() {
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      // signOut function is now handled by UserAvatar component
       toast({
         title: "Logout realizado",
         description: "Você foi desconectado com sucesso."
@@ -343,15 +344,9 @@ export default function CifrasApp() {
         <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-2 md:mb-0">
             <div className="text-lg font-bold tracking-tight">CifraSet</div>
-            <div className="flex items-center gap-2 md:hidden">
-              <div className="text-xs text-muted-foreground">Olá, {userProfile.name}</div>
-              <button
-                onClick={handleSignOut}
-                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
-                title="Sair"
-              >
-                <LogOut size={14} />
-              </button>
+            <div className="flex items-center gap-2">
+              <div className="hidden md:block text-xs text-muted-foreground">Olá, {userProfile.name}</div>
+              <UserAvatar />
             </div>
           </div>
           <div className="flex items-center justify-between">
@@ -391,16 +386,6 @@ export default function CifrasApp() {
                 Show
               </button>
             </nav>
-            <div className="hidden md:flex md:items-center md:gap-2 text-sm text-muted-foreground">
-              <span>Olá, {userProfile.name}</span>
-              <button
-                onClick={handleSignOut}
-                className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
-                title="Sair"
-              >
-                <LogOut size={16} />
-              </button>
-            </div>
           </div>
         </div>
       </header>
