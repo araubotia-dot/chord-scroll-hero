@@ -58,8 +58,8 @@ const CHORD_SUFFIX = "(?:" +
   "[0-9]+[+\\-#b]+" +
 ")?";
 
-// More specific regex for chord recognition including bass notes with accidentals
-export const CHORD_REGEX = new RegExp(`(^|(?<=\\s))([A-G][#b]?(?:${CHORD_SUFFIX})?(?:\\/[A-G][#b]?)?)(?=\\s|$|[,.]|\\n)`,'gi');
+// Simple and precise regex: matches chords with accidentals or suffixes, avoids isolated letters in words
+export const CHORD_REGEX = new RegExp(`(^|(?<=\\s))([A-G](?:[#b]|${CHORD_SUFFIX})(?:\\/[A-G][#b]?)?)(?=\\s|$|[,.]|\\n)(?![a-z])`,'g');
 
 export function transposeChordToken(token: string, semitones: number, preferFlats = false): string {
   const m = token.match(new RegExp(`^([A-G][#b]?)(${CHORD_SUFFIX})(?:\\/([A-G][#b]?))?$`));
