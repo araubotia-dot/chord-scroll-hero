@@ -73,9 +73,10 @@ function saveDB(db: DBShape) {
 
 export default function CifrasApp() {
   const [db, setDb] = useState<DBShape>(() => loadDB());
-  const [view, setView] = useState<"home" | "biblioteca" | "editar" | "show">("home");
+  const [view, setView] = useState<"home" | "biblioteca" | "editar" | "show" | "setlist">("home");
   const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
   const [currentSetlistId, setCurrentSetlistId] = useState<string | null>(null);
+  const [viewingSetlistId, setViewingSetlistId] = useState<string | null>(null);
   const [transpose, setTranspose] = useState(0);
   const [preferFlats, setPreferFlats] = useState(false);
   const [speed, setSpeed] = useState(40);
@@ -120,6 +121,7 @@ export default function CifrasApp() {
   const setlists = db.setlists;
   const selectedSong = songs.find(s => s.id === selectedSongId) || null;
   const currentSetlist = setlists.find(s => s.id === currentSetlistId) || null;
+  const viewingSetlist = setlists.find(s => s.id === viewingSetlistId) || null;
 
   // Filter songs based on search query
   const filteredSongs = songs.filter(song => {
@@ -379,14 +381,13 @@ export default function CifrasApp() {
                     </div>
                     
                     <button
-                      onClick={() => setCurrentSetlistId(setlist.id)}
-                      className={`w-full px-3 py-2 rounded text-sm transition-colors ${
-                        currentSetlistId === setlist.id
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted hover:bg-muted-hover'
-                      }`}
+                      onClick={() => {
+                        setViewingSetlistId(setlist.id);
+                        setView("setlist");
+                      }}
+                      className="w-full px-3 py-2 rounded text-sm transition-colors bg-primary text-primary-foreground hover:bg-primary-hover"
                     >
-                      {currentSetlistId === setlist.id ? 'Repertório Ativo' : 'Selecionar'}
+                      Abrir
                     </button>
                   </div>
                 ))}
@@ -396,6 +397,91 @@ export default function CifrasApp() {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {view === "setlist" && viewingSetlist && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setView("biblioteca")}
+                  className="px-3 py-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
+                >
+                  ← Voltar
+                </button>
+                <div>
+                  <h2 className="font-semibold text-lg">{viewingSetlist.name}</h2>
+                  <div className="text-sm text-muted-foreground">
+                    {viewingSetlist.songIds.length} música{viewingSetlist.songIds.length !== 1 ? 's' : ''}
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentSetlistId(viewingSetlist.id)}
+                  className={`px-3 py-2 rounded text-sm transition-colors ${
+                    currentSetlistId === viewingSetlist.id
+                      ? 'bg-accent text-accent-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted-hover'
+                  }`}
+                >
+                  {currentSetlistId === viewingSetlist.id ? 'Repertório Ativo' : 'Marcar como Ativo'}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-3">
+              {viewingSetlist.songIds.map((songId, index) => {
+                const song = songs.find(s => s.id === songId);
+                if (!song) return null;
+                return (
+                  <div key={songId} className="p-4 border border-border rounded-xl bg-card">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="bg-muted text-muted-foreground px-2 py-1 rounded text-xs font-mono">
+                          {index + 1}
+                        </span>
+                        <div>
+                          <div className="font-semibold">{song.title}</div>
+                          <div className="text-sm text-muted-foreground flex items-center gap-2">
+                            {song.artist && <span>{song.artist}</span>}
+                            {song.artist && song.genre && <span>•</span>}
+                            {song.genre && <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs">{song.genre}</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removeFromSetlist(songId, viewingSetlist.id)}
+                        className="px-2 py-1 rounded bg-destructive/10 text-destructive hover:bg-destructive/20 text-xs"
+                      >
+                        Remover
+                      </button>
+                    </div>
+                    
+                    <div className="flex gap-2 mt-3">
+                      <button 
+                        onClick={() => { setSelectedSongId(song.id); setView("editar"); }} 
+                        className="px-2 py-1 rounded bg-muted hover:bg-muted-hover text-xs"
+                      >
+                        Editar
+                      </button>
+                      <button 
+                        onClick={() => { setSelectedSongId(song.id); setView("show"); }} 
+                        className="px-2 py-1 rounded bg-primary text-primary-foreground hover:bg-primary-hover text-xs"
+                      >
+                        Abrir
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              {viewingSetlist.songIds.length === 0 && (
+                <div className="col-span-2 text-muted-foreground text-center py-8">
+                  Este repertório não possui músicas. Adicione músicas através da página "Início" ou "Editar".
+                </div>
+              )}
             </div>
           </div>
         )}
