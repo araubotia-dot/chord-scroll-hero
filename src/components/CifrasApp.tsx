@@ -308,12 +308,20 @@ export default function CifrasApp() {
                       {s.genre && <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs">{s.genre}</span>}
                     </div>
                   </div>
-                  <button 
-                    onClick={() => { setSelectedSongId(s.id); setView("show"); }} 
-                    className="px-3 py-1.5 rounded bg-primary text-primary-foreground hover:bg-primary-hover"
-                  >
-                    Abrir
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => { setSelectedSongId(s.id); setView("show"); }} 
+                      className="px-3 py-1.5 rounded bg-primary text-primary-foreground hover:bg-primary-hover"
+                    >
+                      TOCAR
+                    </button>
+                    <button 
+                      onClick={() => { setSelectedSongId(s.id); setView("editar"); }} 
+                      className="px-3 py-1.5 rounded bg-yellow-500 text-black hover:bg-yellow-600"
+                    >
+                      ✏️
+                    </button>
+                  </div>
                 </div>
               ))}
               {(searchQuery ? filteredSongs : songs).length === 0 && (
