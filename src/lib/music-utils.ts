@@ -25,29 +25,28 @@ export function shiftNote(note: string, semitones: number, preferFlats = false):
 // Enhanced chord recognition for all chord types
 const CHORD_CORE = "[A-G](?:[#b])?";
 const CHORD_SUFFIX = "(?:" +
-  // Basic triads
+  // Basic triads - must have at least one identifier
   "m|M|maj|min|" +
   // Meio diminuto e diminuto
   "ø|º|°|dim|" +
   // Augmented
   "aug|\\+|" +
-  // Extended chords with alterations - more flexible pattern
+  // Extended chords with numbers
   "(?:m?(?:maj)?[0-9]+(?:/[0-9]+[b#+-]*)*)|" +
   // Complex alterations like m7/5b-, m7/5-, 7/5b, etc
-  "(?:m?[0-9]*(?:/[0-9]+[b#+-]+)*)|" +
+  "(?:m?[0-9]+(?:/[0-9]+[b#+-]+)*)|" +
   // Suspended chords
   "sus[0-9]+|" +
   // Added tones
   "add[0-9]+|" +
   // Power chords
   "5|" +
-  // Catch-all for complex patterns: any sequence of letters, numbers, and symbols
-  "(?:[a-zA-Z]*[0-9]*[/#b+-]*)+|" +
-  // Individual alterations
-  "[0-9]+[+\\-#b]*" +
-")?";
+  // Numbers with alterations
+  "[0-9]+[+\\-#b]+" +
+")";
 
-export const CHORD_REGEX = new RegExp(`(^|(?<=\\s))(${CHORD_CORE})(${CHORD_SUFFIX})(?:\\/(${CHORD_CORE}))?(?=$|[\\s])`,'g');
+// More restrictive regex - chord must have suffix OR be followed by specific word boundaries
+export const CHORD_REGEX = new RegExp(`(^|(?<=\\s))(${CHORD_CORE})(${CHORD_SUFFIX})(?=$|[\\s,.])`,'g');
 
 export function transposeChordToken(token: string, semitones: number, preferFlats = false): string {
   const m = token.match(new RegExp(`^(${CHORD_CORE})(${CHORD_SUFFIX})(?:\\/(${CHORD_CORE}))?$`));
