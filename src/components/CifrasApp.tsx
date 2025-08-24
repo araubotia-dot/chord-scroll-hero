@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { normalizeNote, NOTES_SHARP, Note } from '@/lib/music-utils';
 import { ChordRenderer } from './ChordRenderer';
 import { toast } from '@/hooks/use-toast';
-import { Trash2 } from 'lucide-react';
+import { Trash2, ChevronUp } from 'lucide-react';
 
 // Types
 export type Song = {
@@ -673,16 +673,33 @@ export default function CifrasApp() {
               <span className="text-sm text-muted-foreground">
                 {selectedSong.title} - {selectedSong.artist}
               </span>
-              <button 
-                onClick={() => setIsScrolling(!isScrolling)}
-                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                  isScrolling 
-                    ? 'bg-destructive text-destructive-foreground hover:bg-destructive/80' 
-                    : 'bg-primary text-primary-foreground hover:bg-primary-hover'
-                }`}
-              >
-                {isScrolling ? 'Pausar' : 'Iniciar'}
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setIsScrolling(!isScrolling)}
+                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                    isScrolling 
+                      ? 'bg-destructive text-destructive-foreground hover:bg-destructive/80' 
+                      : 'bg-primary text-primary-foreground hover:bg-primary-hover'
+                  }`}
+                >
+                  Rolagem
+                </button>
+                <button 
+                  onClick={() => {
+                    if (showRef.current) {
+                      const wasScrolling = isScrolling;
+                      setIsScrolling(false);
+                      showRef.current.scrollTop = 0;
+                      if (wasScrolling) {
+                        setTimeout(() => setIsScrolling(true), 300);
+                      }
+                    }
+                  }}
+                  className="p-1 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
+                >
+                  <ChevronUp size={16} />
+                </button>
+              </div>
             </div>
             
             {/* Conteúdo da cifra com toque para mostrar controles */}
