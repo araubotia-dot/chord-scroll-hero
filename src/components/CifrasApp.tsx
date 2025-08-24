@@ -251,57 +251,62 @@ export default function CifrasApp() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 backdrop-blur bg-background/70 border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
-          <div className="text-lg font-bold tracking-tight">Minha Cifra</div>
-          <nav className="flex items-center gap-2 text-sm">
-            <button 
-              onClick={() => setView("home")} 
-              className={`px-3 py-1.5 rounded-2xl transition-colors ${
-                view === 'home' ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted-hover'
-              }`}
-            >
-              Início
-            </button>
-            <button 
-              onClick={() => setView("biblioteca")} 
-              className={`px-3 py-1.5 rounded-2xl transition-colors ${
-                view === 'biblioteca' ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted-hover'
-              }`}
-            >
-              Repertório
-            </button>
-            <button 
-              onClick={() => selectedSong && setView("editar")} 
-              disabled={!selectedSong} 
-              className={`px-3 py-1.5 rounded-2xl transition-colors disabled:opacity-50 ${
-                view === 'editar' ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted-hover'
-              }`}
-            >
-              Editar
-            </button>
-            <button 
-              onClick={() => selectedSong && setView("show")} 
-              disabled={!selectedSong} 
-              className={`px-3 py-1.5 rounded-2xl transition-colors disabled:opacity-50 ${
-                view === 'show' ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted-hover'
-              }`}
-            >
-              Show
-            </button>
-          </nav>
-          <div className="ml-auto text-sm text-muted-foreground">Olá, {db.user.name}</div>
+        <div className="max-w-6xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between mb-2 md:mb-0">
+            <div className="text-lg font-bold tracking-tight">Minha Cifra</div>
+            <div className="text-xs md:text-sm text-muted-foreground md:hidden">Olá, {db.user.name}</div>
+          </div>
+          <div className="flex items-center justify-between">
+            <nav className="flex items-center gap-1 md:gap-2 text-xs md:text-sm overflow-x-auto">
+              <button 
+                onClick={() => setView("home")} 
+                className={`px-2 md:px-3 py-1.5 rounded-2xl transition-colors whitespace-nowrap ${
+                  view === 'home' ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted-hover'
+                }`}
+              >
+                Início
+              </button>
+              <button 
+                onClick={() => setView("biblioteca")} 
+                className={`px-2 md:px-3 py-1.5 rounded-2xl transition-colors whitespace-nowrap ${
+                  view === 'biblioteca' ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted-hover'
+                }`}
+              >
+                Repertório
+              </button>
+              <button 
+                onClick={() => selectedSong && setView("editar")} 
+                disabled={!selectedSong} 
+                className={`px-2 md:px-3 py-1.5 rounded-2xl transition-colors disabled:opacity-50 whitespace-nowrap ${
+                  view === 'editar' ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted-hover'
+                }`}
+              >
+                Editar
+              </button>
+              <button 
+                onClick={() => selectedSong && setView("show")} 
+                disabled={!selectedSong} 
+                className={`px-2 md:px-3 py-1.5 rounded-2xl transition-colors disabled:opacity-50 whitespace-nowrap ${
+                  view === 'show' ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted-hover'
+                }`}
+              >
+                Show
+              </button>
+            </nav>
+            <div className="hidden md:block text-sm text-muted-foreground">Olá, {db.user.name}</div>
+          </div>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6">
         {view === "home" && (
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h1 className="text-xl font-bold">Últimas cifras adicionadas</h1>
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
+              <h1 className="text-lg md:text-xl font-bold">Últimas cifras adicionadas</h1>
+              <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
                 <button
                   onClick={newSong}
-                  className="px-4 py-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary-hover font-medium"
+                  className="px-4 py-3 md:py-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary-hover font-medium text-sm md:text-base"
                 >
                   + Adicionar Música
                 </button>
@@ -310,7 +315,7 @@ export default function CifrasApp() {
                   placeholder="Pesquisar por artista, música ou ritmo..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-80 bg-input border border-border rounded-xl px-3 py-2 text-sm"
+                  className="w-full md:w-80 bg-input border border-border rounded-xl px-3 py-3 md:py-2 text-sm"
                 />
                 {searchQuery && (
                   <button
@@ -324,16 +329,16 @@ export default function CifrasApp() {
             </div>
             <div className="space-y-2">
               {(searchQuery ? filteredSongs : songs.slice(0, 10)).map(s => (
-                <div key={s.id} className="p-3 border border-border rounded-xl bg-card flex items-center justify-between">
-                  <div>
-                    <div className="font-semibold">{s.title}</div>
-                    <div className="text-sm text-muted-foreground flex items-center gap-2">
+                <div key={s.id} className="p-3 md:p-3 border border-border rounded-xl bg-card flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="font-semibold text-base">{s.title}</div>
+                    <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-2">
                       {s.artist && <span>{s.artist}</span>}
-                      {s.artist && s.genre && <span>•</span>}
+                      {s.artist && s.genre && <span className="hidden md:inline">•</span>}
                       {s.genre && <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs">{s.genre}</span>}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 w-full md:w-auto">
                     <button 
                       onClick={() => { 
                         setSelectedSongId(s.id); 
@@ -347,13 +352,13 @@ export default function CifrasApp() {
                           }
                         }, 200);
                       }} 
-                      className="px-3 py-1.5 rounded bg-primary text-primary-foreground hover:bg-primary-hover"
+                      className="flex-1 md:flex-none px-4 py-2 md:px-3 md:py-1.5 rounded bg-primary text-primary-foreground hover:bg-primary-hover font-medium"
                     >
                       TOCAR
                     </button>
                     <button 
                       onClick={() => { setSelectedSongId(s.id); setView("editar"); }} 
-                      className="px-3 py-1.5 rounded bg-yellow-500 text-black hover:bg-yellow-600"
+                      className="px-4 py-2 md:px-3 md:py-1.5 rounded bg-yellow-500 text-black hover:bg-yellow-600"
                     >
                       ✏️
                     </button>
@@ -361,7 +366,7 @@ export default function CifrasApp() {
                 </div>
               ))}
               {(searchQuery ? filteredSongs : songs).length === 0 && (
-                <div className="text-muted-foreground">
+                <div className="text-muted-foreground text-center py-8">
                   {searchQuery ? "Nenhuma cifra encontrada para sua pesquisa." : "Nenhuma cifra ainda. Adicione com \"+ Música\"."}
                 </div>
               )}
@@ -538,24 +543,24 @@ export default function CifrasApp() {
         )}
 
         {view === "editar" && selectedSong && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="space-y-3">
               <input 
                 value={selectedSong.title} 
                 onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, title: e.target.value } : x) }))} 
-                className="w-full bg-input border border-border rounded-xl px-3 py-2" 
+                className="w-full bg-input border border-border rounded-xl px-3 py-3 text-base" 
                 placeholder="Título"
               />
               <input 
                 value={selectedSong.artist || ""} 
                 onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, artist: e.target.value } : x) }))} 
-                className="w-full bg-input border border-border rounded-xl px-3 py-2" 
+                className="w-full bg-input border border-border rounded-xl px-3 py-3 text-base" 
                 placeholder="Artista"
               />
               <select
                 value={selectedSong.genre || ""}
                 onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, genre: e.target.value } : x) }))}
-                className="w-full bg-background border border-border rounded-xl px-3 py-2 text-foreground z-20"
+                className="w-full bg-background border border-border rounded-xl px-3 py-3 text-foreground text-base"
               >
                 <option value="">Selecione o ritmo...</option>
                 {MUSIC_GENRES.map(genre => (
@@ -569,7 +574,7 @@ export default function CifrasApp() {
                 <select 
                   value={selectedSong.key} 
                   onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, key: normalizeNote(e.target.value) as Note } : x) }))} 
-                  className="bg-input border border-border rounded-xl px-2 py-1"
+                  className="bg-input border border-border rounded-xl px-3 py-2 text-base"
                 >
                   {NOTES_SHARP.map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
@@ -577,31 +582,31 @@ export default function CifrasApp() {
               <textarea 
                 value={selectedSong.content} 
                 onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, content: e.target.value } : x) }))} 
-                className="w-full h-[320px] bg-input border border-border rounded-xl p-3 font-mono text-sm"
+                className="w-full h-[300px] lg:h-[320px] bg-input border border-border rounded-xl p-3 font-mono text-sm"
                 placeholder="Digite os acordes e letra aqui..."
               />
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <button 
                   onClick={() => saveSong(selectedSong)} 
-                  className="px-3 py-2 rounded bg-primary text-primary-foreground hover:bg-primary-hover"
+                  className="px-4 py-3 lg:px-3 lg:py-2 rounded bg-primary text-primary-foreground hover:bg-primary-hover font-medium"
                 >
                   Salvar
                 </button>
                 <button 
                   onClick={() => setShowSetlistModal(true)} 
-                  className="px-3 py-2 rounded bg-accent text-accent-foreground hover:bg-accent/80"
+                  className="px-4 py-3 lg:px-3 lg:py-2 rounded bg-accent text-accent-foreground hover:bg-accent/80"
                 >
                   Adicionar ao Repertório
                 </button>
                 <button 
                   onClick={() => setView("biblioteca")} 
-                  className="px-3 py-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
+                  className="px-4 py-3 lg:px-3 lg:py-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
                 >
                   Cancelar
                 </button>
                 <button 
                   onClick={() => deleteSong(selectedSong.id)} 
-                  className="px-3 py-2 rounded bg-red-500 text-white hover:bg-red-600 flex items-center gap-2"
+                  className="px-4 py-3 lg:px-3 lg:py-2 rounded bg-red-500 text-white hover:bg-red-600 flex items-center gap-2"
                 >
                   <Trash2 size={16} />
                   Excluir
@@ -609,20 +614,20 @@ export default function CifrasApp() {
               </div>
             </div>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2">
                 <div className="font-semibold">Pré-visualização</div>
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 text-sm flex-wrap">
                   <span>Transpor:</span>
                   <button 
                     onClick={() => setTranspose(t => t - 1)} 
-                    className="px-2 py-1 rounded bg-muted hover:bg-muted-hover"
+                    className="px-3 py-2 rounded bg-muted hover:bg-muted-hover"
                   >
                     -
                   </button>
                   <div className="w-10 text-center">{transpose}</div>
                   <button 
                     onClick={() => setTranspose(t => t + 1)} 
-                    className="px-2 py-1 rounded bg-muted hover:bg-muted-hover"
+                    className="px-3 py-2 rounded bg-muted hover:bg-muted-hover"
                   >
                     +
                   </button>
@@ -636,12 +641,12 @@ export default function CifrasApp() {
                   </label>
                 </div>
               </div>
-              <div className="rounded-xl border border-border bg-card p-4 overflow-auto h-[420px]">
+              <div className="rounded-xl border border-border bg-card p-4 overflow-auto h-[300px] lg:h-[420px]">
                 <ChordRenderer text={selectedSong.content} semitones={transpose} preferFlats={preferFlats} />
               </div>
               <button 
                 onClick={() => { setView("show"); }} 
-                className="w-full px-3 py-2 rounded bg-accent text-accent-foreground hover:bg-accent/80"
+                className="w-full px-3 py-3 lg:py-2 rounded bg-accent text-accent-foreground hover:bg-accent/80 font-medium"
               >
                 Abrir no Show
               </button>
@@ -651,27 +656,28 @@ export default function CifrasApp() {
 
         {view === "show" && selectedSong && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between bg-card border border-border rounded-xl p-4">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col md:flex-row md:items-center justify-between bg-card border border-border rounded-xl p-4 gap-3">
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
                 <span className="font-semibold text-lg">{selectedSong.title}</span>
-                <span className="text-muted-foreground">• {selectedSong.artist}</span>
+                <span className="text-muted-foreground hidden md:inline">• {selectedSong.artist}</span>
+                <span className="text-muted-foreground text-sm md:hidden">{selectedSong.artist}</span>
               </div>
-              <div className="flex items-center gap-3 text-sm">
+              <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span className="text-muted-foreground">Transpor:</span>
                 <button 
                   onClick={() => setTranspose(t => t - 1)} 
-                  className="px-3 py-1 rounded bg-muted hover:bg-muted-hover"
+                  className="px-3 py-2 rounded bg-muted hover:bg-muted-hover touch-manipulation"
                 >
                   -
                 </button>
                 <div className="w-8 text-center font-mono">{transpose > 0 ? '+' : ''}{transpose}</div>
                 <button 
                   onClick={() => setTranspose(t => t + 1)} 
-                  className="px-3 py-1 rounded bg-muted hover:bg-muted-hover"
+                  className="px-3 py-2 rounded bg-muted hover:bg-muted-hover touch-manipulation"
                 >
                   +
                 </button>
-                <div className="mx-2 w-px h-4 bg-border"></div>
+                <div className="hidden md:block mx-2 w-px h-4 bg-border"></div>
                 <label className="flex items-center gap-1">
                   <input 
                     type="checkbox" 
@@ -682,7 +688,7 @@ export default function CifrasApp() {
                 </label>
                 <button 
                   onClick={() => setTranspose(0)} 
-                  className="px-3 py-1 rounded bg-accent text-accent-foreground hover:bg-accent/80"
+                  className="px-3 py-2 rounded bg-accent text-accent-foreground hover:bg-accent/80 touch-manipulation"
                 >
                   Reset
                 </button>
@@ -690,56 +696,58 @@ export default function CifrasApp() {
             </div>
             
             {/* Auto-scroll controls */}
-            <div className="flex items-center justify-center gap-4 bg-card border border-border rounded-xl p-4">
-              <span className="text-muted-foreground">Rolagem:</span>
-              <button 
-                onClick={() => setIsScrolling(!isScrolling)}
-                className={`px-4 py-2 rounded font-medium transition-colors ${
-                  isScrolling 
-                    ? 'bg-destructive text-destructive-foreground hover:bg-destructive/80' 
-                    : 'bg-primary text-primary-foreground hover:bg-primary-hover'
-                }`}
-              >
-                {isScrolling ? 'Pausar' : 'Iniciar'}
-              </button>
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Velocidade:</span>
+            <div className="flex flex-col md:flex-row md:items-center justify-center gap-4 bg-card border border-border rounded-xl p-4">
+              <div className="flex items-center justify-center gap-4">
+                <span className="text-muted-foreground">Rolagem:</span>
+                <button 
+                  onClick={() => setIsScrolling(!isScrolling)}
+                  className={`px-6 py-3 md:px-4 md:py-2 rounded font-medium transition-colors touch-manipulation ${
+                    isScrolling 
+                      ? 'bg-destructive text-destructive-foreground hover:bg-destructive/80' 
+                      : 'bg-primary text-primary-foreground hover:bg-primary-hover'
+                  }`}
+                >
+                  {isScrolling ? 'Pausar' : 'Iniciar'}
+                </button>
+              </div>
+              <div className="flex flex-col md:flex-row items-center gap-3 md:gap-2">
+                <span className="text-muted-foreground text-sm">Velocidade:</span>
                 <input 
                   type="range" 
                   min={1} 
                   max={5} 
                   value={scrollSpeed} 
                   onChange={e => setScrollSpeed(parseInt(e.target.value))}
-                  className="w-24 accent-primary"
+                  className="w-32 md:w-24 accent-primary"
                 />
-                <span className="w-16 text-center font-mono text-sm">
+                <span className="w-20 md:w-16 text-center font-mono text-sm">
                   {scrollSpeed === 1 ? "Muito lento" : 
                    scrollSpeed === 2 ? "Lento" : 
                    scrollSpeed === 3 ? "Moderado" : 
                    scrollSpeed === 4 ? "Rápido" : "Muito rápido"}
                 </span>
-              </div>
-              <button 
-                onClick={() => {
-                  if (showRef.current) {
-                    const wasScrolling = isScrolling;
-                    setIsScrolling(false); // Pause scrolling temporarily
-                    showRef.current.scrollTop = 0;
-                    // Resume scrolling after a short delay if it was active
-                    if (wasScrolling) {
-                      setTimeout(() => setIsScrolling(true), 300);
+                <button 
+                  onClick={() => {
+                    if (showRef.current) {
+                      const wasScrolling = isScrolling;
+                      setIsScrolling(false); // Pause scrolling temporarily
+                      showRef.current.scrollTop = 0;
+                      // Resume scrolling after a short delay if it was active
+                      if (wasScrolling) {
+                        setTimeout(() => setIsScrolling(true), 300);
+                      }
                     }
-                  }
-                }}
-                className="px-3 py-1 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
-              >
-                ⬆ Topo
-              </button>
+                  }}
+                  className="px-4 py-2 md:px-3 md:py-1 rounded bg-muted text-muted-foreground hover:bg-muted-hover touch-manipulation"
+                >
+                  ⬆ Topo
+                </button>
+              </div>
             </div>
             
             <div 
               ref={showRef}
-              className="rounded-xl border border-border bg-card p-6 overflow-auto h-[65vh] text-lg leading-relaxed scroll-smooth"
+              className="rounded-xl border border-border bg-card p-4 md:p-6 overflow-auto h-[60vh] md:h-[65vh] text-base md:text-lg leading-relaxed scroll-smooth"
             >
               <ChordRenderer text={selectedSong.content} semitones={transpose} preferFlats={preferFlats} />
             </div>
