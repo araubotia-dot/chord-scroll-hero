@@ -245,32 +245,118 @@ export default function CifrasApp() {
                 className="w-full bg-input border border-border rounded-xl px-3 py-2" 
                 placeholder="Artista"
               />
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-muted-foreground">Tom original:</label>
+                <select 
+                  value={selectedSong.key} 
+                  onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, key: normalizeNote(e.target.value) as Note } : x) }))} 
+                  className="bg-input border border-border rounded-xl px-2 py-1"
+                >
+                  {NOTES_SHARP.map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </div>
               <textarea 
                 value={selectedSong.content} 
                 onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, content: e.target.value } : x) }))} 
-                className="w-full h-[360px] bg-input border border-border rounded-xl p-3 font-mono text-sm"
+                className="w-full h-[320px] bg-input border border-border rounded-xl p-3 font-mono text-sm"
                 placeholder="Digite os acordes e letra aqui..."
               />
-              <button 
-                onClick={() => saveSong(selectedSong)} 
-                className="px-3 py-2 rounded bg-primary text-primary-foreground hover:bg-primary-hover"
-              >
-                Salvar
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => saveSong(selectedSong)} 
+                  className="px-3 py-2 rounded bg-primary text-primary-foreground hover:bg-primary-hover"
+                >
+                  Salvar
+                </button>
+                <button 
+                  onClick={() => setView("biblioteca")} 
+                  className="px-3 py-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-4 overflow-auto h-[460px]">
-              <ChordRenderer text={selectedSong.content} semitones={transpose} preferFlats={preferFlats} />
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="font-semibold">Pré-visualização</div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span>Transpor:</span>
+                  <button 
+                    onClick={() => setTranspose(t => t - 1)} 
+                    className="px-2 py-1 rounded bg-muted hover:bg-muted-hover"
+                  >
+                    -
+                  </button>
+                  <div className="w-10 text-center">{transpose}</div>
+                  <button 
+                    onClick={() => setTranspose(t => t + 1)} 
+                    className="px-2 py-1 rounded bg-muted hover:bg-muted-hover"
+                  >
+                    +
+                  </button>
+                  <label className="ml-2 flex items-center gap-1">
+                    <input 
+                      type="checkbox" 
+                      checked={preferFlats} 
+                      onChange={e => setPreferFlats(e.target.checked)} 
+                    /> 
+                    bemóis
+                  </label>
+                </div>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4 overflow-auto h-[420px]">
+                <ChordRenderer text={selectedSong.content} semitones={transpose} preferFlats={preferFlats} />
+              </div>
+              <button 
+                onClick={() => { setView("show"); }} 
+                className="w-full px-3 py-2 rounded bg-accent text-accent-foreground hover:bg-accent/80"
+              >
+                Abrir no Show
+              </button>
             </div>
           </div>
         )}
 
         {view === "show" && selectedSong && (
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="font-semibold">{selectedSong.title}</span>
-              <span className="text-muted-foreground">{selectedSong.artist}</span>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between bg-card border border-border rounded-xl p-4">
+              <div className="flex items-center gap-3">
+                <span className="font-semibold text-lg">{selectedSong.title}</span>
+                <span className="text-muted-foreground">• {selectedSong.artist}</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <span className="text-muted-foreground">Transpor:</span>
+                <button 
+                  onClick={() => setTranspose(t => t - 1)} 
+                  className="px-3 py-1 rounded bg-muted hover:bg-muted-hover"
+                >
+                  -
+                </button>
+                <div className="w-8 text-center font-mono">{transpose > 0 ? '+' : ''}{transpose}</div>
+                <button 
+                  onClick={() => setTranspose(t => t + 1)} 
+                  className="px-3 py-1 rounded bg-muted hover:bg-muted-hover"
+                >
+                  +
+                </button>
+                <div className="mx-2 w-px h-4 bg-border"></div>
+                <label className="flex items-center gap-1">
+                  <input 
+                    type="checkbox" 
+                    checked={preferFlats} 
+                    onChange={e => setPreferFlats(e.target.checked)} 
+                  /> 
+                  <span className="text-muted-foreground">bemóis</span>
+                </label>
+                <button 
+                  onClick={() => setTranspose(0)} 
+                  className="px-3 py-1 rounded bg-accent text-accent-foreground hover:bg-accent/80"
+                >
+                  Reset
+                </button>
+              </div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-4 overflow-auto h-[70vh]">
+            <div className="rounded-xl border border-border bg-card p-6 overflow-auto h-[70vh] text-lg leading-relaxed">
               <ChordRenderer text={selectedSong.content} semitones={transpose} preferFlats={preferFlats} />
             </div>
           </div>
