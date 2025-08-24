@@ -89,6 +89,8 @@ export default function CifrasApp() {
   const [fontSize, setFontSize] = useState(16); // Font size in px
   const [showControls, setShowControls] = useState(false); // Show/hide bottom controls
   const [activeControl, setActiveControl] = useState<string | null>(null); // Active control panel
+  const [currentRepertoireId, setCurrentRepertoireId] = useState<string | null>(null); // Current repertoire being played
+  const [currentSongIndex, setCurrentSongIndex] = useState(0); // Current song index in repertoire
 
   const showRef = React.useRef<HTMLDivElement>(null);
   const lastFrame = React.useRef<number | null>(null);
@@ -98,6 +100,7 @@ export default function CifrasApp() {
   const selectedSong = songs.find(s => s.id === selectedSongId) || null;
   const currentSetlist = setlists.find(s => s.id === currentSetlistId) || null;
   const viewingSetlist = setlists.find(s => s.id === viewingSetlistId) || null;
+  const currentRepertoire = setlists.find(s => s.id === currentRepertoireId) || null;
 
   useEffect(() => { saveDB(db); }, [db]);
   
@@ -265,6 +268,32 @@ export default function CifrasApp() {
     }));
   }
 
+  function playRepertoire(repertoireId: string) {
+    const repertoire = setlists.find(s => s.id === repertoireId);
+    if (!repertoire || repertoire.songIds.length === 0) return;
+    
+    setCurrentRepertoireId(repertoireId);
+    setCurrentSongIndex(0);
+    setSelectedSongId(repertoire.songIds[0]);
+    setView("show");
+  }
+
+  function navigateRepertoire(direction: 'next' | 'prev') {
+    if (!currentRepertoire) return;
+    
+    const maxIndex = currentRepertoire.songIds.length - 1;
+    let newIndex = currentSongIndex;
+    
+    if (direction === 'next') {
+      newIndex = currentSongIndex < maxIndex ? currentSongIndex + 1 : 0;
+    } else {
+      newIndex = currentSongIndex > 0 ? currentSongIndex - 1 : maxIndex;
+    }
+    
+    setCurrentSongIndex(newIndex);
+    setSelectedSongId(currentRepertoire.songIds[newIndex]);
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 backdrop-blur bg-background/70 border-b border-border">
@@ -358,6 +387,7 @@ export default function CifrasApp() {
                   <div className="flex items-center gap-2 w-full md:w-auto">
                     <button 
                       onClick={() => { 
+                        setCurrentRepertoireId(null); // Clear repertoire mode for individual songs
                         setSelectedSongId(s.id); 
                         setView("show"); 
                       }} 
@@ -446,13 +476,10 @@ export default function CifrasApp() {
                     </div>
                     
                     <button
-                      onClick={() => {
-                        setViewingSetlistId(setlist.id);
-                        setView("setlist");
-                      }}
+                      onClick={() => playRepertoire(setlist.id)}
                       className="w-full px-3 py-2 rounded text-sm transition-colors bg-primary text-primary-foreground hover:bg-primary-hover"
                     >
-                      Abrir
+                      Tocar
                     </button>
                   </div>
                 ))}
@@ -533,10 +560,14 @@ export default function CifrasApp() {
                         Editar
                       </button>
                       <button 
-                        onClick={() => { setSelectedSongId(song.id); setView("show"); }} 
+                        onClick={() => { 
+                          setCurrentRepertoireId(null); // Clear repertoire mode for individual songs
+                          setSelectedSongId(song.id); 
+                          setView("show"); 
+                        }} 
                         className="px-2 py-1 rounded bg-primary text-primary-foreground hover:bg-primary-hover text-xs"
                       >
-                        Abrir
+                        Tocar
                       </button>
                     </div>
                   </div>
@@ -667,10 +698,36 @@ export default function CifrasApp() {
           <div className="relative">
             {/* Header discreto com nome da música e botão de rolagem */}
             <div className="flex items-center justify-between py-2 px-4 border-b border-border/50">
-              <span className="text-sm text-muted-foreground">
-                {selectedSong.title} - {selectedSong.artist}
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">
+                  {selectedSong.title} - {selectedSong.artist}
+                </span>
+                {currentRepertoire && (
+                  <span className="text-xs bg-accent text-accent-foreground px-2 py-1 rounded-full">
+                    {currentSongIndex + 1} de {currentRepertoire.songIds.length}
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2">
+                {/* Navigation buttons for repertoire */}
+                {currentRepertoire && (
+                  <>
+                    <button 
+                      onClick={() => navigateRepertoire('prev')}
+                      className="p-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
+                      title="Música anterior"
+                    >
+                      ◀
+                    </button>
+                    <button 
+                      onClick={() => navigateRepertoire('next')}
+                      className="p-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
+                      title="Próxima música"
+                    >
+                      ▶
+                    </button>
+                  </>
+                )}
                 <button 
                   onClick={() => {
                     if (!isScrolling) {
