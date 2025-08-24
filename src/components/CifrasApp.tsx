@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { normalizeNote, NOTES_SHARP, Note } from '@/lib/music-utils';
 import { ChordRenderer } from './ChordRenderer';
 import { toast } from '@/hooks/use-toast';
+import { Trash2 } from 'lucide-react';
 
 // Types
 export type Song = {
@@ -162,6 +163,24 @@ export default function CifrasApp() {
         ? d.songs.map(x => x.id === song.id ? song : x)
         : [song, ...d.songs]
     }));
+  }
+
+  function deleteSong(songId: string) {
+    setDb(d => ({
+      ...d,
+      songs: d.songs.filter(s => s.id !== songId),
+      setlists: d.setlists.map(setlist => ({
+        ...setlist,
+        songIds: setlist.songIds.filter(id => id !== songId)
+      }))
+    }));
+    setSelectedSongId(null);
+    setView("home");
+    toast({
+      title: "Música excluída com sucesso!",
+      description: "A música foi removida permanentemente.",
+      variant: "destructive",
+    });
   }
 
   function newSetlist() {
@@ -562,6 +581,13 @@ export default function CifrasApp() {
                   className="px-3 py-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
                 >
                   Cancelar
+                </button>
+                <button 
+                  onClick={() => deleteSong(selectedSong.id)} 
+                  className="px-3 py-2 rounded bg-red-500 text-white hover:bg-red-600 flex items-center gap-2"
+                >
+                  <Trash2 size={16} />
+                  Excluir
                 </button>
               </div>
             </div>
