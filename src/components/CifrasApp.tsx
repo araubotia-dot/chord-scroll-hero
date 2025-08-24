@@ -86,6 +86,8 @@ export default function CifrasApp() {
   const [scrollSpeed, setScrollSpeed] = useState(3); // 1-5 scale
   const [searchQuery, setSearchQuery] = useState("");
   const [showSetlistModal, setShowSetlistModal] = useState(false);
+  const [fontSize, setFontSize] = useState(16); // Font size in px
+  const [showControls, setShowControls] = useState(false); // Show/hide bottom controls
 
   const showRef = React.useRef<HTMLDivElement>(null);
   const lastFrame = React.useRef<number | null>(null);
@@ -655,102 +657,123 @@ export default function CifrasApp() {
         )}
 
         {view === "show" && selectedSong && (
-          <div className="space-y-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between bg-card border border-border rounded-xl p-4 gap-3">
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
-                <span className="font-semibold text-lg">{selectedSong.title}</span>
-                <span className="text-muted-foreground hidden md:inline">• {selectedSong.artist}</span>
-                <span className="text-muted-foreground text-sm md:hidden">{selectedSong.artist}</span>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="text-muted-foreground">Transpor:</span>
-                <button 
-                  onClick={() => setTranspose(t => t - 1)} 
-                  className="px-3 py-2 rounded bg-muted hover:bg-muted-hover touch-manipulation"
-                >
-                  -
-                </button>
-                <div className="w-8 text-center font-mono">{transpose > 0 ? '+' : ''}{transpose}</div>
-                <button 
-                  onClick={() => setTranspose(t => t + 1)} 
-                  className="px-3 py-2 rounded bg-muted hover:bg-muted-hover touch-manipulation"
-                >
-                  +
-                </button>
-                <div className="hidden md:block mx-2 w-px h-4 bg-border"></div>
-                <label className="flex items-center gap-1">
-                  <input 
-                    type="checkbox" 
-                    checked={preferFlats} 
-                    onChange={e => setPreferFlats(e.target.checked)} 
-                  /> 
-                  <span className="text-muted-foreground">bemóis</span>
-                </label>
-                <button 
-                  onClick={() => setTranspose(0)} 
-                  className="px-3 py-2 rounded bg-accent text-accent-foreground hover:bg-accent/80 touch-manipulation"
-                >
-                  Reset
-                </button>
-              </div>
+          <div className="relative">
+            {/* Header discreto com nome da música */}
+            <div className="text-center py-2 border-b border-border/50">
+              <span className="text-sm text-muted-foreground">
+                {selectedSong.title} - {selectedSong.artist}
+              </span>
             </div>
             
-            {/* Auto-scroll controls */}
-            <div className="flex flex-col md:flex-row md:items-center justify-center gap-4 bg-card border border-border rounded-xl p-4">
-              <div className="flex items-center justify-center gap-4">
-                <span className="text-muted-foreground">Rolagem:</span>
-                <button 
-                  onClick={() => setIsScrolling(!isScrolling)}
-                  className={`px-6 py-3 md:px-4 md:py-2 rounded font-medium transition-colors touch-manipulation ${
-                    isScrolling 
-                      ? 'bg-destructive text-destructive-foreground hover:bg-destructive/80' 
-                      : 'bg-primary text-primary-foreground hover:bg-primary-hover'
-                  }`}
-                >
-                  {isScrolling ? 'Pausar' : 'Iniciar'}
-                </button>
-              </div>
-              <div className="flex flex-col md:flex-row items-center gap-3 md:gap-2">
-                <span className="text-muted-foreground text-sm">Velocidade:</span>
-                <input 
-                  type="range" 
-                  min={1} 
-                  max={5} 
-                  value={scrollSpeed} 
-                  onChange={e => setScrollSpeed(parseInt(e.target.value))}
-                  className="w-32 md:w-24 accent-primary"
-                />
-                <span className="w-20 md:w-16 text-center font-mono text-sm">
-                  {scrollSpeed === 1 ? "Muito lento" : 
-                   scrollSpeed === 2 ? "Lento" : 
-                   scrollSpeed === 3 ? "Moderado" : 
-                   scrollSpeed === 4 ? "Rápido" : "Muito rápido"}
-                </span>
-                <button 
-                  onClick={() => {
-                    if (showRef.current) {
-                      const wasScrolling = isScrolling;
-                      setIsScrolling(false); // Pause scrolling temporarily
-                      showRef.current.scrollTop = 0;
-                      // Resume scrolling after a short delay if it was active
-                      if (wasScrolling) {
-                        setTimeout(() => setIsScrolling(true), 300);
-                      }
-                    }
-                  }}
-                  className="px-4 py-2 md:px-3 md:py-1 rounded bg-muted text-muted-foreground hover:bg-muted-hover touch-manipulation"
-                >
-                  ⬆ Topo
-                </button>
-              </div>
-            </div>
-            
+            {/* Conteúdo da cifra com toque para mostrar controles */}
             <div 
               ref={showRef}
-              className="rounded-xl border border-border bg-card p-4 md:p-6 overflow-auto h-[60vh] md:h-[65vh] text-base md:text-lg leading-relaxed scroll-smooth"
+              className="overflow-auto h-[calc(100vh-8rem)] bg-card p-4 scroll-smooth"
+              style={{ fontSize: `${fontSize}px`, lineHeight: '1.6' }}
+              onClick={() => setShowControls(!showControls)}
             >
               <ChordRenderer text={selectedSong.content} semitones={transpose} preferFlats={preferFlats} />
             </div>
+            
+            {/* Menu flutuante no rodapé */}
+            {showControls && (
+              <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t border-border p-4 space-y-3">
+                {/* Primeira linha: Transposição */}
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-xs text-muted-foreground">Transpor:</span>
+                  <button 
+                    onClick={() => setTranspose(t => t - 1)} 
+                    className="px-3 py-2 rounded bg-muted hover:bg-muted-hover text-sm"
+                  >
+                    -
+                  </button>
+                  <div className="w-8 text-center font-mono text-sm">{transpose > 0 ? '+' : ''}{transpose}</div>
+                  <button 
+                    onClick={() => setTranspose(t => t + 1)} 
+                    className="px-3 py-2 rounded bg-muted hover:bg-muted-hover text-sm"
+                  >
+                    +
+                  </button>
+                  <label className="flex items-center gap-1 ml-2">
+                    <input 
+                      type="checkbox" 
+                      checked={preferFlats} 
+                      onChange={e => setPreferFlats(e.target.checked)}
+                      className="scale-75"
+                    /> 
+                    <span className="text-xs text-muted-foreground">bemóis</span>
+                  </label>
+                  <button 
+                    onClick={() => setTranspose(0)} 
+                    className="px-3 py-2 rounded bg-accent text-accent-foreground hover:bg-accent/80 text-sm ml-2"
+                  >
+                    Reset
+                  </button>
+                </div>
+                
+                {/* Segunda linha: Rolagem automática */}
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-xs text-muted-foreground">Rolagem:</span>
+                  <button 
+                    onClick={() => setIsScrolling(!isScrolling)}
+                    className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                      isScrolling 
+                        ? 'bg-destructive text-destructive-foreground hover:bg-destructive/80' 
+                        : 'bg-primary text-primary-foreground hover:bg-primary-hover'
+                    }`}
+                  >
+                    {isScrolling ? 'Pausar' : 'Iniciar'}
+                  </button>
+                  <input 
+                    type="range" 
+                    min={1} 
+                    max={5} 
+                    value={scrollSpeed} 
+                    onChange={e => setScrollSpeed(parseInt(e.target.value))}
+                    className="w-20 accent-primary"
+                  />
+                  <span className="text-xs text-muted-foreground w-16 text-center">
+                    {scrollSpeed === 1 ? "Lento" : 
+                     scrollSpeed === 2 ? "Lento" : 
+                     scrollSpeed === 3 ? "Médio" : 
+                     scrollSpeed === 4 ? "Rápido" : "Rápido"}
+                  </span>
+                  <button 
+                    onClick={() => {
+                      if (showRef.current) {
+                        const wasScrolling = isScrolling;
+                        setIsScrolling(false);
+                        showRef.current.scrollTop = 0;
+                        if (wasScrolling) {
+                          setTimeout(() => setIsScrolling(true), 300);
+                        }
+                      }
+                    }}
+                    className="px-3 py-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover text-sm"
+                  >
+                    ⬆ Topo
+                  </button>
+                </div>
+                
+                {/* Terceira linha: Tamanho da fonte */}
+                <div className="flex items-center justify-center gap-2 pb-2">
+                  <span className="text-xs text-muted-foreground">Fonte:</span>
+                  <button 
+                    onClick={() => setFontSize(Math.max(12, fontSize - 2))} 
+                    className="px-3 py-2 rounded bg-muted hover:bg-muted-hover text-sm"
+                  >
+                    A-
+                  </button>
+                  <span className="text-xs text-muted-foreground w-8 text-center">{fontSize}px</span>
+                  <button 
+                    onClick={() => setFontSize(Math.min(24, fontSize + 2))} 
+                    className="px-3 py-2 rounded bg-muted hover:bg-muted-hover text-sm"
+                  >
+                    A+
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
