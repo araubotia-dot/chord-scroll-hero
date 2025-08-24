@@ -108,10 +108,10 @@ export default function CifrasApp() {
       const deltaTime = timestamp - lastFrame.current;
       lastFrame.current = timestamp;
       
-      // Convert 1-5 scale to pixels per second
-      // 1=10px/s (muito lento), 2=20px/s (lento), 3=40px/s (moderado), 4=70px/s (rápido), 5=100px/s (muito rápido)
-      const speedMap = { 1: 10, 2: 20, 3: 40, 4: 70, 5: 100 };
-      const pixelsPerSecond = speedMap[scrollSpeed as keyof typeof speedMap] || 40;
+      // Convert 1-5 scale to pixels per second - adjusted for better visibility at low speeds
+      // 1=25px/s (muito lento), 2=35px/s (lento), 3=50px/s (moderado), 4=75px/s (rápido), 5=100px/s (muito rápido)
+      const speedMap = { 1: 25, 2: 35, 3: 50, 4: 75, 5: 100 };
+      const pixelsPerSecond = speedMap[scrollSpeed as keyof typeof speedMap] || 50;
       el.scrollTop += (pixelsPerSecond / 1000) * deltaTime;
       
       raf = requestAnimationFrame(step);
