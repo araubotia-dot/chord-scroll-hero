@@ -7,6 +7,7 @@ export type Song = {
   id: string;
   title: string;
   artist?: string;
+  genre?: string;
   categories: string[];
   key: Note;
   content: string;
@@ -56,6 +57,7 @@ export default function CifrasApp() {
   const [speed, setSpeed] = useState(40);
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollSpeed, setScrollSpeed] = useState(30); // percentage
+  const [searchQuery, setSearchQuery] = useState("");
 
   const showRef = React.useRef<HTMLDivElement>(null);
   const lastFrame = React.useRef<number | null>(null);
@@ -94,12 +96,24 @@ export default function CifrasApp() {
   const selectedSong = songs.find(s => s.id === selectedSongId) || null;
   const currentSetlist = setlists.find(s => s.id === currentSetlistId) || null;
 
+  // Filter songs based on search query
+  const filteredSongs = songs.filter(song => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      song.title.toLowerCase().includes(query) ||
+      (song.artist && song.artist.toLowerCase().includes(query)) ||
+      (song.genre && song.genre.toLowerCase().includes(query))
+    );
+  });
+
   function newSong() {
     const now = Date.now();
     const s: Song = {
       id: crypto.randomUUID(),
       title: "Nova Música",
       artist: "",
+      genre: "",
       categories: [],
       key: "C",
       content: "",
@@ -197,13 +211,36 @@ export default function CifrasApp() {
       <main className="max-w-6xl mx-auto px-4 py-6">
         {view === "home" && (
           <div>
-            <h1 className="text-xl font-bold mb-4">Últimas cifras adicionadas</h1>
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-xl font-bold">Últimas cifras adicionadas</h1>
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  placeholder="Pesquisar por artista, música ou ritmo..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-80 bg-input border border-border rounded-xl px-3 py-2 text-sm"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="px-3 py-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover text-sm"
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
+            </div>
             <div className="space-y-2">
-              {songs.slice(0, 10).map(s => (
+              {(searchQuery ? filteredSongs : songs.slice(0, 10)).map(s => (
                 <div key={s.id} className="p-3 border border-border rounded-xl bg-card flex items-center justify-between">
                   <div>
                     <div className="font-semibold">{s.title}</div>
-                    <div className="text-sm text-muted-foreground">{s.artist}</div>
+                    <div className="text-sm text-muted-foreground flex items-center gap-2">
+                      {s.artist && <span>{s.artist}</span>}
+                      {s.artist && s.genre && <span>•</span>}
+                      {s.genre && <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs">{s.genre}</span>}
+                    </div>
                   </div>
                   <button 
                     onClick={() => { setSelectedSongId(s.id); setView("show"); }} 
@@ -213,8 +250,10 @@ export default function CifrasApp() {
                   </button>
                 </div>
               ))}
-              {songs.length === 0 && (
-                <div className="text-muted-foreground">Nenhuma cifra ainda. Adicione com "+ Música".</div>
+              {(searchQuery ? filteredSongs : songs).length === 0 && (
+                <div className="text-muted-foreground">
+                  {searchQuery ? "Nenhuma cifra encontrada para sua pesquisa." : "Nenhuma cifra ainda. Adicione com \"+ Música\"."}
+                </div>
               )}
             </div>
           </div>
@@ -235,7 +274,11 @@ export default function CifrasApp() {
               {songs.map(s => (
                 <div key={s.id} className="p-3 border border-border rounded-xl bg-card">
                   <div className="font-semibold">{s.title}</div>
-                  <div className="text-sm text-muted-foreground">{s.artist}</div>
+                  <div className="text-sm text-muted-foreground flex items-center gap-2">
+                    {s.artist && <span>{s.artist}</span>}
+                    {s.artist && s.genre && <span>•</span>}
+                    {s.genre && <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs">{s.genre}</span>}
+                  </div>
                   <div className="flex gap-2 mt-2">
                     <button 
                       onClick={() => { setSelectedSongId(s.id); setView("editar"); }} 
@@ -276,6 +319,12 @@ export default function CifrasApp() {
                 onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, artist: e.target.value } : x) }))} 
                 className="w-full bg-input border border-border rounded-xl px-3 py-2" 
                 placeholder="Artista"
+              />
+              <input 
+                value={selectedSong.genre || ""} 
+                onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, genre: e.target.value } : x) }))} 
+                className="w-full bg-input border border-border rounded-xl px-3 py-2" 
+                placeholder="Ritmo (ex: sertanejo, pagode, rock)"
               />
               <div className="flex items-center gap-2">
                 <label className="text-sm text-muted-foreground">Tom original:</label>
