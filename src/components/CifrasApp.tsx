@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { normalizeNote, NOTES_SHARP, Note } from '@/lib/music-utils';
 import { ChordRenderer } from './ChordRenderer';
 import { toast } from '@/hooks/use-toast';
-import { Trash2, ChevronUp } from 'lucide-react';
+import { Trash2, ChevronUp, Play, Pause, RotateCcw } from 'lucide-react';
 
 // Types
 export type Song = {
@@ -675,14 +675,39 @@ export default function CifrasApp() {
               </span>
               <div className="flex items-center gap-2">
                 <button 
-                  onClick={() => setIsScrolling(!isScrolling)}
-                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                  onClick={() => {
+                    if (!isScrolling) {
+                      // Se não está rolando, inicia na velocidade atual
+                      setIsScrolling(true);
+                    } else {
+                      // Se está rolando, aumenta a velocidade ou para se já está no máximo
+                      if (scrollSpeed < 5) {
+                        setScrollSpeed(scrollSpeed + 1);
+                      } else {
+                        setIsScrolling(false);
+                      }
+                    }
+                  }}
+                  className={`p-2 rounded transition-colors ${
                     isScrolling 
-                      ? 'bg-destructive text-destructive-foreground hover:bg-destructive/80' 
-                      : 'bg-primary text-primary-foreground hover:bg-primary-hover'
+                      ? 'bg-primary text-primary-foreground hover:bg-primary-hover' 
+                      : 'bg-muted text-muted-foreground hover:bg-muted-hover'
                   }`}
                 >
-                  Rolagem
+                  {isScrolling ? <Play size={16} /> : <Pause size={16} />}
+                </button>
+                <button 
+                  onClick={() => {
+                    setScrollSpeed(1);
+                    if (isScrolling) {
+                      // Se está rolando, reinicia com velocidade lenta
+                      setIsScrolling(false);
+                      setTimeout(() => setIsScrolling(true), 100);
+                    }
+                  }}
+                  className="p-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
+                >
+                  <RotateCcw size={16} />
                 </button>
                 <button 
                   onClick={() => {
@@ -695,7 +720,7 @@ export default function CifrasApp() {
                       }
                     }
                   }}
-                  className="p-1 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
+                  className="p-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
                 >
                   <ChevronUp size={16} />
                 </button>
