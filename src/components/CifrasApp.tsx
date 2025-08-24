@@ -92,8 +92,24 @@ export default function CifrasApp() {
   const showRef = React.useRef<HTMLDivElement>(null);
   const lastFrame = React.useRef<number | null>(null);
 
+  const songs = db.songs;
+  const setlists = db.setlists;
+  const selectedSong = songs.find(s => s.id === selectedSongId) || null;
+  const currentSetlist = setlists.find(s => s.id === currentSetlistId) || null;
+  const viewingSetlist = setlists.find(s => s.id === viewingSetlistId) || null;
+
   useEffect(() => { saveDB(db); }, [db]);
   
+  // Auto-start scrolling when entering show view
+  useEffect(() => {
+    if (view === "show" && selectedSong) {
+      setIsScrolling(true);
+      setScrollSpeed(2); // Start with slow speed
+    } else {
+      setIsScrolling(false);
+    }
+  }, [view, selectedSong]);
+
   // Auto-scroll effect
   useEffect(() => {
     if (!isScrolling || view !== "show") { 
@@ -123,12 +139,6 @@ export default function CifrasApp() {
     return () => cancelAnimationFrame(raf);
   }, [isScrolling, scrollSpeed, view]);
   
-  const songs = db.songs;
-  const setlists = db.setlists;
-  const selectedSong = songs.find(s => s.id === selectedSongId) || null;
-  const currentSetlist = setlists.find(s => s.id === currentSetlistId) || null;
-  const viewingSetlist = setlists.find(s => s.id === viewingSetlistId) || null;
-
   // Filter songs based on search query
   const filteredSongs = songs.filter(song => {
     if (!searchQuery) return true;
@@ -658,11 +668,21 @@ export default function CifrasApp() {
 
         {view === "show" && selectedSong && (
           <div className="relative">
-            {/* Header discreto com nome da música */}
-            <div className="text-center py-2 border-b border-border/50">
+            {/* Header discreto com nome da música e botão de rolagem */}
+            <div className="flex items-center justify-between py-2 px-4 border-b border-border/50">
               <span className="text-sm text-muted-foreground">
                 {selectedSong.title} - {selectedSong.artist}
               </span>
+              <button 
+                onClick={() => setIsScrolling(!isScrolling)}
+                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                  isScrolling 
+                    ? 'bg-destructive text-destructive-foreground hover:bg-destructive/80' 
+                    : 'bg-primary text-primary-foreground hover:bg-primary-hover'
+                }`}
+              >
+                {isScrolling ? 'Pausar' : 'Iniciar'}
+              </button>
             </div>
             
             {/* Conteúdo da cifra com toque para mostrar controles */}
@@ -711,26 +731,16 @@ export default function CifrasApp() {
                   </button>
                 </div>
                 
-                {/* Segunda linha: Rolagem automática */}
+                {/* Segunda linha: Velocidade de rolagem */}
                 <div className="flex items-center justify-center gap-2">
-                  <span className="text-xs text-muted-foreground">Rolagem:</span>
-                  <button 
-                    onClick={() => setIsScrolling(!isScrolling)}
-                    className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                      isScrolling 
-                        ? 'bg-destructive text-destructive-foreground hover:bg-destructive/80' 
-                        : 'bg-primary text-primary-foreground hover:bg-primary-hover'
-                    }`}
-                  >
-                    {isScrolling ? 'Pausar' : 'Iniciar'}
-                  </button>
+                  <span className="text-xs text-muted-foreground">Velocidade:</span>
                   <input 
                     type="range" 
                     min={1} 
                     max={5} 
                     value={scrollSpeed} 
                     onChange={e => setScrollSpeed(parseInt(e.target.value))}
-                    className="w-20 accent-primary"
+                    className="w-24 accent-primary"
                   />
                   <span className="text-xs text-muted-foreground w-16 text-center">
                     {scrollSpeed === 1 ? "Lento" : 
