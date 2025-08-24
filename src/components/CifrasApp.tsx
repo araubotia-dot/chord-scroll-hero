@@ -329,7 +329,18 @@ export default function CifrasApp() {
                   </div>
                   <div className="flex items-center gap-2">
                     <button 
-                      onClick={() => { setSelectedSongId(s.id); setView("show"); }} 
+                      onClick={() => { 
+                        setSelectedSongId(s.id); 
+                        setView("show"); 
+                        setIsScrolling(true); 
+                        setScrollSpeed(15); 
+                        // Reset scroll position when entering show mode
+                        setTimeout(() => {
+                          if (showRef.current) {
+                            showRef.current.scrollTop = 0;
+                          }
+                        }, 100);
+                      }} 
                       className="px-3 py-1.5 rounded bg-primary text-primary-foreground hover:bg-primary-hover"
                     >
                       TOCAR
@@ -700,7 +711,13 @@ export default function CifrasApp() {
               <button 
                 onClick={() => {
                   if (showRef.current) {
+                    const wasScrolling = isScrolling;
+                    setIsScrolling(false); // Pause scrolling temporarily
                     showRef.current.scrollTop = 0;
+                    // Resume scrolling after a short delay if it was active
+                    if (wasScrolling) {
+                      setTimeout(() => setIsScrolling(true), 300);
+                    }
                   }
                 }}
                 className="px-3 py-1 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
