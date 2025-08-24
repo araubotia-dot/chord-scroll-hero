@@ -14,8 +14,20 @@ export function normalizeNote(n: string): Note {
 }
 
 export function shiftNote(note: string, semitones: number, preferFlats = false): string {
+  // Se não há transposição e queremos manter o formato original
+  if (semitones === 0) {
+    const originalFlat = note.includes('b');
+    const base = normalizeNote(note);
+    // Se a nota original era bemol e preferimos bemóis, ou se era sustenido
+    if (originalFlat && preferFlats && SHARP_TO_FLAT[base]) {
+      return SHARP_TO_FLAT[base];
+    }
+    return preferFlats && SHARP_TO_FLAT[base] ? SHARP_TO_FLAT[base] : base;
+  }
+  
   const base = normalizeNote(note);
   const i = NOTES_SHARP.indexOf(base);
+  if (i === -1) return note; // Fallback se não encontrar
   let j = (i + semitones) % NOTES_SHARP.length; 
   if (j < 0) j += NOTES_SHARP.length;
   const sharp = NOTES_SHARP[j];
