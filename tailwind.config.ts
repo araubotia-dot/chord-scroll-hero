@@ -26,7 +26,8 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					glow: 'hsl(var(--primary-glow))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -61,7 +62,36 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Musical performance colors
+				chord: {
+					highlight: 'hsl(var(--chord-highlight))',
+					bg: 'hsl(var(--chord-bg))'
+				},
+				performance: {
+					bg: 'hsl(var(--performance-bg))'
 				}
+			},
+			backgroundImage: {
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-surface': 'var(--gradient-surface)',
+				'gradient-performance': 'var(--gradient-performance)'
+			},
+			boxShadow: {
+				'elegant': 'var(--shadow-elegant)',
+				'glow': 'var(--shadow-glow)',
+				'performance': 'var(--shadow-performance)'
+			},
+			transitionTimingFunction: {
+				'smooth': 'var(--transition-smooth)',
+				'bounce': 'var(--transition-bounce)'
+			},
+			fontSize: {
+				'performance-lg': 'var(--text-performance-lg)',
+				'performance-xl': 'var(--text-performance-xl)'
+			},
+			lineHeight: {
+				'performance': 'var(--leading-performance)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
