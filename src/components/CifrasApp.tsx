@@ -108,8 +108,9 @@ export default function CifrasApp() {
       const deltaTime = timestamp - lastFrame.current;
       lastFrame.current = timestamp;
       
-      // Convert percentage to pixels per second (30% = ~30 pixels/second)
-      const pixelsPerSecond = scrollSpeed;
+      // Convert percentage to pixels per second with minimum viable speed
+      // 5% = 10 pixels/second, 15% = 30 pixels/second, 50% = 100 pixels/second
+      const pixelsPerSecond = Math.max(10, scrollSpeed * 2);
       el.scrollTop += (pixelsPerSecond / 1000) * deltaTime;
       
       raf = requestAnimationFrame(step);
