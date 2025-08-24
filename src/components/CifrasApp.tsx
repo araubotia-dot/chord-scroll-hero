@@ -88,6 +88,7 @@ export default function CifrasApp() {
   const [showSetlistModal, setShowSetlistModal] = useState(false);
   const [fontSize, setFontSize] = useState(16); // Font size in px
   const [showControls, setShowControls] = useState(false); // Show/hide bottom controls
+  const [activeControl, setActiveControl] = useState<string | null>(null); // Active control panel
 
   const showRef = React.useRef<HTMLDivElement>(null);
   const lastFrame = React.useRef<number | null>(null);
@@ -735,91 +736,136 @@ export default function CifrasApp() {
             
             {/* Menu flutuante no rodapé */}
             {showControls && (
-              <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t border-border p-4 space-y-3">
-                {/* Primeira linha: Transposição */}
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-xs text-muted-foreground">Transpor:</span>
-                  <button 
-                    onClick={() => setTranspose(t => t - 1)} 
-                    className="px-3 py-2 rounded bg-muted hover:bg-muted-hover text-sm"
+              <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t border-border">
+                {/* Botões principais */}
+                <div className="flex items-center justify-around p-3 border-b border-border">
+                  <button
+                    onClick={() => setActiveControl(activeControl === 'transpose' ? null : 'transpose')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      activeControl === 'transpose' 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-muted text-muted-foreground hover:bg-muted-hover'
+                    }`}
                   >
-                    -
+                    Transpor
                   </button>
-                  <div className="w-8 text-center font-mono text-sm">{transpose > 0 ? '+' : ''}{transpose}</div>
-                  <button 
-                    onClick={() => setTranspose(t => t + 1)} 
-                    className="px-3 py-2 rounded bg-muted hover:bg-muted-hover text-sm"
+                  <button
+                    onClick={() => setActiveControl(activeControl === 'speed' ? null : 'speed')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      activeControl === 'speed' 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-muted text-muted-foreground hover:bg-muted-hover'
+                    }`}
                   >
-                    +
+                    Velocidade
                   </button>
-                  <label className="flex items-center gap-1 ml-2">
-                    <input 
-                      type="checkbox" 
-                      checked={preferFlats} 
-                      onChange={e => setPreferFlats(e.target.checked)}
-                      className="scale-75"
-                    /> 
-                    <span className="text-xs text-muted-foreground">bemóis</span>
-                  </label>
-                  <button 
-                    onClick={() => setTranspose(0)} 
-                    className="px-3 py-2 rounded bg-accent text-accent-foreground hover:bg-accent/80 text-sm ml-2"
+                  <button
+                    onClick={() => setActiveControl(activeControl === 'font' ? null : 'font')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      activeControl === 'font' 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-muted text-muted-foreground hover:bg-muted-hover'
+                    }`}
                   >
-                    Reset
+                    Fonte
                   </button>
                 </div>
                 
-                {/* Segunda linha: Velocidade de rolagem */}
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-xs text-muted-foreground">Velocidade:</span>
-                  <input 
-                    type="range" 
-                    min={1} 
-                    max={5} 
-                    value={scrollSpeed} 
-                    onChange={e => setScrollSpeed(parseInt(e.target.value))}
-                    className="w-24 accent-primary"
-                  />
-                  <span className="text-xs text-muted-foreground w-16 text-center">
-                    {scrollSpeed === 1 ? "Lento" : 
-                     scrollSpeed === 2 ? "Lento" : 
-                     scrollSpeed === 3 ? "Médio" : 
-                     scrollSpeed === 4 ? "Rápido" : "Rápido"}
-                  </span>
-                  <button 
-                    onClick={() => {
-                      if (showRef.current) {
-                        const wasScrolling = isScrolling;
-                        setIsScrolling(false);
-                        showRef.current.scrollTop = 0;
-                        if (wasScrolling) {
-                          setTimeout(() => setIsScrolling(true), 300);
+                {/* Painel de controles ativos */}
+                {activeControl === 'transpose' && (
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center justify-center gap-2">
+                      <button 
+                        onClick={() => setTranspose(t => t - 1)} 
+                        className="px-4 py-2 rounded bg-muted hover:bg-muted-hover text-sm"
+                      >
+                        -
+                      </button>
+                      <div className="w-12 text-center font-mono text-sm bg-muted rounded py-2">
+                        {transpose > 0 ? '+' : ''}{transpose}
+                      </div>
+                      <button 
+                        onClick={() => setTranspose(t => t + 1)} 
+                        className="px-4 py-2 rounded bg-muted hover:bg-muted-hover text-sm"
+                      >
+                        +
+                      </button>
+                      <button 
+                        onClick={() => setTranspose(0)} 
+                        className="px-4 py-2 rounded bg-accent text-accent-foreground hover:bg-accent/80 text-sm ml-2"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                    <label className="flex items-center justify-center gap-2">
+                      <input 
+                        type="checkbox" 
+                        checked={preferFlats} 
+                        onChange={e => setPreferFlats(e.target.checked)}
+                        className="scale-125"
+                      /> 
+                      <span className="text-sm text-muted-foreground">Usar bemóis</span>
+                    </label>
+                  </div>
+                )}
+                
+                {activeControl === 'speed' && (
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center justify-center gap-4">
+                      <input 
+                        type="range" 
+                        min={1} 
+                        max={5} 
+                        value={scrollSpeed} 
+                        onChange={e => setScrollSpeed(parseInt(e.target.value))}
+                        className="w-32 accent-primary"
+                      />
+                      <span className="text-sm text-muted-foreground w-16 text-center bg-muted rounded py-2 px-2">
+                        {scrollSpeed === 1 ? "Lento" : 
+                         scrollSpeed === 2 ? "Lento" : 
+                         scrollSpeed === 3 ? "Médio" : 
+                         scrollSpeed === 4 ? "Rápido" : "Rápido"}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        if (showRef.current) {
+                          const wasScrolling = isScrolling;
+                          setIsScrolling(false);
+                          showRef.current.scrollTop = 0;
+                          if (wasScrolling) {
+                            setTimeout(() => setIsScrolling(true), 300);
+                          }
                         }
-                      }
-                    }}
-                    className="px-3 py-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover text-sm"
-                  >
-                    ⬆ Topo
-                  </button>
-                </div>
+                      }}
+                      className="w-full px-4 py-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover text-sm"
+                    >
+                      ⬆ Voltar ao Topo
+                    </button>
+                  </div>
+                )}
                 
-                {/* Terceira linha: Tamanho da fonte */}
-                <div className="flex items-center justify-center gap-2 pb-2">
-                  <span className="text-xs text-muted-foreground">Fonte:</span>
-                  <button 
-                    onClick={() => setFontSize(Math.max(12, fontSize - 2))} 
-                    className="px-3 py-2 rounded bg-muted hover:bg-muted-hover text-sm"
-                  >
-                    A-
-                  </button>
-                  <span className="text-xs text-muted-foreground w-8 text-center">{fontSize}px</span>
-                  <button 
-                    onClick={() => setFontSize(Math.min(24, fontSize + 2))} 
-                    className="px-3 py-2 rounded bg-muted hover:bg-muted-hover text-sm"
-                  >
-                    A+
-                  </button>
-                </div>
+                {activeControl === 'font' && (
+                  <div className="p-4">
+                    <div className="flex items-center justify-center gap-4">
+                      <button 
+                        onClick={() => setFontSize(Math.max(12, fontSize - 2))} 
+                        className="px-4 py-2 rounded bg-muted hover:bg-muted-hover text-sm"
+                      >
+                        A-
+                      </button>
+                      <span className="text-sm text-muted-foreground w-12 text-center bg-muted rounded py-2">
+                        {fontSize}px
+                      </span>
+                      <button 
+                        onClick={() => setFontSize(Math.min(24, fontSize + 2))} 
+                        className="px-4 py-2 rounded bg-muted hover:bg-muted-hover text-sm"
+                      >
+                        A+
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
