@@ -15,6 +15,11 @@ export function ChordRenderer({ text, semitones = 0, preferFlats = false, classN
   return (
     <div className={`whitespace-pre-wrap leading-relaxed tracking-wide ${className}`}>
       {lines.map((line, i) => {
+        // Se a linha está vazia, renderiza um espaço para manter o espaçamento
+        if (line.trim() === "") {
+          return <div key={i} className="h-6">&nbsp;</div>;
+        }
+        
         const parts: React.ReactNode[] = [];
         let last = 0;
         let mr: RegExpExecArray | null;
