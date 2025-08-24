@@ -58,8 +58,8 @@ const CHORD_SUFFIX = "(?:" +
   "[0-9]+[+\\-#bM]*" +
 ")?";
 
-// Enhanced regex: captures chords with flats/sharps and seventh variations
-export const CHORD_REGEX = new RegExp(`(^|(?<=\\s))([A-G][#b]?(?:${CHORD_SUFFIX})?(?:\\/[A-G][#b]?)?)(?=\\s|$|[,.]|\\n)(?![a-z])`,'g');
+// Enhanced regex: avoids E and A as chords when followed by lowercase words
+export const CHORD_REGEX = new RegExp(`(^|(?<=\\s))((?![EA]\\s+[a-z])[A-G][#b]?(?:${CHORD_SUFFIX})?(?:\\/[A-G][#b]?)?)(?=\\s|$|[,.]|\\n)(?![a-z])`,'g');
 
 export function transposeChordToken(token: string, semitones: number, preferFlats = false): string {
   const m = token.match(new RegExp(`^([A-G][#b]?)(${CHORD_SUFFIX})(?:\\/([A-G][#b]?))?$`));
