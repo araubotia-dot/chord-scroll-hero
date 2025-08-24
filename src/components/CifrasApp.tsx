@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { normalizeNote, NOTES_SHARP, Note } from '@/lib/music-utils';
 import { ChordRenderer } from './ChordRenderer';
+import { toast } from '@/hooks/use-toast';
 
 // Types
 export type Song = {
@@ -700,6 +701,10 @@ export default function CifrasApp() {
                     onClick={() => {
                       if (selectedSong) {
                         addToSetlist(selectedSong.id, setlist.id);
+                        toast({
+                          title: "Música adicionada com sucesso!",
+                          description: `"${selectedSong.title}" foi adicionada ao repertório "${setlist.name}".`,
+                        });
                         setShowSetlistModal(false);
                       }
                     }}
