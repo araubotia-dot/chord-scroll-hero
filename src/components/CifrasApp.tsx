@@ -54,8 +54,40 @@ export default function CifrasApp() {
   const [transpose, setTranspose] = useState(0);
   const [preferFlats, setPreferFlats] = useState(false);
   const [speed, setSpeed] = useState(40);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [scrollSpeed, setScrollSpeed] = useState(30); // percentage
+
+  const showRef = React.useRef<HTMLDivElement>(null);
+  const lastFrame = React.useRef<number | null>(null);
 
   useEffect(() => { saveDB(db); }, [db]);
+  
+  // Auto-scroll effect
+  useEffect(() => {
+    if (!isScrolling || view !== "show") { 
+      lastFrame.current = null; 
+      return; 
+    }
+    
+    let raf = 0;
+    const step = (timestamp: number) => {
+      const el = showRef.current;
+      if (!el) return;
+      
+      if (lastFrame.current === null) lastFrame.current = timestamp;
+      const deltaTime = timestamp - lastFrame.current;
+      lastFrame.current = timestamp;
+      
+      // Convert percentage to pixels per second (30% = ~30 pixels/second)
+      const pixelsPerSecond = scrollSpeed;
+      el.scrollTop += (pixelsPerSecond / 1000) * deltaTime;
+      
+      raf = requestAnimationFrame(step);
+    };
+    
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [isScrolling, scrollSpeed, view]);
   
   const songs = db.songs;
   const setlists = db.setlists;
@@ -356,7 +388,48 @@ export default function CifrasApp() {
                 </button>
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-6 overflow-auto h-[70vh] text-lg leading-relaxed">
+            
+            {/* Auto-scroll controls */}
+            <div className="flex items-center justify-center gap-4 bg-card border border-border rounded-xl p-4">
+              <span className="text-muted-foreground">Rolagem:</span>
+              <button 
+                onClick={() => setIsScrolling(!isScrolling)}
+                className={`px-4 py-2 rounded font-medium transition-colors ${
+                  isScrolling 
+                    ? 'bg-destructive text-destructive-foreground hover:bg-destructive/80' 
+                    : 'bg-primary text-primary-foreground hover:bg-primary-hover'
+                }`}
+              >
+                {isScrolling ? 'Pausar' : 'Iniciar'}
+              </button>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Velocidade:</span>
+                <input 
+                  type="range" 
+                  min={5} 
+                  max={100} 
+                  value={scrollSpeed} 
+                  onChange={e => setScrollSpeed(parseInt(e.target.value))}
+                  className="w-24 accent-primary"
+                />
+                <span className="w-12 text-center font-mono text-sm">{scrollSpeed}%</span>
+              </div>
+              <button 
+                onClick={() => {
+                  if (showRef.current) {
+                    showRef.current.scrollTop = 0;
+                  }
+                }}
+                className="px-3 py-1 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
+              >
+                ⬆ Topo
+              </button>
+            </div>
+            
+            <div 
+              ref={showRef}
+              className="rounded-xl border border-border bg-card p-6 overflow-auto h-[65vh] text-lg leading-relaxed scroll-smooth"
+            >
               <ChordRenderer text={selectedSong.content} semitones={transpose} preferFlats={preferFlats} />
             </div>
           </div>
