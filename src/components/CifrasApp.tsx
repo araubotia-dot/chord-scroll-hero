@@ -174,6 +174,38 @@ export default function CifrasApp() {
     setCurrentSetlistId(sl.id);
   }
 
+  function deleteSetlist(setlistId: string) {
+    setDb(d => ({
+      ...d,
+      setlists: d.setlists.filter(s => s.id !== setlistId)
+    }));
+    if (currentSetlistId === setlistId) {
+      setCurrentSetlistId(null);
+    }
+  }
+
+  function updateSetlistName(setlistId: string, newName: string) {
+    setDb(d => ({
+      ...d,
+      setlists: d.setlists.map(s =>
+        s.id === setlistId
+          ? { ...s, name: newName, updatedAt: Date.now() }
+          : s
+      )
+    }));
+  }
+
+  function removeFromSetlist(songId: string, setlistId: string) {
+    setDb(d => ({
+      ...d,
+      setlists: d.setlists.map(s =>
+        s.id === setlistId
+          ? { ...s, songIds: s.songIds.filter(id => id !== songId), updatedAt: Date.now() }
+          : s
+      )
+    }));
+  }
+
   function addToSetlist(songId: string, setlistId?: string) {
     const id = setlistId ?? currentSetlistId;
     if (!id) return;
@@ -287,44 +319,134 @@ export default function CifrasApp() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold">Repertório</h2>
-              <button 
-                onClick={newSong} 
-                className="px-3 py-2 rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover"
-              >
-                + Música
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={newSetlist} 
+                  className="px-3 py-2 rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover"
+                >
+                  + Novo Repertório
+                </button>
+                <button 
+                  onClick={newSong} 
+                  className="px-3 py-2 rounded-2xl bg-accent text-accent-foreground hover:bg-accent/80"
+                >
+                  + Música
+                </button>
+              </div>
             </div>
-            <div className="grid md:grid-cols-2 gap-3">
-              {songs.map(s => (
-                <div key={s.id} className="p-3 border border-border rounded-xl bg-card">
-                  <div className="font-semibold">{s.title}</div>
-                  <div className="text-sm text-muted-foreground flex items-center gap-2">
-                    {s.artist && <span>{s.artist}</span>}
-                    {s.artist && s.genre && <span>•</span>}
-                    {s.genre && <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs">{s.genre}</span>}
+            
+            {/* Setlists Section */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold mb-3">Meus Repertórios</h3>
+              <div className="grid md:grid-cols-2 gap-3">
+                {setlists.map(setlist => (
+                  <div key={setlist.id} className="p-4 border border-border rounded-xl bg-card">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <input
+                          value={setlist.name}
+                          onChange={(e) => updateSetlistName(setlist.id, e.target.value)}
+                          className="w-full font-semibold bg-transparent border-none outline-none focus:bg-input focus:border focus:border-border focus:rounded px-1 -mx-1"
+                        />
+                        <div className="text-sm text-muted-foreground mt-1">
+                          {setlist.songIds.length} música{setlist.songIds.length !== 1 ? 's' : ''}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => deleteSetlist(setlist.id)}
+                        className="ml-2 px-2 py-1 rounded bg-destructive/10 text-destructive hover:bg-destructive/20 text-xs"
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                    
+                    {/* Songs in setlist */}
+                    <div className="space-y-2 mb-3">
+                      {setlist.songIds.map(songId => {
+                        const song = songs.find(s => s.id === songId);
+                        if (!song) return null;
+                        return (
+                          <div key={songId} className="flex items-center justify-between bg-muted/50 rounded p-2 text-sm">
+                            <div>
+                              <span className="font-medium">{song.title}</span>
+                              {song.artist && <span className="text-muted-foreground ml-2">- {song.artist}</span>}
+                            </div>
+                            <button
+                              onClick={() => removeFromSetlist(songId, setlist.id)}
+                              className="text-destructive hover:bg-destructive/10 rounded px-1"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        );
+                      })}
+                      {setlist.songIds.length === 0 && (
+                        <div className="text-muted-foreground text-sm py-2">Nenhuma música adicionada</div>
+                      )}
+                    </div>
+                    
+                    <button
+                      onClick={() => setCurrentSetlistId(setlist.id)}
+                      className={`w-full px-3 py-2 rounded text-sm transition-colors ${
+                        currentSetlistId === setlist.id
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted hover:bg-muted-hover'
+                      }`}
+                    >
+                      {currentSetlistId === setlist.id ? 'Repertório Ativo' : 'Selecionar'}
+                    </button>
                   </div>
-                  <div className="flex gap-2 mt-2">
-                    <button 
-                      onClick={() => { setSelectedSongId(s.id); setView("editar"); }} 
-                      className="px-2 py-1 rounded bg-muted hover:bg-muted-hover text-xs"
-                    >
-                      Editar
-                    </button>
-                    <button 
-                      onClick={() => { setSelectedSongId(s.id); setView("show"); }} 
-                      className="px-2 py-1 rounded bg-primary text-primary-foreground hover:bg-primary-hover text-xs"
-                    >
-                      Abrir
-                    </button>
-                    <button 
-                      onClick={() => addToSetlist(s.id)} 
-                      className="px-2 py-1 rounded bg-muted hover:bg-muted-hover text-xs"
-                    >
-                      + Repertório
-                    </button>
+                ))}
+                {setlists.length === 0 && (
+                  <div className="col-span-2 text-muted-foreground text-center py-8">
+                    Nenhum repertório criado. Clique em "+ Novo Repertório" para começar.
                   </div>
-                </div>
-              ))}
+                )}
+              </div>
+            </div>
+
+            {/* Songs Section */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Todas as Músicas</h3>
+              <div className="grid md:grid-cols-2 gap-3">
+                {songs.map(s => (
+                  <div key={s.id} className="p-3 border border-border rounded-xl bg-card">
+                    <div className="font-semibold">{s.title}</div>
+                    <div className="text-sm text-muted-foreground flex items-center gap-2">
+                      {s.artist && <span>{s.artist}</span>}
+                      {s.artist && s.genre && <span>•</span>}
+                      {s.genre && <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs">{s.genre}</span>}
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      <button 
+                        onClick={() => { setSelectedSongId(s.id); setView("editar"); }} 
+                        className="px-2 py-1 rounded bg-muted hover:bg-muted-hover text-xs"
+                      >
+                        Editar
+                      </button>
+                      <button 
+                        onClick={() => { setSelectedSongId(s.id); setView("show"); }} 
+                        className="px-2 py-1 rounded bg-primary text-primary-foreground hover:bg-primary-hover text-xs"
+                      >
+                        Abrir
+                      </button>
+                      {currentSetlistId && (
+                        <button 
+                          onClick={() => addToSetlist(s.id)} 
+                          className="px-2 py-1 rounded bg-accent text-accent-foreground hover:bg-accent/80 text-xs"
+                        >
+                          + Repertório
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {songs.length === 0 && (
+                  <div className="col-span-2 text-muted-foreground text-center py-8">
+                    Nenhuma música adicionada. Clique em "+ Música" para começar.
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
