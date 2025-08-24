@@ -25,7 +25,7 @@ export function shiftNote(note: string, semitones: number, preferFlats = false):
 // Enhanced chord recognition for all chord types
 const CHORD_CORE = "[A-G](?:[#b])?";
 const CHORD_SUFFIX = "(?:" +
-  // Basic triads - must have at least one identifier
+  // Basic triads
   "m|M|maj|min|" +
   // Meio diminuto e diminuto
   "ø|º|°|dim|" +
@@ -43,10 +43,10 @@ const CHORD_SUFFIX = "(?:" +
   "5|" +
   // Numbers with alterations
   "[0-9]+[+\\-#b]+" +
-")";
+")?";
 
-// More restrictive regex - chord must have suffix OR be followed by specific word boundaries
-export const CHORD_REGEX = new RegExp(`(^|(?<=\\s))(${CHORD_CORE})(${CHORD_SUFFIX})(?=$|[\\s,.])`,'g');
+// Better regex: recognizes chords with accidentals OR natural notes with suffixes OR standalone naturals
+export const CHORD_REGEX = new RegExp(`(^|(?<=\\s))([A-G][#b]${CHORD_SUFFIX}|[A-G](?=[mMsad0-9ºø°+])[^\\s]*|[A-G](?=\\s|$|[,.]|/)(?![a-z]))(?=$|[\\s,./])`,'g');
 
 export function transposeChordToken(token: string, semitones: number, preferFlats = false): string {
   const m = token.match(new RegExp(`^(${CHORD_CORE})(${CHORD_SUFFIX})(?:\\/(${CHORD_CORE}))?$`));
@@ -58,8 +58,8 @@ export function transposeChordToken(token: string, semitones: number, preferFlat
 }
 
 export function transposeAnyChordTokens(text: string, semitones: number, preferFlats = false): string {
-  return text.replace(CHORD_REGEX, (full, pre, root, suffix, bass) => {
-    const trans = transposeChordToken(`${root}${suffix||""}${bass?"/"+bass:""}`, semitones, preferFlats);
-    return `${pre}${trans}`;
+  return text.replace(CHORD_REGEX, (full, pre, chord) => {
+    const transposed = transposeChordToken(chord, semitones, preferFlats);
+    return `${pre}${transposed}`;
   });
 }
