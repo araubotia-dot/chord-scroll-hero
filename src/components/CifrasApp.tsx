@@ -34,6 +34,30 @@ type DBShape = {
 // Storage
 const STORAGE_KEY = "minhacifra.v1";
 
+// Predefined music genres
+const MUSIC_GENRES = [
+  "Sertanejo",
+  "Pagode",
+  "Forró",
+  "MPB",
+  "Rock",
+  "Pop",
+  "Funk",
+  "Gospel",
+  "Bossa Nova",
+  "Reggae",
+  "Country",
+  "Blues",
+  "Jazz",
+  "Axé",
+  "Piseiro",
+  "Samba",
+  "Chorinho",
+  "Romântica",
+  "Infantil",
+  "Clássica"
+];
+
 function loadDB(): DBShape {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -320,12 +344,18 @@ export default function CifrasApp() {
                 className="w-full bg-input border border-border rounded-xl px-3 py-2" 
                 placeholder="Artista"
               />
-              <input 
-                value={selectedSong.genre || ""} 
-                onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, genre: e.target.value } : x) }))} 
-                className="w-full bg-input border border-border rounded-xl px-3 py-2" 
-                placeholder="Ritmo (ex: sertanejo, pagode, rock)"
-              />
+              <select
+                value={selectedSong.genre || ""}
+                onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, genre: e.target.value } : x) }))}
+                className="w-full bg-background border border-border rounded-xl px-3 py-2 text-foreground z-20"
+              >
+                <option value="">Selecione o ritmo...</option>
+                {MUSIC_GENRES.map(genre => (
+                  <option key={genre} value={genre} className="bg-background text-foreground">
+                    {genre}
+                  </option>
+                ))}
+              </select>
               <div className="flex items-center gap-2">
                 <label className="text-sm text-muted-foreground">Tom original:</label>
                 <select 
