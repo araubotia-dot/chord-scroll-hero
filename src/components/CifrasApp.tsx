@@ -319,24 +319,16 @@ export default function CifrasApp() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold">Repertório</h2>
-              <div className="flex gap-2">
-                <button 
-                  onClick={newSetlist} 
-                  className="px-3 py-2 rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover"
-                >
-                  + Novo Repertório
-                </button>
-                <button 
-                  onClick={newSong} 
-                  className="px-3 py-2 rounded-2xl bg-accent text-accent-foreground hover:bg-accent/80"
-                >
-                  + Música
-                </button>
-              </div>
+              <button 
+                onClick={newSetlist} 
+                className="px-3 py-2 rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover"
+              >
+                + Novo Repertório
+              </button>
             </div>
             
             {/* Setlists Section */}
-            <div className="mb-8">
+            <div>
               <h3 className="text-lg font-semibold mb-3">Meus Repertórios</h3>
               <div className="grid md:grid-cols-2 gap-3">
                 {setlists.map(setlist => (
@@ -400,50 +392,6 @@ export default function CifrasApp() {
                 {setlists.length === 0 && (
                   <div className="col-span-2 text-muted-foreground text-center py-8">
                     Nenhum repertório criado. Clique em "+ Novo Repertório" para começar.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Songs Section */}
-            <div>
-              <h3 className="text-lg font-semibold mb-3">Todas as Músicas</h3>
-              <div className="grid md:grid-cols-2 gap-3">
-                {songs.map(s => (
-                  <div key={s.id} className="p-3 border border-border rounded-xl bg-card">
-                    <div className="font-semibold">{s.title}</div>
-                    <div className="text-sm text-muted-foreground flex items-center gap-2">
-                      {s.artist && <span>{s.artist}</span>}
-                      {s.artist && s.genre && <span>•</span>}
-                      {s.genre && <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs">{s.genre}</span>}
-                    </div>
-                    <div className="flex gap-2 mt-2">
-                      <button 
-                        onClick={() => { setSelectedSongId(s.id); setView("editar"); }} 
-                        className="px-2 py-1 rounded bg-muted hover:bg-muted-hover text-xs"
-                      >
-                        Editar
-                      </button>
-                      <button 
-                        onClick={() => { setSelectedSongId(s.id); setView("show"); }} 
-                        className="px-2 py-1 rounded bg-primary text-primary-foreground hover:bg-primary-hover text-xs"
-                      >
-                        Abrir
-                      </button>
-                      {currentSetlistId && (
-                        <button 
-                          onClick={() => addToSetlist(s.id)} 
-                          className="px-2 py-1 rounded bg-accent text-accent-foreground hover:bg-accent/80 text-xs"
-                        >
-                          + Repertório
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {songs.length === 0 && (
-                  <div className="col-span-2 text-muted-foreground text-center py-8">
-                    Nenhuma música adicionada. Clique em "+ Música" para começar.
                   </div>
                 )}
               </div>
