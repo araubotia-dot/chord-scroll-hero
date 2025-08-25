@@ -51,55 +51,49 @@ export default function Musicians() {
 
       if (profilesError) throw profilesError;
 
-      // Get songs and setlists counts for each musician
+      // Get all songs and setlists in parallel
+      const [songsResponse, setlistsResponse] = await Promise.all([
+        supabase.from("songs").select("id, title, artist, user_id, created_at"),
+        supabase.from("setlists").select("id, name, user_id, created_at")
+      ]);
+
+      if (songsResponse.error) {
+        console.error("Error fetching songs:", songsResponse.error);
+      }
+      if (setlistsResponse.error) {
+        console.error("Error fetching setlists:", setlistsResponse.error);
+      }
+
+      const allSongs = songsResponse.data || [];
+      const allSetlists = setlistsResponse.data || [];
+
+      // Process musicians data
       const musiciansData: MusicianProfile[] = [];
 
       for (const profile of profiles || []) {
-        // Get songs count and recent songs
-        const { data: songs, error: songsError } = await supabase
-          .from("songs")
-          .select("id, title, artist")
-          .eq("user_id", profile.id)
-          .order("created_at", { ascending: false })
-          .limit(3);
+        // Filter songs and setlists for this user
+        const userSongs = allSongs.filter(song => song.user_id === profile.id);
+        const userSetlists = allSetlists.filter(setlist => setlist.user_id === profile.id);
 
-        if (songsError) {
-          console.error("Error fetching songs:", songsError);
-          continue;
-        }
+        // Get recent items (latest 3)
+        const recentSongs = userSongs
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, 3)
+          .map(song => ({ id: song.id, title: song.title, artist: song.artist }));
 
-        // Get setlists count and recent setlists
-        const { data: setlists, error: setlistsError } = await supabase
-          .from("setlists")
-          .select("id, name")
-          .eq("user_id", profile.id)
-          .order("created_at", { ascending: false })
-          .limit(3);
-
-        if (setlistsError) {
-          console.error("Error fetching setlists:", setlistsError);
-          continue;
-        }
-
-        // Get total counts
-        const { count: songsCount } = await supabase
-          .from("songs")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", profile.id);
-
-        const { count: setlistsCount } = await supabase
-          .from("setlists")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", profile.id);
+        const recentSetlists = userSetlists
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, 3)
+          .map(setlist => ({ id: setlist.id, name: setlist.name }));
 
         musiciansData.push({
           ...profile,
-          songs_count: songsCount || 0,
-          setlists_count: setlistsCount || 0,
-          total_score: (songsCount || 0) + (setlistsCount || 0),
+          songs_count: userSongs.length,
+          setlists_count: userSetlists.length,
+          total_score: userSongs.length + userSetlists.length,
           position: 0, // Will be set after sorting
-          recent_songs: songs || [],
-          recent_setlists: setlists || []
+          recent_songs: recentSongs,
+          recent_setlists: recentSetlists
         });
       }
 
