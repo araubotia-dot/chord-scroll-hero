@@ -5,6 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { UserAvatar } from './UserAvatar';
 import { Trash2, ChevronUp, Play, Pause, RotateCcw } from 'lucide-react';
+import * as dataService from '@/services/data';
 
 // Types
 export type Song = {
@@ -12,31 +13,28 @@ export type Song = {
   title: string;
   artist?: string;
   genre?: string;
-  categories: string[];
-  key: Note;
+  key: string;
   content: string;
-  ownerId: string;
-  createdAt: number;
-  updatedAt: number;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
 };
 
 type Setlist = {
   id: string;
   name: string;
-  songIds: string[];
-  createdAt: number;
-  updatedAt: number;
-  ownerId: string;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
 };
 
-type DBShape = {
-  songs: Song[];
-  setlists: Setlist[];
-  user: { id: string; name: string };
+type SetlistSong = {
+  id: string;
+  setlist_id: string;
+  song_id: string;
+  position: number;
+  song?: Song;
 };
-
-// Storage
-const STORAGE_KEY = "minhacifra.v1";
 
 // Predefined music genres
 const MUSIC_GENRES = [
@@ -62,22 +60,12 @@ const MUSIC_GENRES = [
   "Clássica"
 ];
 
-function loadDB(): DBShape {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  const user = { id: "me", name: "Meu Usuário" };
-  return { songs: [], setlists: [], user };
-}
-
-function saveDB(db: DBShape) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-}
-
 export default function CifrasApp() {
   const { user } = useAuth();
-  const [db, setDb] = useState<DBShape>(() => loadDB());
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [setlists, setSetlists] = useState<Setlist[]>([]);
+  const [setlistSongs, setSetlistSongs] = useState<{[key: string]: SetlistSong[]}>({});
+  const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"home" | "biblioteca" | "editar" | "show" | "setlist">("home");
   const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
   const [currentSetlistId, setCurrentSetlistId] = useState<string | null>(null);
@@ -102,11 +90,8 @@ export default function CifrasApp() {
   const userProfile = user ? {
     id: user.id,
     name: user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuário'
-  } : db.user;
+  } : { id: 'guest', name: 'Usuário' };
   const lastFrame = React.useRef<number | null>(null);
-
-  const songs = db.songs;
-  const setlists = db.setlists;
   const selectedSong = songs.find(s => s.id === selectedSongId) || null;
   const currentSetlist = setlists.find(s => s.id === currentSetlistId) || null;
   const viewingSetlist = setlists.find(s => s.id === viewingSetlistId) || null;
@@ -121,7 +106,63 @@ export default function CifrasApp() {
     selectedSong.content !== originalSong.content
   );
 
-  useEffect(() => { saveDB(db); }, [db]);
+  // Load initial data
+  useEffect(() => {
+    if (!user) return;
+    
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [songsData, setlistsData] = await Promise.all([
+          dataService.listSongs(),
+          dataService.listSetlists()
+        ]);
+        setSongs(songsData);
+        setSetlists(setlistsData);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        toast({
+          title: "Erro ao carregar dados",
+          description: "Tente recarregar a página.",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user]);
+
+  // Load setlist songs when viewing setlist or biblioteca
+  useEffect(() => {
+    const loadSetlistSongs = async () => {
+      try {
+        const promises = setlists.map(async setlist => {
+          const songs = await dataService.listSetlistSongs(setlist.id);
+          // Map the response to match our SetlistSong interface
+          const mappedSongs = songs.map(s => ({
+            id: s.id,
+            setlist_id: setlist.id,
+            song_id: s.song?.id || '',
+            position: s.position,
+            song: s.song as Song
+          }));
+          return { [setlist.id]: mappedSongs };
+        });
+        
+        const results = await Promise.all(promises);
+        const songsBySetlist = results.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+        setSetlistSongs(songsBySetlist);
+      } catch (error) {
+        console.error('Error loading setlist songs:', error);
+      }
+    };
+
+    if (setlists.length > 0) {
+      loadSetlistSongs();
+    }
+  }, [setlists]);
   
   // Track original song state when entering edit mode
   useEffect(() => {
@@ -184,132 +225,238 @@ export default function CifrasApp() {
     );
   });
 
-  function newSong() {
-    const now = Date.now();
-    const s: Song = {
-      id: crypto.randomUUID(),
-      title: "Nova Música",
-      artist: "",
-      genre: "",
-      categories: [],
-      key: "C",
-      content: "",
-      ownerId: userProfile.id,
-      createdAt: now,
-      updatedAt: now
-    };
-    setDb(d => ({ ...d, songs: [s, ...d.songs] }));
-    setSelectedSongId(s.id);
-    setView("editar");
-  }
-
-  function saveSong(song: Song) {
-    song.updatedAt = Date.now();
-    setDb(d => ({
-      ...d,
-      songs: d.songs.some(x => x.id === song.id)
-        ? d.songs.map(x => x.id === song.id ? song : x)
-        : [song, ...d.songs]
-    }));
-    // Update original song state after saving
-    setOriginalSong({ ...song });
-    toast({
-      title: "Salvo com sucesso!",
-      description: `A música "${song.title}" foi salva.`,
-    });
-  }
-
-  function deleteSong(songId: string) {
-    setDb(d => ({
-      ...d,
-      songs: d.songs.filter(s => s.id !== songId),
-      setlists: d.setlists.map(setlist => ({
-        ...setlist,
-        songIds: setlist.songIds.filter(id => id !== songId)
-      }))
-    }));
-    setSelectedSongId(null);
-    setView("home");
-    toast({
-      title: "Música excluída com sucesso!",
-      description: "A música foi removida permanentemente.",
-      variant: "destructive",
-    });
-  }
-
-  function newSetlist() {
-    const now = Date.now();
-    const sl: Setlist = {
-      id: crypto.randomUUID(),
-      name: `Repertório ${new Date().toLocaleDateString()}`,
-      songIds: [],
-      createdAt: now,
-      updatedAt: now,
-      ownerId: userProfile.id
-    };
-    setDb(d => ({ ...d, setlists: [sl, ...d.setlists] }));
-    setCurrentSetlistId(sl.id);
-  }
-
-  function deleteSetlist(setlistId: string) {
-    setDb(d => ({
-      ...d,
-      setlists: d.setlists.filter(s => s.id !== setlistId)
-    }));
-    if (currentSetlistId === setlistId) {
-      setCurrentSetlistId(null);
+  async function newSong() {
+    try {
+      const songData = await dataService.createSong({
+        title: "Nova Música",
+        artist: "",
+        genre: "",
+        key: "C",
+        content: ""
+      });
+      
+      setSongs(prev => [songData, ...prev]);
+      setSelectedSongId(songData.id);
+      setView("editar");
+      
+      toast({
+        title: "Nova música criada!",
+        description: "Preencha os dados e salve.",
+      });
+    } catch (error) {
+      console.error('newSong error:', error);
+      toast({
+        title: "Erro ao criar música",
+        description: String(error),
+        variant: "destructive"
+      });
     }
   }
 
-  function updateSetlistName(setlistId: string, newName: string) {
-    setDb(d => ({
-      ...d,
-      setlists: d.setlists.map(s =>
-        s.id === setlistId
-          ? { ...s, name: newName, updatedAt: Date.now() }
-          : s
-      )
-    }));
+  async function saveSong(song: Song) {
+    try {
+      const updatedSong = await dataService.updateSong(song.id, {
+        title: song.title,
+        artist: song.artist,
+        genre: song.genre,
+        key: song.key,
+        content: song.content
+      });
+      
+      setSongs(prev => prev.map(s => s.id === song.id ? updatedSong : s));
+      setOriginalSong({ ...updatedSong });
+      
+      toast({
+        title: "Salvo com sucesso!",
+        description: `A música "${song.title}" foi salva.`,
+      });
+      
+      setView("home");
+    } catch (error) {
+      console.error('saveSong error:', error);
+      toast({
+        title: "Erro ao salvar música",
+        description: String(error),
+        variant: "destructive"
+      });
+    }
   }
 
-  function removeFromSetlist(songId: string, setlistId: string) {
-    setDb(d => ({
-      ...d,
-      setlists: d.setlists.map(s =>
-        s.id === setlistId
-          ? { ...s, songIds: s.songIds.filter(id => id !== songId), updatedAt: Date.now() }
-          : s
-      )
-    }));
+  async function deleteSong(songId: string) {
+    try {
+      await dataService.deleteSong(songId);
+      setSongs(prev => prev.filter(s => s.id !== songId));
+      setSelectedSongId(null);
+      setView("home");
+      
+      toast({
+        title: "Música excluída com sucesso!",
+        description: "A música foi removida permanentemente.",
+        variant: "destructive",
+      });
+    } catch (error) {
+      console.error('deleteSong error:', error);
+      toast({
+        title: "Erro ao excluir música",
+        description: String(error),
+        variant: "destructive"
+      });
+    }
   }
 
-  function addToSetlist(songId: string, setlistId?: string) {
+  async function newSetlist() {
+    try {
+      const setlistData = await dataService.createSetlist({
+        name: `Repertório ${new Date().toLocaleDateString()}`
+      });
+      
+      setSetlists(prev => [setlistData, ...prev]);
+      setCurrentSetlistId(setlistData.id);
+      
+      toast({
+        title: "Repertório criado!",
+        description: `Novo repertório "${setlistData.name}" foi criado.`,
+      });
+    } catch (error) {
+      console.error('newSetlist error:', error);
+      toast({
+        title: "Erro ao criar repertório",
+        description: String(error),
+        variant: "destructive"
+      });
+    }
+  }
+
+  async function deleteSetlist(setlistId: string) {
+    try {
+      await dataService.deleteSetlist(setlistId);
+      setSetlists(prev => prev.filter(s => s.id !== setlistId));
+      if (currentSetlistId === setlistId) {
+        setCurrentSetlistId(null);
+      }
+      
+      toast({
+        title: "Repertório excluído!",
+        description: "O repertório foi removido permanentemente.",
+        variant: "destructive",
+      });
+    } catch (error) {
+      console.error('deleteSetlist error:', error);
+      toast({
+        title: "Erro ao excluir repertório",
+        description: String(error),
+        variant: "destructive"
+      });
+    }
+  }
+
+  async function updateSetlistName(setlistId: string, newName: string) {
+    try {
+      const updatedSetlist = await dataService.updateSetlist(setlistId, { name: newName });
+      setSetlists(prev => prev.map(s => s.id === setlistId ? updatedSetlist : s));
+    } catch (error) {
+      console.error('updateSetlistName error:', error);
+      toast({
+        title: "Erro ao atualizar repertório",
+        description: String(error),
+        variant: "destructive"
+      });
+    }
+  }
+
+  async function removeFromSetlist(songId: string, setlistId: string) {
+    try {
+      await dataService.removeFromSetlist(setlistId, songId);
+      // Update local state if this setlist is currently loaded
+      if (setlistSongs[setlistId]) {
+        setSetlistSongs(prev => ({
+          ...prev,
+          [setlistId]: prev[setlistId].filter(ss => ss.song_id !== songId)
+        }));
+      }
+      
+      toast({
+        title: "Música removida do repertório!",
+        description: "A música foi removida com sucesso.",
+      });
+    } catch (error) {
+      console.error('removeFromSetlist error:', error);
+      toast({
+        title: "Erro ao remover música",
+        description: String(error),
+        variant: "destructive"
+      });
+    }
+  }
+
+  async function addToSetlist(songId: string, setlistId?: string) {
     const id = setlistId ?? currentSetlistId;
     if (!id) return;
-    setDb(d => ({
-      ...d,
-      setlists: d.setlists.map(s =>
-        s.id === id
-          ? { ...s, songIds: [...s.songIds.filter(x => x !== songId), songId], updatedAt: Date.now() }
-          : s
-      )
-    }));
+    
+    try {
+      // Get current songs in setlist to determine position
+      const currentSongs = setlistSongs[id] || [];
+      const position = currentSongs.length;
+      
+      await dataService.addSongToSetlist({ setlist_id: id, song_id: songId, position });
+      
+      // Update local state
+      const song = songs.find(s => s.id === songId);
+      if (song) {
+        setSetlistSongs(prev => ({
+          ...prev,
+          [id]: [...(prev[id] || []), { id: crypto.randomUUID(), setlist_id: id, song_id: songId, position, song }]
+        }));
+      }
+      
+      toast({
+        title: "Música adicionada ao repertório!",
+        description: "A música foi adicionada com sucesso.",
+      });
+    } catch (error) {
+      console.error('addToSetlist error:', error);
+      toast({
+        title: "Erro ao adicionar música",
+        description: String(error),
+        variant: "destructive"
+      });
+    }
   }
 
-  function playRepertoire(repertoireId: string) {
-    const repertoire = setlists.find(s => s.id === repertoireId);
-    if (!repertoire || repertoire.songIds.length === 0) return;
-    
-    setCurrentRepertoireId(repertoireId);
-    setCurrentSongIndex(0);
-    setSelectedSongId(repertoire.songIds[0]);
-    setView("show");
+  async function playRepertoire(repertoireId: string) {
+    try {
+      const repertoireSongs = await dataService.listSetlistSongs(repertoireId);
+      if (repertoireSongs.length === 0) return;
+      
+      // Map the response to match our SetlistSong interface
+      const mappedSongs = repertoireSongs.map(s => ({
+        id: s.id,
+        setlist_id: repertoireId,
+        song_id: s.song?.id || '',
+        position: s.position,
+        song: s.song as Song
+      }));
+      
+      setSetlistSongs(prev => ({ ...prev, [repertoireId]: mappedSongs }));
+      setCurrentRepertoireId(repertoireId);
+      setCurrentSongIndex(0);
+      setSelectedSongId(mappedSongs[0].song_id);
+      setView("show");
+    } catch (error) {
+      console.error('playRepertoire error:', error);
+      toast({
+        title: "Erro ao tocar repertório",
+        description: String(error),
+        variant: "destructive"
+      });
+    }
   }
 
   function navigateRepertoire(direction: 'next' | 'prev') {
-    if (!currentRepertoire) return;
+    if (!currentRepertoire || !setlistSongs[currentRepertoire.id]) return;
     
-    const maxIndex = currentRepertoire.songIds.length - 1;
+    const repertoireSongs = setlistSongs[currentRepertoire.id];
+    const maxIndex = repertoireSongs.length - 1;
     let newIndex = currentSongIndex;
     
     if (direction === 'next') {
@@ -319,7 +466,12 @@ export default function CifrasApp() {
     }
     
     setCurrentSongIndex(newIndex);
-    setSelectedSongId(currentRepertoire.songIds[newIndex]);
+    setSelectedSongId(repertoireSongs[newIndex].song_id);
+  }
+
+  function updateSongField(field: keyof Song, value: string) {
+    if (!selectedSong) return;
+    setSongs(prev => prev.map(s => s.id === selectedSong.id ? { ...s, [field]: value } : s));
   }
 
   const handleSignOut = async () => {
@@ -337,6 +489,17 @@ export default function CifrasApp() {
       });
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-2xl font-bold mb-2">CifraSet</div>
+          <div className="text-muted-foreground">Carregando...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -475,60 +638,63 @@ export default function CifrasApp() {
             <div>
               <h3 className="text-lg font-semibold mb-3">Meus Repertórios</h3>
               <div className="grid md:grid-cols-2 gap-3">
-                {setlists.map(setlist => (
-                  <div key={setlist.id} className="p-4 border border-border rounded-xl bg-card">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <input
-                          value={setlist.name}
-                          onChange={(e) => updateSetlistName(setlist.id, e.target.value)}
-                          className="w-full font-semibold bg-transparent border-none outline-none focus:bg-input focus:border focus:border-border focus:rounded px-1 -mx-1"
-                        />
-                        <div className="text-sm text-muted-foreground mt-1">
-                          {setlist.songIds.length} música{setlist.songIds.length !== 1 ? 's' : ''}
+                {setlists.map(setlist => {
+                  const setlistSongsCount = setlistSongs[setlist.id]?.length || 0;
+                  return (
+                    <div key={setlist.id} className="p-4 border border-border rounded-xl bg-card">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <input
+                            value={setlist.name}
+                            onChange={(e) => updateSetlistName(setlist.id, e.target.value)}
+                            className="w-full font-semibold bg-transparent border-none outline-none focus:bg-input focus:border focus:border-border focus:rounded px-1 -mx-1"
+                          />
+                          <div className="text-sm text-muted-foreground mt-1">
+                            {setlistSongsCount} música{setlistSongsCount !== 1 ? 's' : ''}
+                          </div>
                         </div>
+                        <button
+                          onClick={() => deleteSetlist(setlist.id)}
+                          className="ml-2 px-2 py-1 rounded bg-destructive/10 text-destructive hover:bg-destructive/20 text-xs"
+                        >
+                          Excluir
+                        </button>
                       </div>
+                      
+                      {/* Songs in setlist */}
+                      <div className="space-y-2 mb-3">
+                        {(setlistSongs[setlist.id] || []).map(setlistSong => {
+                          if (!setlistSong.song) return null;
+                          return (
+                            <div key={setlistSong.id} className="flex items-center justify-between bg-muted/50 rounded p-2 text-sm">
+                              <div>
+                                <span className="font-medium">{setlistSong.song.title}</span>
+                                {setlistSong.song.artist && <span className="text-muted-foreground ml-2">- {setlistSong.song.artist}</span>}
+                              </div>
+                              <button
+                                onClick={() => removeFromSetlist(setlistSong.song_id, setlist.id)}
+                                className="text-destructive hover:bg-destructive/10 rounded px-1"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          );
+                        })}
+                        {setlistSongsCount === 0 && (
+                          <div className="text-muted-foreground text-sm py-2">Nenhuma música adicionada</div>
+                        )}
+                      </div>
+                      
                       <button
-                        onClick={() => deleteSetlist(setlist.id)}
-                        className="ml-2 px-2 py-1 rounded bg-destructive/10 text-destructive hover:bg-destructive/20 text-xs"
+                        onClick={() => playRepertoire(setlist.id)}
+                        className="w-full px-3 py-2 rounded text-sm transition-colors bg-primary text-primary-foreground hover:bg-primary-hover"
+                        disabled={setlistSongsCount === 0}
                       >
-                        Excluir
+                        Tocar
                       </button>
                     </div>
-                    
-                    {/* Songs in setlist */}
-                    <div className="space-y-2 mb-3">
-                      {setlist.songIds.map(songId => {
-                        const song = songs.find(s => s.id === songId);
-                        if (!song) return null;
-                        return (
-                          <div key={songId} className="flex items-center justify-between bg-muted/50 rounded p-2 text-sm">
-                            <div>
-                              <span className="font-medium">{song.title}</span>
-                              {song.artist && <span className="text-muted-foreground ml-2">- {song.artist}</span>}
-                            </div>
-                            <button
-                              onClick={() => removeFromSetlist(songId, setlist.id)}
-                              className="text-destructive hover:bg-destructive/10 rounded px-1"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        );
-                      })}
-                      {setlist.songIds.length === 0 && (
-                        <div className="text-muted-foreground text-sm py-2">Nenhuma música adicionada</div>
-                      )}
-                    </div>
-                    
-                    <button
-                      onClick={() => playRepertoire(setlist.id)}
-                      className="w-full px-3 py-2 rounded text-sm transition-colors bg-primary text-primary-foreground hover:bg-primary-hover"
-                    >
-                      Tocar
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
                 {setlists.length === 0 && (
                   <div className="col-span-2 text-muted-foreground text-center py-8">
                     Nenhum repertório criado. Clique em "+ Novo Repertório" para começar.
@@ -539,113 +705,24 @@ export default function CifrasApp() {
           </div>
         )}
 
-        {view === "setlist" && viewingSetlist && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setView("biblioteca")}
-                  className="px-3 py-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
-                >
-                  ← Voltar
-                </button>
-                <div>
-                  <h2 className="font-semibold text-lg">{viewingSetlist.name}</h2>
-                  <div className="text-sm text-muted-foreground">
-                    {viewingSetlist.songIds.length} música{viewingSetlist.songIds.length !== 1 ? 's' : ''}
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setCurrentSetlistId(viewingSetlist.id)}
-                  className={`px-3 py-2 rounded text-sm transition-colors ${
-                    currentSetlistId === viewingSetlist.id
-                      ? 'bg-accent text-accent-foreground'
-                      : 'bg-muted text-muted-foreground hover:bg-muted-hover'
-                  }`}
-                >
-                  {currentSetlistId === viewingSetlist.id ? 'Repertório Ativo' : 'Marcar como Ativo'}
-                </button>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-3">
-              {viewingSetlist.songIds.map((songId, index) => {
-                const song = songs.find(s => s.id === songId);
-                if (!song) return null;
-                return (
-                  <div key={songId} className="p-4 border border-border rounded-xl bg-card">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="bg-muted text-muted-foreground px-2 py-1 rounded text-xs font-mono">
-                          {index + 1}
-                        </span>
-                        <div>
-                          <div className="font-semibold">{song.title}</div>
-                          <div className="text-sm text-muted-foreground flex items-center gap-2">
-                            {song.artist && <span>{song.artist}</span>}
-                            {song.artist && song.genre && <span>•</span>}
-                            {song.genre && <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs">{song.genre}</span>}
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => removeFromSetlist(songId, viewingSetlist.id)}
-                        className="px-2 py-1 rounded bg-destructive/10 text-destructive hover:bg-destructive/20 text-xs"
-                      >
-                        Remover
-                      </button>
-                    </div>
-                    
-                    <div className="flex gap-2 mt-3">
-                      <button 
-                        onClick={() => { setSelectedSongId(song.id); setView("editar"); }} 
-                        className="px-2 py-1 rounded bg-muted hover:bg-muted-hover text-xs"
-                      >
-                        Editar
-                      </button>
-                      <button 
-                        onClick={() => { 
-                          setCurrentRepertoireId(null); // Clear repertoire mode for individual songs
-                          setSelectedSongId(song.id); 
-                          setView("show"); 
-                        }} 
-                        className="px-2 py-1 rounded bg-primary text-primary-foreground hover:bg-primary-hover text-xs"
-                      >
-                        Tocar
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-              {viewingSetlist.songIds.length === 0 && (
-                <div className="col-span-2 text-muted-foreground text-center py-8">
-                  Este repertório não possui músicas. Adicione músicas através da página "Início" ou "Editar".
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         {view === "editar" && selectedSong && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="space-y-3">
               <input 
                 value={selectedSong.title === "Nova Música" ? "" : selectedSong.title} 
-                onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, title: e.target.value } : x) }))} 
+                onChange={e => updateSongField('title', e.target.value)}
                 className="w-full bg-input border border-border rounded-xl px-3 py-3 text-base" 
                 placeholder="Título"
               />
               <input 
                 value={selectedSong.artist || ""} 
-                onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, artist: e.target.value } : x) }))} 
+                onChange={e => updateSongField('artist', e.target.value)}
                 className="w-full bg-input border border-border rounded-xl px-3 py-3 text-base" 
                 placeholder="Artista"
               />
               <select
                 value={selectedSong.genre || ""}
-                onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, genre: e.target.value } : x) }))}
+                onChange={e => updateSongField('genre', e.target.value)}
                 className="w-full bg-background border border-border rounded-xl px-3 py-3 text-foreground text-base"
               >
                 <option value="">Selecione o ritmo...</option>
@@ -659,7 +736,7 @@ export default function CifrasApp() {
                 <label className="text-sm text-muted-foreground">Tom original:</label>
                 <select 
                   value={selectedSong.key} 
-                  onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, key: normalizeNote(e.target.value) as Note } : x) }))} 
+                  onChange={e => updateSongField('key', normalizeNote(e.target.value) as Note)}
                   className="bg-input border border-border rounded-xl px-3 py-2 text-base"
                 >
                   {NOTES_SHARP.map(n => <option key={n} value={n}>{n}</option>)}
@@ -667,7 +744,7 @@ export default function CifrasApp() {
               </div>
               <textarea 
                 value={selectedSong.content} 
-                onChange={e => setDb(d => ({ ...d, songs: d.songs.map(x => x.id === selectedSong.id ? { ...x, content: e.target.value } : x) }))} 
+                onChange={e => updateSongField('content', e.target.value)}
                 className="w-full h-[300px] lg:h-[320px] bg-input border border-border rounded-xl p-3 font-mono text-sm"
                 placeholder="Digite os acordes e letra aqui..."
               />
@@ -689,7 +766,7 @@ export default function CifrasApp() {
                   Adicionar ao Repertório
                 </button>
                 <button 
-                  onClick={() => setView("biblioteca")} 
+                  onClick={() => setView("home")} 
                   className="px-4 py-3 lg:px-3 lg:py-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
                 >
                   Cancelar
@@ -754,7 +831,7 @@ export default function CifrasApp() {
                 </span>
                 {currentRepertoire && (
                   <span className="text-xs bg-accent text-accent-foreground px-2 py-1 rounded-full">
-                    {currentSongIndex + 1} de {currentRepertoire.songIds.length}
+                    {currentSongIndex + 1} de {setlistSongs[currentRepertoire.id]?.length || 0}
                   </span>
                 )}
               </div>
@@ -781,10 +858,8 @@ export default function CifrasApp() {
                 <button 
                   onClick={() => {
                     if (!isScrolling) {
-                      // Se não está rolando, inicia na velocidade atual
                       setIsScrolling(true);
                     } else {
-                      // Se está rolando, aumenta a velocidade ou para se já está no máximo
                       if (scrollSpeed < 5) {
                         setScrollSpeed(scrollSpeed + 1);
                       } else {
@@ -804,7 +879,6 @@ export default function CifrasApp() {
                   onClick={() => {
                     setScrollSpeed(1);
                     if (isScrolling) {
-                      // Se está rolando, reinicia com velocidade lenta
                       setIsScrolling(false);
                       setTimeout(() => setIsScrolling(true), 100);
                     }
@@ -995,28 +1069,26 @@ export default function CifrasApp() {
             
             <div className="space-y-2 mb-4">
               {setlists.length > 0 ? (
-                setlists.map(setlist => (
-                  <button
-                    key={setlist.id}
-                    onClick={() => {
-                      if (selectedSong) {
-                        addToSetlist(selectedSong.id, setlist.id);
-                        toast({
-                          title: "Música adicionada com sucesso!",
-                          description: `"${selectedSong.title}" foi adicionada ao repertório "${setlist.name}".`,
-                          variant: "success",
-                        });
-                        setShowSetlistModal(false);
-                      }
-                    }}
-                    className="w-full text-left p-3 rounded-lg border border-border hover:bg-muted transition-colors"
-                  >
-                    <div className="font-medium">{setlist.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {setlist.songIds.length} música{setlist.songIds.length !== 1 ? 's' : ''}
-                    </div>
-                  </button>
-                ))
+                setlists.map(setlist => {
+                  const setlistSongsCount = setlistSongs[setlist.id]?.length || 0;
+                  return (
+                    <button
+                      key={setlist.id}
+                      onClick={() => {
+                        if (selectedSong) {
+                          addToSetlist(selectedSong.id, setlist.id);
+                          setShowSetlistModal(false);
+                        }
+                      }}
+                      className="w-full text-left p-3 rounded-lg border border-border hover:bg-muted transition-colors"
+                    >
+                      <div className="font-medium">{setlist.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {setlistSongsCount} música{setlistSongsCount !== 1 ? 's' : ''}
+                      </div>
+                    </button>
+                  );
+                })
               ) : (
                 <div className="text-center py-4 text-muted-foreground">
                   Nenhum repertório encontrado. Crie um repertório primeiro.
