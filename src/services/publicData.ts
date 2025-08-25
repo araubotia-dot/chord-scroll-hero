@@ -36,6 +36,53 @@ export async function getPublicSetlists(userId: string) {
   return data ?? [];
 }
 
+// GET SINGLE SONG (for preview)
+export async function getSong(songId: string) {
+  const { data, error } = await supabase
+    .from('songs')
+    .select('id, title, artist, genre, key, content, user_id, created_at')
+    .eq('id', songId)
+    .single();
+  
+  if (error) throw error;
+  return data;
+}
+
+// GET SETLIST WITH SONGS (for preview)
+export async function getSetlistWithSongs(setlistId: string) {
+  const { data: setlist, error: setlistError } = await supabase
+    .from('setlists')
+    .select('id, name, user_id, created_at')
+    .eq('id', setlistId)
+    .single();
+
+  if (setlistError) throw setlistError;
+
+  const { data: songs, error: songsError } = await supabase
+    .from('setlist_songs')
+    .select(`
+      id,
+      position,
+      song_id,
+      songs (
+        id,
+        title,
+        artist,
+        genre,
+        key
+      )
+    `)
+    .eq('setlist_id', setlistId)
+    .order('position', { ascending: true });
+
+  if (songsError) throw songsError;
+
+  return {
+    ...setlist,
+    songs: songs || []
+  };
+}
+
 // DUPLICATE SONG
 export async function duplicateSong(song: any) {
   const { data: { user }, error: authErr } = await supabase.auth.getUser();
@@ -49,7 +96,9 @@ export async function duplicateSong(song: any) {
       artist: song.artist,
       genre: song.genre,
       key: song.key,
-      content: song.content
+      content: song.content,
+      is_imported: true,
+      origin_user_id: song.user_id
     }])
     .select()
     .single();
@@ -126,7 +175,9 @@ export async function duplicateSetlist(setlist: any) {
     .from('setlists')
     .insert([{ 
       user_id: user.id, 
-      name: `${setlist.name} (cópia)` 
+      name: `${setlist.name} (cópia)`,
+      is_imported: true,
+      origin_user_id: setlist.user_id
     }])
     .select()
     .single();

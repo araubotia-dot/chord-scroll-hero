@@ -102,21 +102,27 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_imported: boolean | null
           name: string
+          origin_user_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          is_imported?: boolean | null
           name: string
+          origin_user_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          is_imported?: boolean | null
           name?: string
+          origin_user_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -129,7 +135,9 @@ export type Database = {
           created_at: string
           genre: string | null
           id: string
+          is_imported: boolean | null
           key: string | null
+          origin_user_id: string | null
           title: string
           updated_at: string
           user_id: string
@@ -140,7 +148,9 @@ export type Database = {
           created_at?: string
           genre?: string | null
           id?: string
+          is_imported?: boolean | null
           key?: string | null
+          origin_user_id?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -151,7 +161,9 @@ export type Database = {
           created_at?: string
           genre?: string | null
           id?: string
+          is_imported?: boolean | null
           key?: string | null
+          origin_user_id?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -193,6 +205,14 @@ export type Database = {
           name?: string | null
           past_bands?: string[] | null
           tiktok?: string | null
+        }
+        Relationships: []
+      }
+      user_stats: {
+        Row: {
+          setlists_count_own: number | null
+          songs_count_own: number | null
+          user_id: string | null
         }
         Relationships: []
       }

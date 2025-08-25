@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Plus, Loader2 } from 'lucide-react';
+import { Copy, Plus, Loader2, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface PublicSongsListProps {
   songs: any[];
@@ -65,39 +66,53 @@ export function PublicSongsList({
               )}
             </div>
             
-            {!isOwnProfile && (
-              <div className="flex gap-2 flex-col sm:flex-row">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDuplicate(song)}
-                  disabled={loadingDuplicate === song.id}
-                  className="flex-1"
-                >
-                  {loadingDuplicate === song.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                  Duplicar
-                </Button>
-                
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handleAddToSetlist(song.id)}
-                  disabled={loadingAddToSetlist === song.id}
-                  className="flex-1"
-                >
-                  {loadingAddToSetlist === song.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Plus className="h-4 w-4" />
-                  )}
-                  Adicionar
-                </Button>
-              </div>
-            )}
+            <div className="flex gap-2 flex-col sm:flex-row">
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="flex-1"
+              >
+                <Link to={`/show/song/${song.id}`}>
+                  <Eye className="h-4 w-4" />
+                  Ver cifra
+                </Link>
+              </Button>
+              
+              {!isOwnProfile && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDuplicate(song)}
+                    disabled={loadingDuplicate === song.id}
+                    className="flex-1"
+                  >
+                    {loadingDuplicate === song.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                    Duplicar
+                  </Button>
+                  
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleAddToSetlist(song.id)}
+                    disabled={loadingAddToSetlist === song.id}
+                    className="flex-1"
+                  >
+                    {loadingAddToSetlist === song.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                    Adicionar
+                  </Button>
+                </>
+              )}
+            </div>
           </CardContent>
         </Card>
       ))}

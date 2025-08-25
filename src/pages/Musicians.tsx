@@ -49,11 +49,15 @@ export default function Musicians() {
       
       console.log("✅ Perfis encontrados:", profiles?.length);
 
-      // Get all songs and setlists in parallel
-      console.log("🔍 Buscando músicas e repertórios...");
+      // Get all songs and setlists in parallel (only original content, not imported)
+      console.log("🔍 Buscando músicas e repertórios originais...");
       const [songsResponse, setlistsResponse] = await Promise.all([
-        supabase.from("songs").select("id, title, artist, user_id, created_at"),
-        supabase.from("setlists").select("id, name, user_id, created_at")
+        supabase.from("songs")
+          .select("id, title, artist, user_id, created_at")
+          .eq('is_imported', false),
+        supabase.from("setlists")
+          .select("id, name, user_id, created_at")
+          .eq('is_imported', false)
       ]);
 
       if (songsResponse.error) {

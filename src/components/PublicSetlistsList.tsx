@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Copy, Loader2 } from 'lucide-react';
+import { Copy, Loader2, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface PublicSetlistsListProps {
   setlists: any[];
@@ -44,24 +45,38 @@ export function PublicSetlistsList({
             </p>
           </CardHeader>
           
-          {!isOwnProfile && (
-            <CardContent>
+          <CardContent>
+            <div className="flex gap-2 flex-col">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleDuplicate(setlist)}
-                disabled={loadingDuplicate === setlist.id}
+                asChild
                 className="w-full"
               >
-                {loadingDuplicate === setlist.id ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <Copy className="h-4 w-4 mr-2" />
-                )}
-                Salvar repertório na minha conta
+                <Link to={`/show/setlist/${setlist.id}`}>
+                  <Eye className="h-4 w-4 mr-2" />
+                  Ver repertório
+                </Link>
               </Button>
-            </CardContent>
-          )}
+              
+              {!isOwnProfile && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleDuplicate(setlist)}
+                  disabled={loadingDuplicate === setlist.id}
+                  className="w-full"
+                >
+                  {loadingDuplicate === setlist.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Copy className="h-4 w-4 mr-2" />
+                  )}
+                  Salvar repertório na minha conta
+                </Button>
+              )}
+            </div>
+          </CardContent>
         </Card>
       ))}
     </div>
