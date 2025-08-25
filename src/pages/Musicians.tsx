@@ -223,8 +223,20 @@ export default function Musicians() {
                       </div>
                     </div>
 
-                    {/* Redes Sociais */}
+                    {/* Ações */}
                     <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        asChild
+                        className="text-xs"
+                      >
+                        <Link to={`/musico/${musician.id}`}>
+                          <User className="h-3 w-3 mr-1" />
+                          Ver Perfil
+                        </Link>
+                      </Button>
+                      
                       <Button
                         variant="ghost"
                         size="sm"
