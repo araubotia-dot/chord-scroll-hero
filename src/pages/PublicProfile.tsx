@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { PublicProfileHeader } from '@/components/PublicProfileHeader';
 import { PublicSongsList } from '@/components/PublicSongsList';
 import { PublicSetlistsList } from '@/components/PublicSetlistsList';
@@ -150,6 +151,14 @@ export default function PublicProfile() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <div className="mb-6">
+        <Button variant="outline" asChild>
+          <Link to="/musicians">
+            ← Voltar ao ranking
+          </Link>
+        </Button>
+      </div>
+      
       <PublicProfileHeader profile={profile} />
       
       <Tabs defaultValue="cifras" className="mt-8">
