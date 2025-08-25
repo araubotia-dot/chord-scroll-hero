@@ -131,9 +131,9 @@ export default function Musicians() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {musicians.map((musician) => {
+      <main className="max-w-4xl mx-auto p-4">
+        <div className="space-y-3">
+          {musicians.map((musician, index) => {
             const initials = musician.name
               .split(" ")
               .map(n => n[0])
@@ -141,77 +141,81 @@ export default function Musicians() {
               .toUpperCase();
 
             return (
-              <Card key={musician.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12">
+              <div key={musician.id} className="bg-card border border-border rounded-lg p-4 hover:bg-accent/50 transition-colors">
+                <div className="flex items-center gap-4">
+                  {/* Avatar e Info Principal */}
+                  <div className="flex items-center gap-3 flex-1">
+                    <Avatar className="h-12 w-12 flex-shrink-0">
                       <AvatarImage src={musician.avatar_url} alt={musician.name} />
                       <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
+                    
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg truncate">{musician.name}</CardTitle>
-                      {musician.current_band && (
-                        <p className="text-sm text-muted-foreground truncate">
-                          {musician.current_band}
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-lg truncate">{musician.name}</h3>
+                        {musician.current_band && (
+                          <span className="text-sm text-muted-foreground">• {musician.current_band}</span>
+                        )}
+                      </div>
+                      
+                      {musician.description && (
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                          {musician.description}
                         </p>
                       )}
-                    </div>
-                  </div>
-                  
-                  {musician.description && (
-                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                      {musician.description}
-                    </p>
-                  )}
-
-                  {musician.instruments && musician.instruments.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {musician.instruments.slice(0, 3).map((instrument, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {instrument}
-                        </Badge>
-                      ))}
-                      {musician.instruments.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{musician.instruments.length - 3}
-                        </Badge>
+                      
+                      {musician.instruments && musician.instruments.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {musician.instruments.slice(0, 4).map((instrument, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs">
+                              {instrument}
+                            </Badge>
+                          ))}
+                          {musician.instruments.length > 4 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{musician.instruments.length - 4}
+                            </Badge>
+                          )}
+                        </div>
                       )}
                     </div>
-                  )}
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  <div className="flex justify-around text-center">
-                    <div>
-                      <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
-                        <Music className="h-4 w-4" />
-                        <span>Músicas</span>
-                      </div>
-                      <p className="text-lg font-semibold">{musician.songs_count}</p>
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
-                        <List className="h-4 w-4" />
-                        <span>Repertórios</span>
-                      </div>
-                      <p className="text-lg font-semibold">{musician.setlists_count}</p>
-                    </div>
                   </div>
 
-                  {(musician.recent_songs.length > 0 || musician.recent_setlists.length > 0) && (
-                    <>
-                      <Separator />
-                      
+                  {/* Estatísticas */}
+                  <div className="flex items-center gap-6 text-center flex-shrink-0">
+                    <div className="flex items-center gap-2">
+                      <Music className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-lg font-semibold">{musician.songs_count}</p>
+                        <p className="text-xs text-muted-foreground">Músicas</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <List className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-lg font-semibold">{musician.setlists_count}</p>
+                        <p className="text-xs text-muted-foreground">Repertórios</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Conteúdo Recente */}
+                {(musician.recent_songs.length > 0 || musician.recent_setlists.length > 0) && (
+                  <div className="mt-4 pt-3 border-t border-border">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {musician.recent_songs.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-medium mb-2 flex items-center gap-1">
+                          <h4 className="text-sm font-medium mb-2 flex items-center gap-1 text-muted-foreground">
                             <Music className="h-3 w-3" />
                             Músicas Recentes
                           </h4>
                           <div className="space-y-1">
                             {musician.recent_songs.map((song) => (
-                              <div key={song.id} className="text-xs text-muted-foreground truncate">
-                                {song.title} {song.artist && `- ${song.artist}`}
+                              <div key={song.id} className="text-sm truncate">
+                                <span className="font-medium">{song.title}</span>
+                                {song.artist && <span className="text-muted-foreground ml-1">- {song.artist}</span>}
                               </div>
                             ))}
                           </div>
@@ -220,23 +224,23 @@ export default function Musicians() {
 
                       {musician.recent_setlists.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-medium mb-2 flex items-center gap-1">
+                          <h4 className="text-sm font-medium mb-2 flex items-center gap-1 text-muted-foreground">
                             <List className="h-3 w-3" />
                             Repertórios Recentes
                           </h4>
                           <div className="space-y-1">
                             {musician.recent_setlists.map((setlist) => (
-                              <div key={setlist.id} className="text-xs text-muted-foreground truncate">
+                              <div key={setlist.id} className="text-sm font-medium truncate">
                                 {setlist.name}
                               </div>
                             ))}
                           </div>
                         </div>
                       )}
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+                    </div>
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
