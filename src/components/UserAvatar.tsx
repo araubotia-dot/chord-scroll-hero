@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { User, Settings, LogOut } from "lucide-react";
+import { User, Users, LogOut } from "lucide-react";
 
 interface Profile {
   name: string;
@@ -85,9 +85,9 @@ export function UserAvatar() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/profile" className="cursor-pointer">
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Configurações</span>
+          <Link to="/musicians" className="cursor-pointer">
+            <Users className="mr-2 h-4 w-4" />
+            <span>Músicos</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
