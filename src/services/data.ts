@@ -26,6 +26,22 @@ export async function listSongs() {
   return data ?? [];
 }
 
+// Lista apenas as músicas do usuário logado
+export async function listMySongs() {
+  const { data: { user }, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !user) throw new Error('Sem sessão. Faça login.');
+  
+  const { data, error } = await supabase
+    .from('songs')
+    .select('id, title, artist, genre, key, content, created_at, updated_at, user_id')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+  
+  if (error) throw error;
+  console.log('Minhas músicas encontradas:', data?.length || 0);
+  return data ?? [];
+}
+
 export async function updateSong(id: string, updates: any) {
   const { data: { user }, error: authErr } = await supabase.auth.getUser();
   if (authErr || !user) throw new Error('Sem sessão. Faça login.');
@@ -46,13 +62,14 @@ export async function deleteSong(id: string) {
   const { data: { user }, error: authErr } = await supabase.auth.getUser();
   if (authErr || !user) throw new Error('Sem sessão. Faça login.');
   
-  const { error } = await supabase
+  const { error, status } = await supabase
     .from('songs')
     .delete()
     .eq('id', id)
     .eq('user_id', user.id);
   
   if (error) throw error;
+  return status;
 }
 
 // SETLISTS
@@ -71,9 +88,13 @@ export async function createSetlist({ name }: any) {
 }
 
 export async function listSetlists() {
+  const { data: { user }, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !user) throw new Error('Sem sessão. Faça login.');
+  
   const { data, error } = await supabase
     .from('setlists')
     .select('id, name, created_at, updated_at, user_id')
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false });
   
   if (error) throw error;

@@ -5,6 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { UserAvatar } from './UserAvatar';
 import { Trash2, ChevronUp, Play, Pause, RotateCcw } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import * as dataService from '@/services/data';
 
 // Types
@@ -114,7 +115,7 @@ export default function CifrasApp() {
       try {
         setLoading(true);
         const [songsData, setlistsData] = await Promise.all([
-          dataService.listSongs(),
+          dataService.listMySongs(), // Usar listMySongs ao invés de listSongs
           dataService.listSetlists()
         ]);
         setSongs(songsData);
@@ -132,6 +133,42 @@ export default function CifrasApp() {
     };
 
     loadData();
+
+    // Set up Realtime subscription para músicas do usuário
+    const channel = supabase
+      .channel('my-songs-changes')
+      .on(
+        'postgres_changes',
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'songs',
+          filter: `user_id=eq.${user.id}` // Filtrar apenas músicas do usuário atual
+        },
+        (payload) => {
+          console.log('🔄 Realtime - mudança em songs:', payload);
+          // Recarregar dados quando houver mudanças
+          loadData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'setlists',
+          filter: `user_id=eq.${user.id}` // Filtrar apenas setlists do usuário atual
+        },
+        (payload) => {
+          console.log('🔄 Realtime - mudança em setlists:', payload);
+          loadData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   // Load setlist songs when viewing setlist or biblioteca
@@ -284,11 +321,12 @@ export default function CifrasApp() {
 
   async function deleteSong(songId: string) {
     try {
-      await dataService.deleteSong(songId);
+      const status = await dataService.deleteSong(songId);
       setSongs(prev => prev.filter(s => s.id !== songId));
       setSelectedSongId(null);
       setView("home");
       
+      console.log('Música excluída com status:', status);
       toast({
         title: "Música excluída com sucesso!",
         description: "A música foi removida permanentemente.",
@@ -298,7 +336,7 @@ export default function CifrasApp() {
       console.error('deleteSong error:', error);
       toast({
         title: "Erro ao excluir música",
-        description: String(error),
+        description: error instanceof Error ? error.message : String(error),
         variant: "destructive"
       });
     }
