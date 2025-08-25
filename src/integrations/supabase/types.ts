@@ -59,6 +59,105 @@ export type Database = {
         }
         Relationships: []
       }
+      setlist_songs: {
+        Row: {
+          created_at: string
+          id: string
+          position: number | null
+          setlist_id: string
+          song_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          position?: number | null
+          setlist_id: string
+          song_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          position?: number | null
+          setlist_id?: string
+          song_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "setlist_songs_setlist_id_fkey"
+            columns: ["setlist_id"]
+            isOneToOne: false
+            referencedRelation: "setlists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "setlist_songs_song_id_fkey"
+            columns: ["song_id"]
+            isOneToOne: false
+            referencedRelation: "songs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      setlists: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      songs: {
+        Row: {
+          artist: string | null
+          content: string | null
+          created_at: string
+          genre: string | null
+          id: string
+          key: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          artist?: string | null
+          content?: string | null
+          created_at?: string
+          genre?: string | null
+          id?: string
+          key?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          artist?: string | null
+          content?: string | null
+          created_at?: string
+          genre?: string | null
+          id?: string
+          key?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
