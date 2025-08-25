@@ -8,8 +8,19 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Camera, Plus, X } from "lucide-react";
+import { ArrowLeft, Camera, Plus, X, Image as ImageIcon } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useImageUpload } from "@/hooks/useImageUpload";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Profile {
   id: string;
@@ -27,9 +38,11 @@ interface Profile {
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { uploadImage, uploading } = useImageUpload();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showImageDialog, setShowImageDialog] = useState(false);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -162,6 +175,18 @@ export default function Profile() {
     });
   };
 
+  const handleImageUpload = async (source: 'camera' | 'gallery') => {
+    if (!user) return;
+    
+    try {
+      const imageUrl = await uploadImage(user.id, source);
+      setFormData({ ...formData, avatar_url: imageUrl });
+      setShowImageDialog(false);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -197,9 +222,15 @@ export default function Profile() {
                     {formData.name.split(" ").map(n => n[0]).join("").toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <Button type="button" variant="outline" size="sm">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowImageDialog(true)}
+                  disabled={uploading}
+                >
                   <Camera className="h-4 w-4 mr-2" />
-                  Alterar Foto
+                  {uploading ? "Enviando..." : "Alterar Foto"}
                 </Button>
               </div>
 
@@ -358,6 +389,39 @@ export default function Profile() {
           </div>
         </form>
       </main>
+
+      <AlertDialog open={showImageDialog} onOpenChange={setShowImageDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Escolher foto do perfil</AlertDialogTitle>
+            <AlertDialogDescription>
+              Como você gostaria de adicionar sua foto?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex flex-col gap-3">
+            <Button
+              onClick={() => handleImageUpload('camera')}
+              disabled={uploading}
+              className="w-full"
+            >
+              <Camera className="h-4 w-4 mr-2" />
+              Tirar foto
+            </Button>
+            <Button
+              onClick={() => handleImageUpload('gallery')}
+              disabled={uploading}
+              variant="outline"
+              className="w-full"
+            >
+              <ImageIcon className="h-4 w-4 mr-2" />
+              Escolher da galeria
+            </Button>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

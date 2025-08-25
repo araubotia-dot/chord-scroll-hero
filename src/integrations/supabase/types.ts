@@ -160,7 +160,42 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          current_band: string | null
+          description: string | null
+          id: string | null
+          instagram: string | null
+          instruments: string[] | null
+          name: string | null
+          past_bands: string[] | null
+          tiktok: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          current_band?: string | null
+          description?: string | null
+          id?: string | null
+          instagram?: string | null
+          instruments?: string[] | null
+          name?: string | null
+          past_bands?: string[] | null
+          tiktok?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          current_band?: string | null
+          description?: string | null
+          id?: string | null
+          instagram?: string | null
+          instruments?: string[] | null
+          name?: string | null
+          past_bands?: string[] | null
+          tiktok?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_public_profile: {
