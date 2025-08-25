@@ -30,11 +30,17 @@ export default function Auth() {
     const { error } = await signIn(email, password)
     
     if (error) {
+      let errorMessage = error.message
+      
+      if (error.message === "Invalid login credentials") {
+        errorMessage = "Email ou senha incorretos"
+      } else if (error.message === "Email not confirmed" || error.message.includes("email_not_confirmed")) {
+        errorMessage = "Email não confirmado. Verifique sua caixa de entrada e clique no link de confirmação."
+      }
+      
       toast({
         title: "Erro ao entrar",
-        description: error.message === "Invalid login credentials" 
-          ? "Email ou senha incorretos" 
-          : error.message,
+        description: errorMessage,
         variant: "destructive"
       })
     } else {
