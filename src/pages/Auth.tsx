@@ -27,13 +27,15 @@ export default function Auth() {
     e.preventDefault()
     setIsLoading(true)
     
+    console.log('Tentando fazer login com:', email)
     const { error } = await signIn(email, password)
+    console.log('Resultado do login:', { error })
     
     if (error) {
       let errorMessage = error.message
       
       if (error.message === "Invalid login credentials") {
-        errorMessage = "Email ou senha incorretos"
+        errorMessage = "Email ou senha incorretos. Você precisa se cadastrar primeiro?"
       } else if (error.message === "Email not confirmed" || error.message.includes("email_not_confirmed")) {
         errorMessage = "Email não confirmado. Verifique sua caixa de entrada e clique no link de confirmação."
       }
