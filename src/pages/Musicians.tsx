@@ -44,24 +44,39 @@ export default function Musicians() {
 
   const fetchMusicians = async () => {
     try {
+      console.log("🔍 Iniciando busca de músicos...");
+      
       // Get all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("id, name, avatar_url, description, current_band, instruments, instagram, tiktok");
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error("❌ Erro ao buscar perfis:", profilesError);
+        throw profilesError;
+      }
+      
+      console.log("✅ Perfis encontrados:", profiles?.length);
 
       // Get all songs and setlists in parallel
+      console.log("🔍 Buscando músicas e repertórios...");
       const [songsResponse, setlistsResponse] = await Promise.all([
         supabase.from("songs").select("id, title, artist, user_id, created_at"),
         supabase.from("setlists").select("id, name, user_id, created_at")
       ]);
 
       if (songsResponse.error) {
-        console.error("Error fetching songs:", songsResponse.error);
+        console.error("❌ Erro ao buscar músicas:", songsResponse.error);
+      } else {
+        console.log("✅ Músicas encontradas:", songsResponse.data?.length);
+        console.log("📊 Detalhes das músicas:", songsResponse.data);
       }
+      
       if (setlistsResponse.error) {
-        console.error("Error fetching setlists:", setlistsResponse.error);
+        console.error("❌ Erro ao buscar repertórios:", setlistsResponse.error);
+      } else {
+        console.log("✅ Repertórios encontrados:", setlistsResponse.data?.length);
+        console.log("📊 Detalhes dos repertórios:", setlistsResponse.data);
       }
 
       const allSongs = songsResponse.data || [];
@@ -75,6 +90,8 @@ export default function Musicians() {
         const userSongs = allSongs.filter(song => song.user_id === profile.id);
         const userSetlists = allSetlists.filter(setlist => setlist.user_id === profile.id);
 
+        console.log(`👤 ${profile.name}: ${userSongs.length} músicas, ${userSetlists.length} repertórios`);
+
         // Get recent items (latest 3)
         const recentSongs = userSongs
           .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -86,11 +103,14 @@ export default function Musicians() {
           .slice(0, 3)
           .map(setlist => ({ id: setlist.id, name: setlist.name }));
 
+        const totalScore = userSongs.length + userSetlists.length;
+        console.log(`🏆 ${profile.name} - Pontuação total: ${totalScore}`);
+
         musiciansData.push({
           ...profile,
           songs_count: userSongs.length,
           setlists_count: userSetlists.length,
-          total_score: userSongs.length + userSetlists.length,
+          total_score: totalScore,
           position: 0, // Will be set after sorting
           recent_songs: recentSongs,
           recent_setlists: recentSetlists
@@ -101,11 +121,13 @@ export default function Musicians() {
       musiciansData.sort((a, b) => b.total_score - a.total_score);
       musiciansData.forEach((musician, index) => {
         musician.position = index + 1;
+        console.log(`🥇 Posição ${musician.position}: ${musician.name} (${musician.total_score} pts)`);
       });
 
+      console.log("✅ Ranking final calculado:", musiciansData);
       setMusicians(musiciansData);
     } catch (error) {
-      console.error("Error fetching musicians:", error);
+      console.error("❌ Erro geral ao carregar músicos:", error);
       toast({
         title: "Erro",
         description: "Erro ao carregar músicos",
