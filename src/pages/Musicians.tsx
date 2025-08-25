@@ -22,15 +22,6 @@ interface MusicianProfile {
   setlists_count: number;
   total_score: number;
   position: number;
-  recent_songs: {
-    id: string;
-    title: string;
-    artist?: string;
-  }[];
-  recent_setlists: {
-    id: string;
-    name: string;
-  }[];
 }
 
 export default function Musicians() {
@@ -92,17 +83,6 @@ export default function Musicians() {
 
         console.log(`👤 ${profile.name}: ${userSongs.length} músicas, ${userSetlists.length} repertórios`);
 
-        // Get recent items (latest 3)
-        const recentSongs = userSongs
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          .slice(0, 3)
-          .map(song => ({ id: song.id, title: song.title, artist: song.artist }));
-
-        const recentSetlists = userSetlists
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          .slice(0, 3)
-          .map(setlist => ({ id: setlist.id, name: setlist.name }));
-
         const totalScore = userSongs.length + userSetlists.length;
         console.log(`🏆 ${profile.name} - Pontuação total: ${totalScore}`);
 
@@ -112,8 +92,6 @@ export default function Musicians() {
           setlists_count: userSetlists.length,
           total_score: totalScore,
           position: 0, // Will be set after sorting
-          recent_songs: recentSongs,
-          recent_setlists: recentSetlists
         });
       }
 
@@ -299,46 +277,6 @@ export default function Musicians() {
                     </div>
                   </div>
                 </div>
-
-                {/* Conteúdo Recente */}
-                {(musician.recent_songs.length > 0 || musician.recent_setlists.length > 0) && (
-                  <div className="mt-4 pt-3 border-t border-border">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {musician.recent_songs.length > 0 && (
-                        <div>
-                          <h4 className="text-sm font-medium mb-2 flex items-center gap-1 text-muted-foreground">
-                            <Music className="h-3 w-3" />
-                            Músicas Recentes
-                          </h4>
-                          <div className="space-y-1">
-                            {musician.recent_songs.map((song) => (
-                              <div key={song.id} className="text-sm truncate">
-                                <span className="font-medium">{song.title}</span>
-                                {song.artist && <span className="text-muted-foreground ml-1">- {song.artist}</span>}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {musician.recent_setlists.length > 0 && (
-                        <div>
-                          <h4 className="text-sm font-medium mb-2 flex items-center gap-1 text-muted-foreground">
-                            <List className="h-3 w-3" />
-                            Repertórios Recentes
-                          </h4>
-                          <div className="space-y-1">
-                            {musician.recent_setlists.map((setlist) => (
-                              <div key={setlist.id} className="text-sm font-medium truncate">
-                                {setlist.name}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             );
           })}
