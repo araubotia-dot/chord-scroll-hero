@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Music, List, User } from "lucide-react";
+import { ArrowLeft, Music, List, User, Instagram, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface MusicianProfile {
@@ -16,8 +16,12 @@ interface MusicianProfile {
   description?: string;
   current_band?: string;
   instruments?: string[];
+  instagram?: string;
+  tiktok?: string;
   songs_count: number;
   setlists_count: number;
+  total_score: number;
+  position: number;
   recent_songs: {
     id: string;
     title: string;
@@ -43,7 +47,7 @@ export default function Musicians() {
       // Get all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, name, avatar_url, description, current_band, instruments");
+        .select("id, name, avatar_url, description, current_band, instruments, instagram, tiktok");
 
       if (profilesError) throw profilesError;
 
@@ -92,10 +96,18 @@ export default function Musicians() {
           ...profile,
           songs_count: songsCount || 0,
           setlists_count: setlistsCount || 0,
+          total_score: (songsCount || 0) + (setlistsCount || 0),
+          position: 0, // Will be set after sorting
           recent_songs: songs || [],
           recent_setlists: setlists || []
         });
       }
+
+      // Sort by total score (descending) and assign positions
+      musiciansData.sort((a, b) => b.total_score - a.total_score);
+      musiciansData.forEach((musician, index) => {
+        musician.position = index + 1;
+      });
 
       setMusicians(musiciansData);
     } catch (error) {
@@ -143,6 +155,21 @@ export default function Musicians() {
             return (
               <div key={musician.id} className="bg-card border border-border rounded-lg p-4 hover:bg-accent/50 transition-colors">
                 <div className="flex items-center gap-4">
+                  {/* Ranking Position */}
+                  <div className="flex-shrink-0 text-center min-w-[3rem]">
+                    <div className={`text-2xl font-bold ${
+                      musician.position === 1 ? 'text-yellow-500' :
+                      musician.position === 2 ? 'text-gray-400' :
+                      musician.position === 3 ? 'text-amber-600' :
+                      'text-muted-foreground'
+                    }`}>
+                      {musician.position}º
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {musician.total_score} pts
+                    </div>
+                  </div>
+
                   {/* Avatar e Info Principal */}
                   <div className="flex items-center gap-3 flex-1">
                     <Avatar className="h-12 w-12 flex-shrink-0">
@@ -181,22 +208,66 @@ export default function Musicians() {
                     </div>
                   </div>
 
-                  {/* Estatísticas */}
-                  <div className="flex items-center gap-6 text-center flex-shrink-0">
-                    <div className="flex items-center gap-2">
-                      <Music className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-lg font-semibold">{musician.songs_count}</p>
-                        <p className="text-xs text-muted-foreground">Músicas</p>
+                  {/* Estatísticas e Redes Sociais */}
+                  <div className="flex items-center gap-6 flex-shrink-0">
+                    {/* Estatísticas */}
+                    <div className="flex items-center gap-4 text-center">
+                      <div className="flex items-center gap-2">
+                        <Music className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-lg font-semibold">{musician.songs_count}</p>
+                          <p className="text-xs text-muted-foreground">Músicas</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <List className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-lg font-semibold">{musician.setlists_count}</p>
+                          <p className="text-xs text-muted-foreground">Repertórios</p>
+                        </div>
                       </div>
                     </div>
-                    
+
+                    {/* Redes Sociais */}
                     <div className="flex items-center gap-2">
-                      <List className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-lg font-semibold">{musician.setlists_count}</p>
-                        <p className="text-xs text-muted-foreground">Repertórios</p>
-                      </div>
+                      {musician.instagram && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          asChild
+                        >
+                          <a
+                            href={musician.instagram.startsWith('http') ? musician.instagram : `https://instagram.com/${musician.instagram.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Instagram"
+                          >
+                            <Instagram className="h-4 w-4" />
+                          </a>
+                        </Button>
+                      )}
+                      
+                      {musician.tiktok && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          asChild
+                        >
+                          <a
+                            href={musician.tiktok.startsWith('http') ? musician.tiktok : `https://tiktok.com/@${musician.tiktok.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="TikTok"
+                          >
+                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 0 2.89 2.89 0 0 1 2.31-2.83 2.9 2.9 0 0 1 .58 0V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                            </svg>
+                          </a>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
