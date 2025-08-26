@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { ChordRenderer } from '@/components/ChordRenderer';
+import AutoScrollControls from '@/components/AutoScrollControls';
 import { useAuth } from '@/hooks/useAuth';
 import { getSetlistWithSongs, getPublicProfile, duplicateSetlist } from '@/services/publicData';
 import { supabase } from '@/integrations/supabase/client';
@@ -211,6 +212,7 @@ export default function ShowSetlist() {
 
   return (
     <div className="min-h-screen bg-background">
+      <AutoScrollControls />
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

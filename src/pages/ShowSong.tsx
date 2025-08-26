@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChordRenderer } from '@/components/ChordRenderer';
 import { PickSetlistModal } from '@/components/PickSetlistModal';
+import AutoScrollControls from '@/components/AutoScrollControls';
 import { ArrowLeft, Copy, Plus, Minus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -136,6 +137,7 @@ export default function ShowSong() {
 
   return (
     <div className="min-h-screen bg-background">
+      <AutoScrollControls />
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
