@@ -151,8 +151,9 @@ export default function Musicians() {
               .toUpperCase();
 
             return (
-              <div key={musician.id} className="bg-card border border-border rounded-lg p-4 hover:bg-accent/50 transition-colors">
-                <div className="flex items-center gap-4">
+              <div key={musician.id} className="bg-card border border-border rounded-lg p-3 md:p-4 hover:bg-accent/50 transition-colors">
+                {/* Layout Desktop */}
+                <div className="hidden md:flex items-center gap-4">
                   {/* Ranking Position */}
                   <div className="flex-shrink-0 text-center min-w-[3rem]">
                     <div className={`text-2xl font-bold ${
@@ -182,12 +183,6 @@ export default function Musicians() {
                           <span className="text-sm text-muted-foreground">• {musician.current_band}</span>
                         )}
                       </div>
-                      
-                      {musician.description && (
-                        <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
-                          {musician.description}
-                        </p>
-                      )}
                       
                       {musician.instruments && musician.instruments.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
@@ -285,11 +280,125 @@ export default function Musicians() {
                         ) : (
                           <div title="TikTok não cadastrado">
                             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 0 2.89 2.89 0 0 1 2.31-2.83 2.9 2.9 0 0 1 .58 0V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 0 2.89 2.89 0 0 1 2.31-2.83 2.9 2.9 0 0 1 .58 0V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.10z"/>
                             </svg>
                           </div>
                         )}
                       </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Layout Mobile */}
+                <div className="md:hidden">
+                  {/* Header com ranking, avatar e nome */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex-shrink-0 text-center min-w-[2.5rem]">
+                      <div className={`text-xl font-bold ${
+                        musician.position === 1 ? 'text-yellow-500' :
+                        musician.position === 2 ? 'text-gray-400' :
+                        musician.position === 3 ? 'text-amber-600' :
+                        'text-muted-foreground'
+                      }`}>
+                        {musician.position}º
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {musician.total_score} pts
+                      </div>
+                    </div>
+
+                    <Avatar className="h-10 w-10 flex-shrink-0">
+                      <AvatarImage src={musician.avatar_url} alt={musician.name} />
+                      <AvatarFallback>{initials}</AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base truncate">{musician.name}</h3>
+                      {musician.current_band && (
+                        <p className="text-sm text-muted-foreground truncate">{musician.current_band}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Instrumentos */}
+                  {musician.instruments && musician.instruments.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {musician.instruments.slice(0, 3).map((instrument, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs">
+                          {instrument}
+                        </Badge>
+                      ))}
+                      {musician.instruments.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{musician.instruments.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Estatísticas e ações */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1">
+                        <Music className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">{musician.songs_count}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <List className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">{musician.setlists_count}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        asChild
+                        className="text-xs h-8"
+                      >
+                        <Link to={`/musico/${musician.id}`}>
+                          <User className="h-3 w-3 mr-1" />
+                          Ver Perfil
+                        </Link>
+                      </Button>
+                      
+                      {musician.instagram && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          asChild
+                        >
+                          <a
+                            href={musician.instagram.startsWith('http') ? musician.instagram : `https://instagram.com/${musician.instagram.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Instagram"
+                          >
+                            <Instagram className="h-4 w-4" />
+                          </a>
+                        </Button>
+                      )}
+                      
+                      {musician.tiktok && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          asChild
+                        >
+                          <a
+                            href={musician.tiktok.startsWith('http') ? musician.tiktok : `https://tiktok.com/@${musician.tiktok.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="TikTok"
+                          >
+                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 0 2.89 2.89 0 0 1 2.31-2.83 2.9 2.9 0 0 1 .58 0V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.10z"/>
+                            </svg>
+                          </a>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
