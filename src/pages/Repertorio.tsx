@@ -95,7 +95,7 @@ export default function Repertorio() {
       }
 
       // Navegar para o show
-      navigate(`/show/setlist/${setlistId}`);
+      navigate(`/show/setlist/${setlistId}?pos=1`);
     } catch (error) {
       console.error('Erro ao tocar setlist:', error);
       toast({

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { ChordRenderer } from '@/components/ChordRenderer';
 import { PickSetlistModal } from '@/components/PickSetlistModal';
-import { ArrowLeft, Copy, Plus, ZoomIn, ZoomOut, Minus } from 'lucide-react';
+import { ArrowLeft, Copy, Plus, Minus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -112,24 +112,33 @@ export default function ShowSong() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Carregando música...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Carregando música...</div>
       </div>
     );
   }
 
   if (!song) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Música não encontrada.</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Música não encontrada</h2>
+          <p className="text-muted-foreground mb-4">
+            A música que você está procurando não existe ou foi removida.
+          </p>
+          <Link to="/">
+            <Button>Voltar ao Início</Button>
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border p-4 sticky top-0 bg-background/80 backdrop-blur-sm z-10">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <div className="container mx-auto px-4 py-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-4 w-4" />
@@ -142,8 +151,9 @@ export default function ShowSong() {
             </div>
           </div>
           
+          {/* Controls */}
           <div className="flex items-center gap-2">
-            {/* Controles de transposição */}
+            {/* Transposition */}
             <Button
               variant="outline"
               size="sm"
@@ -151,7 +161,7 @@ export default function ShowSong() {
             >
               <Minus className="h-4 w-4" />
             </Button>
-            <span className="px-3 py-1 text-sm bg-muted rounded">
+            <span className="px-3 py-1 text-sm bg-muted rounded font-mono">
               {semitones > 0 ? `+${semitones}` : semitones}
             </span>
             <Button
@@ -162,27 +172,25 @@ export default function ShowSong() {
               +
             </Button>
 
-            {/* Controles de zoom */}
+            {/* Font Size */}
             <Button
               variant="outline"
               size="sm"
               onClick={() => setFontSize(s => Math.max(12, s - 2))}
             >
-              <ZoomOut className="h-4 w-4" />
+              A-
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setFontSize(s => Math.min(24, s + 2))}
             >
-              <ZoomIn className="h-4 w-4" />
+              A+
             </Button>
           </div>
         </div>
-      </header>
 
-      <main className="max-w-4xl mx-auto p-4">
-        {/* Ações (apenas se não for própria música) */}
+        {/* Actions (apenas se não for própria música) */}
         {!isOwnSong && user && (
           <div className="mb-6 flex gap-3">
             <Button
@@ -204,19 +212,25 @@ export default function ShowSong() {
           </div>
         )}
 
-        {/* Conteúdo da música */}
+        {/* Song Content */}
         <Card>
           <CardContent className="p-6">
-            <div style={{ fontSize: `${fontSize}px` }}>
-              <ChordRenderer 
-                text={song.content || ''} 
-                semitones={semitones}
-                className="font-mono"
-              />
-            </div>
+            {song.content ? (
+              <div style={{ fontSize: `${fontSize}px` }}>
+                <ChordRenderer 
+                  text={song.content} 
+                  semitones={semitones}
+                  className="font-mono"
+                />
+              </div>
+            ) : (
+              <div className="text-center text-muted-foreground py-8">
+                <p>Esta música não possui conteúdo disponível.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
-      </main>
+      </div>
 
       <PickSetlistModal
         open={pickSetlistModalOpen}

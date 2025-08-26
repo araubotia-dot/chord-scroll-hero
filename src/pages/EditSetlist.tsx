@@ -29,10 +29,11 @@ interface SetlistSong {
 interface SortableItemProps {
   song: SetlistSong;
   searchTerm: string;
+  setlistId: string;
   onRemove: (id: string) => void;
 }
 
-function SortableItem({ song, searchTerm, onRemove }: SortableItemProps) {
+function SortableItem({ song, searchTerm, setlistId, onRemove }: SortableItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: song.id });
 
   const style = {
@@ -82,14 +83,25 @@ function SortableItem({ song, searchTerm, onRemove }: SortableItemProps) {
                 </div>
               </div>
               
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onRemove(song.id)}
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => window.location.href = `/show/setlist/${setlistId}?pos=${song.position}`}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Play className="h-3 w-3 mr-1" />
+                  Tocar
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onRemove(song.id)}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -277,7 +289,7 @@ export default function EditSetlist() {
           <div className="flex items-center gap-2">
             <Button 
               variant="outline"
-              onClick={() => navigate(`/show/setlist/${setlistId}`)}
+              onClick={() => navigate(`/show/setlist/${setlistId}?pos=1`)}
               disabled={songs.length === 0}
             >
               <Play className="h-4 w-4 mr-2" />
@@ -328,6 +340,7 @@ export default function EditSetlist() {
                     key={song.id}
                     song={song}
                     searchTerm={searchTerm}
+                    setlistId={setlistId!}
                     onRemove={handleRemoveSong}
                   />
                 ))}

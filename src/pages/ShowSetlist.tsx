@@ -56,6 +56,22 @@ export default function ShowSetlist() {
     loadSetlist();
   }, [setlistId]);
 
+  // Atalhos de teclado
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        goToPrevious();
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        goToNext();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentIndex, setlist]);
+
   useEffect(() => {
     // Atualizar last_viewed_at quando acessar o setlist
     if (setlist && user && setlist.user_id === user.id) {
@@ -64,13 +80,25 @@ export default function ShowSetlist() {
   }, [setlist, user]);
 
   useEffect(() => {
-    // Ler posição da URL
+    // Ler posição da URL e validar
     const pos = searchParams.get('pos');
     if (pos && setlist) {
       const index = parseInt(pos) - 1;
-      if (index >= 0 && index < setlist.songs.length) {
+      // Validar pos: se for inválido, cair no limite mais próximo
+      if (index < 0) {
+        setCurrentIndex(0);
+        setSearchParams({ pos: '1' });
+      } else if (index >= setlist.songs.length) {
+        const lastIndex = setlist.songs.length - 1;
+        setCurrentIndex(lastIndex);
+        setSearchParams({ pos: (lastIndex + 1).toString() });
+      } else {
         setCurrentIndex(index);
       }
+    } else if (setlist && setlist.songs.length > 0) {
+      // Se não há posição definida e há músicas, ir para a primeira
+      setCurrentIndex(0);
+      setSearchParams({ pos: '1' });
     }
   }, [searchParams, setlist]);
 
@@ -88,12 +116,6 @@ export default function ShowSetlist() {
       // Carregar perfil do dono
       const ownerData = await getPublicProfile(setlistData.user_id);
       setOwner(ownerData);
-
-      // Se não há posição definida e há músicas, ir para a primeira
-      const pos = searchParams.get('pos');
-      if (!pos && setlistData.songs.length > 0) {
-        setSearchParams({ pos: '1' });
-      }
     } catch (error) {
       console.error('Erro ao carregar setlist:', error);
       toast({
