@@ -301,7 +301,7 @@ export default function ShowSetlist() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => navigate(`/repertorio/song/${currentSong.songs.id}/edit`)}
+                      onClick={() => window.location.href = `/?edit=${currentSong.songs.id}`}
                       className="bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20"
                     >
                       <Edit className="h-4 w-4 text-yellow-500" />

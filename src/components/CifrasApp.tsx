@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { normalizeNote, NOTES_SHARP, Note } from '@/lib/music-utils';
 import { ChordRenderer } from './ChordRenderer';
 import { toast } from '@/hooks/use-toast';
@@ -63,6 +64,7 @@ const MUSIC_GENRES = [
 
 export default function CifrasApp() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [songs, setSongs] = useState<Song[]>([]);
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [setlistSongs, setSetlistSongs] = useState<{[key: string]: SetlistSong[]}>({});
@@ -108,6 +110,20 @@ export default function CifrasApp() {
   );
 
   // Load initial data
+  // Check URL parameters for editing
+  useEffect(() => {
+    const editSongId = searchParams.get('edit');
+    if (editSongId && songs.length > 0) {
+      const songToEdit = songs.find(s => s.id === editSongId);
+      if (songToEdit) {
+        setSelectedSongId(editSongId);
+        setView('editar');
+        // Clear the URL parameter
+        setSearchParams({});
+      }
+    }
+  }, [searchParams, songs, setSearchParams]);
+
   useEffect(() => {
     if (!user) return;
     
