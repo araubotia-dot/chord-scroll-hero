@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Play, Edit, Plus } from 'lucide-react';
@@ -194,44 +193,29 @@ export default function Repertorio() {
 
         {/* Setlists List */}
         {!loading && setlists.length > 0 && (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {setlists.map((setlist) => (
-              <Card key={setlist.id}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{setlist.name}</CardTitle>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/repertorio/${setlist.id}/editar`)}
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Editar
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => handlePlay(setlist.id)}
-                      >
-                        <Play className="h-4 w-4 mr-2" />
-                        Tocar
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>
-                      Criado em {new Date(setlist.created_at).toLocaleDateString('pt-BR')}
-                    </span>
-                    {setlist.last_viewed_at && (
-                      <span>
-                        Último acesso: {new Date(setlist.last_viewed_at).toLocaleDateString('pt-BR')}
-                      </span>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <div key={setlist.id} className="p-2 border border-border rounded-lg bg-card flex items-center justify-between gap-3">
+                <div className="flex-1 cursor-pointer min-w-0" onClick={() => handlePlay(setlist.id)}>
+                  <div className="font-semibold text-sm hover:text-primary transition-colors truncate">{setlist.name}</div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    onClick={() => navigate(`/repertorio/${setlist.id}/editar`)}
+                    className="w-8 h-8 flex items-center justify-center rounded-full bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 transition-colors"
+                    title="Editar repertório"
+                  >
+                    <Edit className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handlePlay(setlist.id)}
+                    className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                    title="Tocar repertório"
+                  >
+                    <Play className="h-4 w-4 fill-current" />
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         )}
