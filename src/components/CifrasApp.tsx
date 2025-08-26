@@ -2,10 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { normalizeNote, NOTES_SHARP, Note } from '@/lib/music-utils';
 import { ChordRenderer } from './ChordRenderer';
+import AutoScrollControls from './AutoScrollControls';
+import EdgeNavArrows from './EdgeNavArrows';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { UserAvatar } from './UserAvatar';
-import { Trash2, ChevronUp, Play, Pause, RotateCcw, Edit, Search } from 'lucide-react';
+import { Trash2, ChevronUp, Play, Pause, RotateCcw, Edit, Search, ArrowLeft, Minus, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import * as dataService from '@/services/data';
 
@@ -97,6 +99,8 @@ export default function CifrasApp() {
   const [currentRepertoireId, setCurrentRepertoireId] = useState<string | null>(null); // Current repertoire being played
   const [currentSongIndex, setCurrentSongIndex] = useState(0); // Current song index in repertoire
   const [originalSong, setOriginalSong] = useState<Song | null>(null); // Track original song state for changes
+  const [showSemitones, setShowSemitones] = useState(0); // Transposition for show mode
+  const [showFontSize, setShowFontSize] = useState(16); // Font size for show mode
 
   const showRef = React.useRef<HTMLDivElement>(null);
   
@@ -1002,21 +1006,86 @@ export default function CifrasApp() {
         )}
 
         {view === "show" && selectedSong && (
-          <div className="relative min-h-screen bg-background">
-            {/* Header simples com título e artista */}
-            <div className="py-4 px-4 border-b border-border/50">
-              <div className="text-center">
-                <h1 className="text-lg font-semibold text-foreground">{selectedSong.title}</h1>
-                {selectedSong.artist && (
-                  <p className="text-sm text-muted-foreground mt-1">{selectedSong.artist}</p>
-                )}
-              </div>
-            </div>
+          <div className="min-h-screen bg-background">
+            <AutoScrollControls />
+            {currentRepertoireId && (
+              <EdgeNavArrows
+                canPrev={currentSongIndex > 0}
+                canNext={currentRepertoire ? currentSongIndex < (setlistSongs[currentRepertoireId]?.length || 0) - 1 : false}
+                onPrev={() => navigateRepertoire('prev')}
+                onNext={() => navigateRepertoire('next')}
+              />
+            )}
             
-            {/* Conteúdo da cifra */}
-            <div className="p-4">
-              <div className="bg-card rounded-lg p-4">
-                <ChordRenderer text={selectedSong.content} semitones={transpose} preferFlats={preferFlats} />
+            <div className="container mx-auto px-6 py-6">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4">
+                  <button 
+                    onClick={() => setView("home")}
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
+                  <div>
+                    <h1 className="text-xl font-bold">{selectedSong.title}</h1>
+                    {selectedSong.artist && (
+                      <p className="text-sm text-muted-foreground">{selectedSong.artist}</p>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Controls */}
+                <div className="flex items-center gap-2">
+                  {/* Transposition */}
+                  <button
+                    onClick={() => setShowSemitones(s => s - 1)}
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-muted hover:bg-muted/80 transition-colors text-sm font-semibold"
+                  >
+                    ♭
+                  </button>
+                  <span className="text-sm font-mono w-8 text-center">
+                    {showSemitones === 0 ? '0' : showSemitones > 0 ? `+${showSemitones}` : showSemitones}
+                  </span>
+                  <button
+                    onClick={() => setShowSemitones(s => s + 1)}
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-muted hover:bg-muted/80 transition-colors text-sm font-semibold"
+                  >
+                    ♯
+                  </button>
+
+                  {/* Font Size */}
+                  <button
+                    onClick={() => setShowFontSize(s => Math.max(12, s - 2))}
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-muted hover:bg-muted/80 transition-colors text-sm"
+                  >
+                    A-
+                  </button>
+                  <button
+                    onClick={() => setShowFontSize(s => Math.min(24, s + 2))}
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-muted hover:bg-muted/80 transition-colors text-sm"
+                  >
+                    A+
+                  </button>
+                </div>
+              </div>
+
+              {/* Song Content */}
+              <div className="bg-card rounded-lg p-6">
+                {selectedSong.content ? (
+                  <div style={{ fontSize: `${showFontSize}px` }}>
+                    <ChordRenderer
+                      text={selectedSong.content}
+                      semitones={showSemitones}
+                      preferFlats={preferFlats}
+                      className="font-mono"
+                    />
+                  </div>
+                ) : (
+                  <div className="text-center text-muted-foreground py-8">
+                    <p>Esta música não possui conteúdo disponível.</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
