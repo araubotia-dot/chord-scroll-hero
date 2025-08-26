@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Heart, Edit } from 'lucide-react';
 import { ChordRenderer } from '@/components/ChordRenderer';
 import AutoScrollControls from '@/components/AutoScrollControls';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,6 +17,7 @@ interface Song {
   genre?: string;
   key?: string;
   content?: string;
+  user_id?: string;
 }
 
 interface SetlistSong {
@@ -166,6 +167,7 @@ export default function ShowSetlist() {
       setCurrentIndex(newIndex);
       setSearchParams({ pos: (newIndex + 1).toString() });
       setSemitones(0); // Reset transposition
+      window.scrollTo({ top: 0, behavior: 'auto' });
     }
   };
 
@@ -175,6 +177,7 @@ export default function ShowSetlist() {
       setCurrentIndex(newIndex);
       setSearchParams({ pos: (newIndex + 1).toString() });
       setSemitones(0); // Reset transposition
+      window.scrollTo({ top: 0, behavior: 'auto' });
     }
   };
 
@@ -293,6 +296,18 @@ export default function ShowSetlist() {
 
                 {/* Controls */}
                 <div className="flex items-center gap-2">
+                  {/* Edit button for own songs */}
+                  {user?.id === currentSong.songs.user_id && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/repertorio/song/${currentSong.songs.id}/edit`)}
+                      className="bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20"
+                    >
+                      <Edit className="h-4 w-4 text-yellow-500" />
+                    </Button>
+                  )}
+                  
                   {/* Transposition */}
                   <Button
                     variant="outline"
@@ -335,11 +350,13 @@ export default function ShowSetlist() {
             <Card>
               <CardContent className="p-6">
                 {currentSong.songs.content ? (
-                  <ChordRenderer
-                    text={currentSong.songs.content}
-                    semitones={semitones}
-                    className={`text-[${fontSize}px]`}
-                  />
+                  <div style={{ fontSize: `${fontSize}px` }}>
+                    <ChordRenderer
+                      text={currentSong.songs.content}
+                      semitones={semitones}
+                      className="font-mono"
+                    />
+                  </div>
                 ) : (
                   <div className="text-center text-muted-foreground py-8">
                     <p>Esta música não possui conteúdo disponível.</p>

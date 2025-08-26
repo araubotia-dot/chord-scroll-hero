@@ -70,7 +70,8 @@ export async function getSetlistWithSongs(setlistId: string) {
         artist,
         genre,
         key,
-        content
+        content,
+        user_id
       )
     `)
     .eq('setlist_id', setlistId)

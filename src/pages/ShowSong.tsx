@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ChordRenderer } from '@/components/ChordRenderer';
 import { PickSetlistModal } from '@/components/PickSetlistModal';
 import AutoScrollControls from '@/components/AutoScrollControls';
-import { ArrowLeft, Copy, Plus, Minus } from 'lucide-react';
+import { ArrowLeft, Copy, Plus, Minus, Edit } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -155,6 +155,18 @@ export default function ShowSong() {
           
           {/* Controls */}
           <div className="flex items-center gap-2">
+            {/* Edit button for own songs */}
+            {isOwnSong && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/repertorio/song/${songId}/edit`)}
+                className="bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20"
+              >
+                <Edit className="h-4 w-4 text-yellow-500" />
+              </Button>
+            )}
+            
             {/* Transposition */}
             <Button
               variant="outline"
