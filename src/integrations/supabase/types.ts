@@ -211,6 +211,45 @@ export type Database = {
         }
         Relationships: []
       }
+      public_profiles_view: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          current_band: string | null
+          description: string | null
+          id: string | null
+          instagram: string | null
+          instruments: string[] | null
+          name: string | null
+          past_bands: string[] | null
+          tiktok: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          current_band?: string | null
+          description?: string | null
+          id?: string | null
+          instagram?: string | null
+          instruments?: string[] | null
+          name?: string | null
+          past_bands?: string[] | null
+          tiktok?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          current_band?: string | null
+          description?: string | null
+          id?: string | null
+          instagram?: string | null
+          instruments?: string[] | null
+          name?: string | null
+          past_bands?: string[] | null
+          tiktok?: string | null
+        }
+        Relationships: []
+      }
       user_stats: {
         Row: {
           setlists_count_own: number | null

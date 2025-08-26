@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 // PUBLIC PROFILE
 export async function getPublicProfile(userId: string) {
   const { data, error } = await supabase
-    .from('public_profiles')
+    .from('public_profiles_view')
     .select('id, name, avatar_url, description, instagram, tiktok, current_band, instruments')
     .eq('id', userId)
     .single();

@@ -37,9 +37,9 @@ export default function Musicians() {
     try {
       console.log("🔍 Iniciando busca de músicos...");
       
-      // Get all profiles
+      // Get all profiles (using public view that excludes sensitive data like emails)
       const { data: profiles, error: profilesError } = await supabase
-        .from("profiles")
+        .from("public_profiles_view")
         .select("id, name, avatar_url, description, current_band, instruments, instagram, tiktok");
 
       if (profilesError) {
