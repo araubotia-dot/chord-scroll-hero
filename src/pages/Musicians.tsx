@@ -49,15 +49,17 @@ export default function Musicians() {
       
       console.log("✅ Perfis encontrados:", profiles?.length);
 
-      // Get all songs and setlists in parallel (only original content, not imported)
-      console.log("🔍 Buscando músicas e repertórios originais...");
-      const [songsResponse, setlistsResponse] = await Promise.all([
+      // Get all songs, setlists and setlist_songs in parallel (only original content, not imported)
+      console.log("🔍 Buscando músicas, repertórios originais e suas músicas...");
+      const [songsResponse, setlistsResponse, setlistSongsResponse] = await Promise.all([
         supabase.from("songs")
           .select("id, title, artist, user_id, created_at")
           .eq('is_imported', false),
         supabase.from("setlists")
           .select("id, name, user_id, created_at")
-          .eq('is_imported', false)
+          .eq('is_imported', false),
+        supabase.from("setlist_songs")
+          .select("setlist_id, song_id")
       ]);
 
       if (songsResponse.error) {
@@ -74,8 +76,21 @@ export default function Musicians() {
         console.log("📊 Detalhes dos repertórios:", setlistsResponse.data);
       }
 
+      if (setlistSongsResponse.error) {
+        console.error("❌ Erro ao buscar músicas dos repertórios:", setlistSongsResponse.error);
+      } else {
+        console.log("✅ Relações setlist-songs encontradas:", setlistSongsResponse.data?.length);
+      }
+
       const allSongs = songsResponse.data || [];
       const allSetlists = setlistsResponse.data || [];
+      const allSetlistSongs = setlistSongsResponse.data || [];
+
+      // Create a map of setlist_id -> song count for quick lookup
+      const setlistSongCounts: Record<string, number> = {};
+      allSetlistSongs.forEach(relation => {
+        setlistSongCounts[relation.setlist_id] = (setlistSongCounts[relation.setlist_id] || 0) + 1;
+      });
 
       // Process musicians data
       const musiciansData: MusicianProfile[] = [];
@@ -85,15 +100,20 @@ export default function Musicians() {
         const userSongs = allSongs.filter(song => song.user_id === profile.id);
         const userSetlists = allSetlists.filter(setlist => setlist.user_id === profile.id);
 
-        console.log(`👤 ${profile.name}: ${userSongs.length} músicas, ${userSetlists.length} repertórios`);
+        // Only count setlists that have 2 or more songs for ranking
+        const validSetlists = userSetlists.filter(setlist => 
+          (setlistSongCounts[setlist.id] || 0) >= 2
+        );
 
-        const totalScore = userSongs.length + userSetlists.length;
+        console.log(`👤 ${profile.name}: ${userSongs.length} músicas, ${userSetlists.length} repertórios (${validSetlists.length} válidos para ranking)`);
+
+        const totalScore = userSongs.length + validSetlists.length;
         console.log(`🏆 ${profile.name} - Pontuação total: ${totalScore}`);
 
         musiciansData.push({
           ...profile,
           songs_count: userSongs.length,
-          setlists_count: userSetlists.length,
+          setlists_count: validSetlists.length, // Only count valid setlists
           total_score: totalScore,
           position: 0, // Will be set after sorting
         });
