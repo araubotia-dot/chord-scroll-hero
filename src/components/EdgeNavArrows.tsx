@@ -26,24 +26,26 @@ export default function EdgeNavArrows({
     <>
       <button
         aria-label="Música anterior"
-        className={`fixed left-4 top-1/2 -translate-y-1/2 z-50 rounded-full w-12 h-12 md:w-14 md:h-14
-                    flex items-center justify-center bg-zinc-800/80 hover:bg-zinc-700 text-white
-                    backdrop-blur shadow-lg transition ${canPrev ? '' : 'opacity-40 pointer-events-none'}`}
+        className={`fixed left-2 top-1/2 -translate-y-1/2 z-50 rounded-full w-10 h-10 md:w-12 md:h-12
+                    flex items-center justify-center bg-zinc-900/70 hover:bg-zinc-800/80 text-white
+                    backdrop-blur shadow-md transition-all duration-200 border border-zinc-700/50
+                    ${canPrev ? 'opacity-80 hover:opacity-100' : 'opacity-30 pointer-events-none'}`}
         onClick={onPrev}
         disabled={!canPrev}
       >
-        <ChevronLeft size={28}/>
+        <ChevronLeft size={20}/>
       </button>
 
       <button
         aria-label="Próxima música"
-        className={`fixed right-4 top-1/2 -translate-y-1/2 z-50 rounded-full w-12 h-12 md:w-14 md:h-14
-                    flex items-center justify-center bg-zinc-800/80 hover:bg-zinc-700 text-white
-                    backdrop-blur shadow-lg transition ${canNext ? '' : 'opacity-40 pointer-events-none'}`}
+        className={`fixed right-2 top-1/2 -translate-y-1/2 z-50 rounded-full w-10 h-10 md:w-12 md:h-12
+                    flex items-center justify-center bg-zinc-900/70 hover:bg-zinc-800/80 text-white
+                    backdrop-blur shadow-md transition-all duration-200 border border-zinc-700/50
+                    ${canNext ? 'opacity-80 hover:opacity-100' : 'opacity-30 pointer-events-none'}`}
         onClick={onNext}
         disabled={!canNext}
       >
-        <ChevronRight size={28}/>
+        <ChevronRight size={20}/>
       </button>
     </>
   );
