@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { ArrowLeft, Play, Edit, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,6 +26,9 @@ export default function Repertorio() {
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>('created');
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newSetlistName, setNewSetlistName] = useState('');
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     console.log('🔍 Repertorio - Auth state:', { user: !!user, authLoading, userId: user?.id });
@@ -114,6 +120,58 @@ export default function Repertorio() {
     }
   };
 
+  const handleCreateSetlist = async () => {
+    if (!newSetlistName.trim()) {
+      toast({
+        title: "Nome obrigatório",
+        description: "Por favor digite um nome para o repertório.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setCreating(true);
+      
+      const { data, error } = await supabase
+        .from('setlists')
+        .insert([
+          {
+            name: newSetlistName.trim(),
+            user_id: user?.id
+          }
+        ])
+        .select('id, name, created_at')
+        .single();
+
+      if (error) throw error;
+
+      // Atualizar a lista local
+      setSetlists(prev => [data, ...prev]);
+      
+      // Resetar o modal
+      setShowCreateDialog(false);
+      setNewSetlistName('');
+      
+      toast({
+        title: "Repertório criado",
+        description: `"${data.name}" foi criado com sucesso.`,
+      });
+      
+      // Navegar para editar o novo repertório
+      navigate(`/repertorio/${data.id}/editar`);
+    } catch (error) {
+      console.error('Erro ao criar repertório:', error);
+      toast({
+        title: "Erro ao criar repertório",
+        description: error instanceof Error ? error.message : String(error),
+        variant: "destructive"
+      });
+    } finally {
+      setCreating(false);
+    }
+  };
+
   // Mostrar loading enquanto autentica
   if (authLoading) {
     return (
@@ -139,12 +197,10 @@ export default function Repertorio() {
             <h1 className="text-2xl font-bold">Meus Repertórios</h1>
           </div>
           
-          <Link to="/profile">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Repertório
-            </Button>
-          </Link>
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Repertório
+          </Button>
         </div>
 
         {/* Controls */}
@@ -182,12 +238,10 @@ export default function Repertorio() {
             <p className="text-muted-foreground mb-4">
               Crie seu primeiro repertório para organizar suas músicas.
             </p>
-            <Link to="/profile">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Criar Repertório
-              </Button>
-            </Link>
+            <Button onClick={() => setShowCreateDialog(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Criar Repertório
+            </Button>
           </div>
         )}
 
@@ -220,6 +274,53 @@ export default function Repertorio() {
           </div>
         )}
       </div>
+
+      {/* Create Setlist Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="mx-4 max-w-md">
+          <DialogHeader>
+            <DialogTitle>Novo Repertório</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="setlist-name">Nome do repertório</Label>
+              <Input
+                id="setlist-name"
+                value={newSetlistName}
+                onChange={(e) => setNewSetlistName(e.target.value)}
+                placeholder="Digite o nome do repertório"
+                disabled={creating}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleCreateSetlist();
+                  }
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowCreateDialog(false);
+                setNewSetlistName('');
+              }}
+              disabled={creating}
+              className="w-full sm:w-auto"
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleCreateSetlist}
+              disabled={creating || !newSetlistName.trim()}
+              className="w-full sm:w-auto"
+            >
+              {creating ? 'Criando...' : 'Criar Repertório'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
