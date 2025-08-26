@@ -15,38 +15,62 @@ export default function EdgeNavArrows({
   // atalhos do teclado
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft' && canPrev) onPrev();
-      if (e.key === 'ArrowRight' && canNext) onNext();
+      if (e.key === 'ArrowLeft' && canPrev) {
+        e.preventDefault();
+        onPrev();
+      }
+      if (e.key === 'ArrowRight' && canNext) {
+        e.preventDefault();
+        onNext();
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [canPrev, canNext, onPrev, onNext]);
 
+  const handlePrevClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (canPrev) {
+      onPrev();
+    }
+  };
+
+  const handleNextClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (canNext) {
+      onNext();
+    }
+  };
+
   return (
     <>
-      <button
-        aria-label="Música anterior"
-        className={`fixed left-2 top-1/2 -translate-y-1/2 z-50 rounded-full w-10 h-10 md:w-12 md:h-12
-                    flex items-center justify-center bg-zinc-900/70 hover:bg-zinc-800/80 text-white
-                    backdrop-blur shadow-md transition-all duration-200 border border-zinc-700/50
-                    ${canPrev ? 'opacity-80 hover:opacity-100' : 'opacity-30 pointer-events-none'}`}
-        onClick={onPrev}
-        disabled={!canPrev}
-      >
-        <ChevronLeft size={20}/>
-      </button>
+      {canPrev && (
+        <button
+          aria-label="Música anterior"
+          className="fixed left-2 top-1/2 -translate-y-1/2 z-[9999] rounded-full w-12 h-12 
+                     flex items-center justify-center bg-black/60 hover:bg-black/80 text-white
+                     backdrop-blur shadow-lg transition-all duration-200 cursor-pointer"
+          onClick={handlePrevClick}
+          type="button"
+        >
+          <ChevronLeft size={24}/>
+        </button>
+      )}
 
-      <button
-        aria-label="Próxima música"
-        className={`fixed right-2 top-1/2 -translate-y-1/2 z-50 rounded-full w-10 h-10 md:w-12 md:h-12
-                    flex items-center justify-center bg-zinc-900/70 hover:bg-zinc-800/80 text-white
-                    backdrop-blur shadow-md transition-all duration-200 border border-zinc-700/50
-                    ${canNext ? 'opacity-80 hover:opacity-100' : 'opacity-30 pointer-events-none'}`}
-        onClick={onNext}
-        disabled={!canNext}
-      >
-        <ChevronRight size={20}/>
-      </button>
+      {canNext && (
+        <button
+          aria-label="Próxima música"
+          className="fixed right-2 top-1/2 -translate-y-1/2 z-[9999] rounded-full w-12 h-12
+                     flex items-center justify-center bg-black/60 hover:bg-black/80 text-white
+                     backdrop-blur shadow-lg transition-all duration-200 cursor-pointer"
+          onClick={handleNextClick}
+          type="button"
+        >
+          <ChevronRight size={24}/>
+        </button>
+      )}
     </>
   );
 }
