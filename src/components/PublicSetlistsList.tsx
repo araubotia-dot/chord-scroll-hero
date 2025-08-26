@@ -1,40 +1,54 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Copy, Loader2, Eye } from 'lucide-react';
+import { Heart, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { isSetlistFavorited } from '@/services/publicData';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PublicSetlistsListProps {
   setlists: any[];
   isOwnProfile: boolean;
-  onDuplicateSetlist: (setlist: any) => Promise<void>;
+  onToggleFavorite: (setlist: any) => Promise<void>;
 }
 
 export function PublicSetlistsList({ 
   setlists, 
   isOwnProfile, 
-  onDuplicateSetlist 
+  onToggleFavorite 
 }: PublicSetlistsListProps) {
-  const [loadingDuplicate, setLoadingDuplicate] = useState<string | null>(null);
-  const [confirmDuplicateOpen, setConfirmDuplicateOpen] = useState(false);
-  const [setlistToDuplicate, setSetlistToDuplicate] = useState<any>(null);
+  const { user } = useAuth();
+  const [favorites, setFavorites] = useState<{[key: string]: boolean}>({});
+  const [loadingFavorites, setLoadingFavorites] = useState<{[key: string]: boolean}>({});
 
-  const handleDuplicateClick = (setlist: any) => {
-    setSetlistToDuplicate(setlist);
-    setConfirmDuplicateOpen(true);
-  };
-
-  const handleConfirmDuplicate = async () => {
-    if (!setlistToDuplicate) return;
+  // Check favorite status for all setlists
+  useEffect(() => {
+    if (!user || isOwnProfile) return;
     
-    setLoadingDuplicate(setlistToDuplicate.id);
+    const checkFavorites = async () => {
+      const favoriteStatus: {[key: string]: boolean} = {};
+      for (const setlist of setlists) {
+        try {
+          favoriteStatus[setlist.id] = await isSetlistFavorited(setlist.id);
+        } catch (error) {
+          favoriteStatus[setlist.id] = false;
+        }
+      }
+      setFavorites(favoriteStatus);
+    };
+    
+    checkFavorites();
+  }, [setlists, user, isOwnProfile]);
+
+  const handleToggleFavorite = async (setlist: any) => {
+    if (loadingFavorites[setlist.id]) return;
+    
+    setLoadingFavorites(prev => ({ ...prev, [setlist.id]: true }));
     try {
-      await onDuplicateSetlist(setlistToDuplicate);
-      setConfirmDuplicateOpen(false);
-      setSetlistToDuplicate(null);
+      await onToggleFavorite(setlist);
+      setFavorites(prev => ({ ...prev, [setlist.id]: !prev[setlist.id] }));
     } finally {
-      setLoadingDuplicate(null);
+      setLoadingFavorites(prev => ({ ...prev, [setlist.id]: false }));
     }
   };
 
@@ -47,79 +61,49 @@ export function PublicSetlistsList({
   }
 
   return (
-    <>
-      <div className="space-y-3">
-        {setlists.map((setlist) => (
-          <Card key={setlist.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg truncate">{setlist.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Criado em {new Date(setlist.created_at).toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-                
-                <div className="flex gap-2 flex-shrink-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    asChild
-                    title="Ver repertório"
-                  >
-                    <Link to={`/show/setlist/${setlist.id}`}>
-                      <Eye className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  
-                  {!isOwnProfile && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => handleDuplicateClick(setlist)}
-                      disabled={loadingDuplicate === setlist.id}
-                      title="Duplicar"
-                    >
-                      {loadingDuplicate === setlist.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </Button>
-                  )}
-                </div>
+    <div className="space-y-3">
+      {setlists.map((setlist) => (
+        <Card key={setlist.id} className="hover:shadow-md transition-shadow">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-lg truncate">{setlist.name}</h3>
+                <p className="text-sm text-muted-foreground">
+                  Criado em {new Date(setlist.created_at).toLocaleDateString('pt-BR')}
+                </p>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <AlertDialog open={confirmDuplicateOpen} onOpenChange={setConfirmDuplicateOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Copiar repertório</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja copiar o repertório "{setlistToDuplicate?.name}" para sua conta?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleConfirmDuplicate}
-              disabled={loadingDuplicate === setlistToDuplicate?.id}
-            >
-              {loadingDuplicate === setlistToDuplicate?.id ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Copiando...
-                </>
-              ) : (
-                'Copiar'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+              
+              <div className="flex gap-2 flex-shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  title="Ver repertório"
+                >
+                  <Link to={`/show/setlist/${setlist.id}`}>
+                    <Eye className="h-4 w-4" />
+                  </Link>
+                </Button>
+                
+                {!isOwnProfile && user && (
+                  <Button
+                    variant={favorites[setlist.id] ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleToggleFavorite(setlist)}
+                    disabled={loadingFavorites[setlist.id]}
+                    title={favorites[setlist.id] ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+                    className={favorites[setlist.id] ? "bg-red-500 hover:bg-red-600 text-white" : ""}
+                  >
+                    <Heart 
+                      className={`h-4 w-4 ${favorites[setlist.id] ? "fill-current" : ""}`} 
+                    />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 }

@@ -7,7 +7,13 @@ import { ChordRenderer } from '@/components/ChordRenderer';
 import AutoScrollControls from '@/components/AutoScrollControls';
 import EdgeNavArrows from '@/components/EdgeNavArrows';
 import { useAuth } from '@/hooks/useAuth';
-import { getSetlistWithSongs, getPublicProfile, duplicateSetlist } from '@/services/publicData';
+import { 
+  getSetlistWithSongs, 
+  getPublicProfile, 
+  addSetlistToFavorites,
+  removeSetlistFromFavorites,
+  isSetlistFavorited
+} from '@/services/publicData';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -53,6 +59,8 @@ export default function ShowSetlist() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [semitones, setSemitones] = useState(0);
   const [fontSize, setFontSize] = useState(16);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
 
   useEffect(() => {
     if (!setlistId) return;
@@ -63,6 +71,13 @@ export default function ShowSetlist() {
     // Atualizar last_viewed_at quando acessar o setlist
     if (setlist && user && setlist.user_id === user.id) {
       updateLastViewed();
+    }
+  }, [setlist, user]);
+
+  useEffect(() => {
+    // Check if setlist is favorited
+    if (setlist && user && setlist.user_id !== user.id) {
+      checkIfFavorited();
     }
   }, [setlist, user]);
 
@@ -127,22 +142,47 @@ export default function ShowSetlist() {
     }
   };
 
-  const handleDuplicate = async () => {
-    if (!setlist || !user) return;
+  const checkIfFavorited = async () => {
+    if (!setlistId) return;
+    try {
+      const favorited = await isSetlistFavorited(setlistId);
+      setIsFavorited(favorited);
+    } catch (error) {
+      console.error('Erro ao verificar favorito:', error);
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!setlist || favoriteLoading) return;
 
     try {
-      await duplicateSetlist(setlist);
-      toast({
-        title: "Repertório salvo!",
-        description: "O repertório foi adicionado à sua conta.",
-      });
+      setFavoriteLoading(true);
+      if (isFavorited) {
+        await removeSetlistFromFavorites(setlist.id);
+        setIsFavorited(false);
+        toast({
+          title: "Removido dos favoritos",
+          description: "Repertório removido dos favoritos!",
+          className: "bg-green-50 border-green-200 text-green-800"
+        });
+      } else {
+        await addSetlistToFavorites(setlist.id);
+        setIsFavorited(true);
+        toast({
+          title: "Adicionado aos favoritos",
+          description: "Repertório adicionado aos favoritos!",
+          className: "bg-green-50 border-green-200 text-green-800"
+        });
+      }
     } catch (error) {
-      console.error('Erro ao duplicar setlist:', error);
+      console.error('Erro ao favoritar repertório:', error);
       toast({
-        title: "Erro ao salvar repertório",
-        description: error instanceof Error ? error.message : String(error),
+        title: "Erro",
+        description: "Não foi possível favoritar o repertório.",
         variant: "destructive"
       });
+    } finally {
+      setFavoriteLoading(false);
     }
   };
 
@@ -251,9 +291,19 @@ export default function ShowSetlist() {
               </Button>
 
               {!isOwner && user && (
-                <Button onClick={handleDuplicate}>
-                  <Heart className="h-4 w-4 mr-2" />
-                  Salvar
+                <Button 
+                  onClick={handleToggleFavorite}
+                  disabled={favoriteLoading}
+                  variant={isFavorited ? "default" : "outline"}
+                  className={isFavorited ? "bg-red-500 hover:bg-red-600 text-white" : ""}
+                >
+                  <Heart className={`h-4 w-4 mr-2 ${isFavorited ? "fill-current" : ""}`} />
+                  {favoriteLoading 
+                    ? 'Processando...' 
+                    : isFavorited 
+                    ? 'Remover dos favoritos' 
+                    : 'Adicionar aos favoritos'
+                  }
                 </Button>
               )}
             </div>

@@ -3,16 +3,15 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChordRenderer } from '@/components/ChordRenderer';
-import { PickSetlistModal } from '@/components/PickSetlistModal';
 import AutoScrollControls from '@/components/AutoScrollControls';
-import { ArrowLeft, Copy, Plus, Minus, Edit } from 'lucide-react';
+import { ArrowLeft, Heart, Plus, Minus, Edit } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import {
   getSong,
-  duplicateSong,
-  addSongToMySetlist,
-  listMySetlists
+  addSongToFavorites,
+  removeSongFromFavorites,
+  isSongFavorited
 } from '@/services/publicData';
 
 export default function ShowSong() {
@@ -23,9 +22,8 @@ export default function ShowSong() {
   const [loading, setLoading] = useState(true);
   const [semitones, setSemitones] = useState(0);
   const [fontSize, setFontSize] = useState(16);
-  const [pickSetlistModalOpen, setPickSetlistModalOpen] = useState(false);
-  const [mySetlists, setMySetlists] = useState<any[]>([]);
-  const [duplicating, setDuplicating] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
 
   const isOwnSong = user?.id === song?.user_id;
 
@@ -33,6 +31,12 @@ export default function ShowSong() {
     if (!songId) return;
     loadSong();
   }, [songId]);
+
+  useEffect(() => {
+    if (song && user && !isOwnSong) {
+      checkIfFavorited();
+    }
+  }, [song, user, isOwnSong]);
 
   const loadSong = async () => {
     try {
@@ -52,62 +56,47 @@ export default function ShowSong() {
     }
   };
 
-  const handleDuplicate = async () => {
-    if (!song) return;
+  const checkIfFavorited = async () => {
+    if (!songId) return;
+    try {
+      const favorited = await isSongFavorited(songId);
+      setIsFavorited(favorited);
+    } catch (error) {
+      console.error('Erro ao verificar favorito:', error);
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!song || favoriteLoading) return;
     
     try {
-      setDuplicating(true);
-      await duplicateSong(song);
-      toast({
-        title: "Sucesso",
-        description: "Música duplicada para sua conta!"
-      });
+      setFavoriteLoading(true);
+      if (isFavorited) {
+        await removeSongFromFavorites(song.id);
+        setIsFavorited(false);
+        toast({
+          title: "Removido dos favoritos",
+          description: "Música removida dos favoritos!",
+          className: "bg-green-50 border-green-200 text-green-800"
+        });
+      } else {
+        await addSongToFavorites(song.id);
+        setIsFavorited(true);
+        toast({
+          title: "Adicionado aos favoritos",
+          description: "Música adicionada aos favoritos!",
+          className: "bg-green-50 border-green-200 text-green-800"
+        });
+      }
     } catch (error) {
-      console.error('Erro ao duplicar música:', error);
+      console.error('Erro ao favoritar música:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível duplicar a música.",
+        description: "Não foi possível favoritar a música.",
         variant: "destructive"
       });
     } finally {
-      setDuplicating(false);
-    }
-  };
-
-  const handleAddToSetlist = async () => {
-    if (!user || !songId) return;
-    
-    try {
-      const setlists = await listMySetlists();
-      setMySetlists(setlists);
-      setPickSetlistModalOpen(true);
-    } catch (error) {
-      console.error('Erro ao carregar repertórios:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar seus repertórios.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleSetlistSelection = async (selection: { setlistId?: string; createNew?: string }) => {
-    if (!songId) return;
-
-    try {
-      await addSongToMySetlist(songId, selection);
-      toast({
-        title: "Sucesso",
-        description: "Música adicionada ao repertório!"
-      });
-      setPickSetlistModalOpen(false);
-    } catch (error) {
-      console.error('Erro ao adicionar música ao repertório:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível adicionar a música ao repertório.",
-        variant: "destructive"
-      });
+      setFavoriteLoading(false);
     }
   };
 
@@ -208,20 +197,18 @@ export default function ShowSong() {
         {!isOwnSong && user && (
           <div className="mb-6 flex gap-3">
             <Button
-              variant="outline"
-              onClick={handleDuplicate}
-              disabled={duplicating}
+              variant={isFavorited ? "default" : "outline"}
+              onClick={handleToggleFavorite}
+              disabled={favoriteLoading}
+              className={isFavorited ? "bg-red-500 hover:bg-red-600 text-white" : ""}
             >
-              <Copy className="h-4 w-4 mr-2" />
-              {duplicating ? 'Duplicando...' : 'Duplicar para minha conta'}
-            </Button>
-            
-            <Button
-              variant="secondary"
-              onClick={handleAddToSetlist}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar a um repertório meu
+              <Heart className={`h-4 w-4 mr-2 ${isFavorited ? "fill-current" : ""}`} />
+              {favoriteLoading 
+                ? 'Processando...' 
+                : isFavorited 
+                ? 'Remover dos favoritos' 
+                : 'Adicionar aos favoritos'
+              }
             </Button>
           </div>
         )}
@@ -251,13 +238,6 @@ export default function ShowSong() {
           </div>
         </article>
       </div>
-
-      <PickSetlistModal
-        open={pickSetlistModalOpen}
-        onOpenChange={setPickSetlistModalOpen}
-        mySetlists={mySetlists}
-        onConfirm={handleSetlistSelection}
-      />
     </main>
   );
 }

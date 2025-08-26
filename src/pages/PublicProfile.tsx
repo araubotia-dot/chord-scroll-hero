@@ -12,10 +12,12 @@ import {
   getPublicProfile,
   getPublicSongs,
   getPublicSetlists,
-  duplicateSong,
-  addSongToMySetlist,
-  duplicateSetlist,
-  listMySetlists
+  addSongToFavorites,
+  removeSongFromFavorites,
+  addSetlistToFavorites,
+  removeSetlistFromFavorites,
+  isSongFavorited,
+  isSetlistFavorited
 } from '@/services/publicData';
 
 export default function PublicProfile() {
@@ -60,74 +62,57 @@ export default function PublicProfile() {
     }
   };
 
-  const handleDuplicateSong = async (song: any) => {
+  const handleToggleSongFavorite = async (song: any) => {
     try {
-      await duplicateSong(song);
-      toast({
-        title: "Sucesso",
-        description: "Música duplicada para sua conta!"
-      });
+      const favorited = await isSongFavorited(song.id);
+      if (favorited) {
+        await removeSongFromFavorites(song.id);
+        toast({
+          title: "Removido dos favoritos",
+          description: "Música removida dos favoritos!",
+          className: "bg-green-50 border-green-200 text-green-800"
+        });
+      } else {
+        await addSongToFavorites(song.id);
+        toast({
+          title: "Adicionado aos favoritos",
+          description: "Música adicionada aos favoritos!",
+          className: "bg-green-50 border-green-200 text-green-800"
+        });
+      }
     } catch (error) {
-      console.error('Erro ao duplicar música:', error);
+      console.error('Erro ao favoritar música:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível duplicar a música.",
+        description: "Não foi possível favoritar a música.",
         variant: "destructive"
       });
     }
   };
 
-  const handleAddToSetlist = async (songId: string) => {
-    if (!user) return;
-    
-    setSelectedSongForSetlist(songId);
+  const handleToggleSetlistFavorite = async (setlist: any) => {
     try {
-      const setlists = await listMySetlists();
-      setMySetlists(setlists);
-      setPickSetlistModalOpen(true);
+      const favorited = await isSetlistFavorited(setlist.id);
+      if (favorited) {
+        await removeSetlistFromFavorites(setlist.id);
+        toast({
+          title: "Removido dos favoritos",
+          description: "Repertório removido dos favoritos!",
+          className: "bg-green-50 border-green-200 text-green-800"
+        });
+      } else {
+        await addSetlistToFavorites(setlist.id);
+        toast({
+          title: "Adicionado aos favoritos",
+          description: "Repertório adicionado aos favoritos!",
+          className: "bg-green-50 border-green-200 text-green-800"
+        });
+      }
     } catch (error) {
-      console.error('Erro ao carregar repertórios:', error);
+      console.error('Erro ao favoritar repertório:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível carregar seus repertórios.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleSetlistSelection = async (selection: { setlistId?: string; createNew?: string }) => {
-    if (!selectedSongForSetlist) return;
-
-    try {
-      await addSongToMySetlist(selectedSongForSetlist, selection);
-      toast({
-        title: "Sucesso",
-        description: "Música adicionada ao repertório!"
-      });
-      setPickSetlistModalOpen(false);
-      setSelectedSongForSetlist(null);
-    } catch (error) {
-      console.error('Erro ao adicionar música ao repertório:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível adicionar a música ao repertório.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleDuplicateSetlist = async (setlist: any) => {
-    try {
-      const newSetlist = await duplicateSetlist(setlist);
-      toast({
-        title: "Sucesso",
-        description: `Repertório "${newSetlist.name}" salvo na sua conta!`
-      });
-    } catch (error) {
-      console.error('Erro ao duplicar repertório:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível duplicar o repertório.",
+        description: "Não foi possível favoritar o repertório.",
         variant: "destructive"
       });
     }
@@ -171,8 +156,7 @@ export default function PublicProfile() {
           <PublicSongsList
             songs={songs}
             isOwnProfile={isOwnProfile}
-            onDuplicateSong={handleDuplicateSong}
-            onAddToMySetlist={handleAddToSetlist}
+            onToggleFavorite={handleToggleSongFavorite}
           />
         </TabsContent>
         
@@ -180,17 +164,10 @@ export default function PublicProfile() {
           <PublicSetlistsList
             setlists={setlists}
             isOwnProfile={isOwnProfile}
-            onDuplicateSetlist={handleDuplicateSetlist}
+            onToggleFavorite={handleToggleSetlistFavorite}
           />
         </TabsContent>
       </Tabs>
-
-      <PickSetlistModal
-        open={pickSetlistModalOpen}
-        onOpenChange={setPickSetlistModalOpen}
-        mySetlists={mySetlists}
-        onConfirm={handleSetlistSelection}
-      />
     </div>
   );
 }
