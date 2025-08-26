@@ -283,7 +283,7 @@ export default function CifrasApp() {
       // Criar música temporária apenas no estado local - não salvar no banco ainda
       const tempSong: Song = {
         id: `temp-${Date.now()}`, // ID temporário
-        title: "Nova Música",
+        title: "", // Começar com título vazio
         artist: "",
         genre: "",
         key: "C",
@@ -848,7 +848,7 @@ export default function CifrasApp() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="space-y-3">
               <input 
-                value={selectedSong.title === "Nova Música" ? "" : selectedSong.title} 
+                value={selectedSong.title || ""} 
                 onChange={e => updateSongField('title', e.target.value)}
                 className="w-full bg-input border border-border rounded-xl px-3 py-3 text-base" 
                 placeholder="Título"
