@@ -185,7 +185,8 @@ export async function listFavoriteSongs() {
     .select(`
       id,
       created_at,
-      songs (
+      song_id,
+      songs!inner (
         id,
         title,
         artist,
@@ -212,7 +213,8 @@ export async function listFavoriteSetlists() {
     .select(`
       id,
       created_at,
-      setlists (
+      setlist_id,
+      setlists!inner (
         id,
         name,
         user_id,
