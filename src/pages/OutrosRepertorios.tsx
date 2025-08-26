@@ -5,48 +5,45 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
-type SongWithUser = {
+type SetlistWithUser = {
   id: string;
-  title: string;
-  artist?: string;
-  genre?: string;
-  key: string;
+  name: string;
   user_id: string;
-  profiles?: {
+  created_at: string;
+  user?: {
     id: string;
     name: string;
   };
+  songs_count?: number;
 };
 
-const OutrasCifras = () => {
+const OutrosRepertorios = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [songs, setSongs] = useState<SongWithUser[]>([]);
+  const [setlists, setSetlists] = useState<SetlistWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    loadSongs();
+    loadSetlists();
   }, []);
 
-  const loadSongs = async () => {
+  const loadSetlists = async () => {
     try {
       setLoading(true);
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
       let query = supabase
-        .from('songs')
+        .from('setlists')
         .select(`
           id, 
-          title, 
-          artist, 
-          genre, 
-          key, 
-          user_id
+          name, 
+          user_id,
+          created_at
         `)
         .order('created_at', { ascending: false });
 
-      // Exclude current user's songs
+      // Exclude current user's setlists
       if (currentUser) {
         query = query.neq('user_id', currentUser.id);
       }
@@ -56,7 +53,7 @@ const OutrasCifras = () => {
       if (error) throw error;
 
       // Get unique user IDs
-      const userIds = [...new Set(data?.map(song => song.user_id))];
+      const userIds = [...new Set(data?.map(setlist => setlist.user_id))];
       
       // Get profiles for these users
       const { data: profilesData } = await supabase
@@ -64,17 +61,40 @@ const OutrasCifras = () => {
         .select('id, name')
         .in('id', userIds);
 
-      // Map profiles to songs
-      const songsWithProfiles = data?.map(song => ({
-        ...song,
-        profiles: profilesData?.find(profile => profile.id === song.user_id)
+      // Get song counts for each setlist
+      const setlistIds = data?.map(setlist => setlist.id) || [];
+      let songsCountData: any[] = [];
+      
+      if (setlistIds.length > 0) {
+        const { data: countsData } = await supabase
+          .from('setlist_songs')
+          .select('setlist_id')
+          .in('setlist_id', setlistIds);
+        
+        // Count songs per setlist
+        const countsBySetlist = countsData?.reduce((acc, item) => {
+          acc[item.setlist_id] = (acc[item.setlist_id] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>) || {};
+
+        songsCountData = Object.entries(countsBySetlist).map(([setlist_id, count]) => ({
+          setlist_id,
+          songs_count: count
+        }));
+      }
+
+      // Map profiles and song counts to setlists
+      const setlistsWithProfiles = data?.map(setlist => ({
+        ...setlist,
+        user: profilesData?.find(profile => profile.id === setlist.user_id),
+        songs_count: songsCountData.find(s => s.setlist_id === setlist.id)?.songs_count || 0
       })) || [];
 
-      setSongs(songsWithProfiles);
+      setSetlists(setlistsWithProfiles);
     } catch (error) {
-      console.error('Error loading songs:', error);
+      console.error('Error loading setlists:', error);
       toast({
-        title: "Erro ao carregar músicas",
+        title: "Erro ao carregar repertórios",
         description: "Tente recarregar a página.",
         variant: "destructive"
       });
@@ -83,18 +103,14 @@ const OutrasCifras = () => {
     }
   };
 
-  const filteredSongs = songs.filter(song => {
+  const filteredSetlists = setlists.filter(setlist => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
-    return (
-      song.title.toLowerCase().includes(query) ||
-      (song.artist && song.artist.toLowerCase().includes(query)) ||
-      (song.genre && song.genre.toLowerCase().includes(query))
-    );
+    return setlist.name.toLowerCase().includes(query);
   });
 
-  const handlePlaySong = (songId: string) => {
-    navigate(`/show/song/${songId}`);
+  const handlePlaySetlist = (setlistId: string) => {
+    navigate(`/show/setlist/${setlistId}`);
   };
 
   if (loading) {
@@ -138,8 +154,14 @@ const OutrasCifras = () => {
             >
               Repertório
             </button>
-            <button className="px-5 py-2.5 text-sm md:text-base rounded-full bg-primary text-primary-foreground">
+            <button
+              onClick={() => navigate('/outras-cifras')}
+              className="px-5 py-2.5 text-sm md:text-base rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+            >
               Outras Cifras
+            </button>
+            <button className="px-5 py-2.5 text-sm md:text-base rounded-full bg-primary text-primary-foreground">
+              Outros Repertórios
             </button>
           </div>
 
@@ -153,7 +175,7 @@ const OutrasCifras = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-12 pl-11 pr-4 rounded-xl bg-white text-black placeholder:text-zinc-500 shadow border border-input"
-              placeholder="Pesquisar por artista, música ou ritmo..."
+              placeholder="Pesquisar repertórios..."
             />
           </div>
         </div>
@@ -162,26 +184,24 @@ const OutrasCifras = () => {
       {/* Content */}
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="mb-4">
-          <h2 className="text-xl font-semibold mb-2">Todas as Cifras</h2>
+          <h2 className="text-xl font-semibold mb-2">Todos os Repertórios</h2>
           <p className="text-muted-foreground text-sm">
-            {filteredSongs.length} música{filteredSongs.length !== 1 ? 's' : ''} encontrada{filteredSongs.length !== 1 ? 's' : ''}
+            {filteredSetlists.length} repertório{filteredSetlists.length !== 1 ? 's' : ''} encontrado{filteredSetlists.length !== 1 ? 's' : ''}
           </p>
         </div>
 
         <div className="space-y-2">
-          {filteredSongs.map(song => (
-            <div key={song.id} className="p-3 md:p-3 border border-border rounded-xl bg-card flex flex-col md:flex-row md:items-center justify-between gap-3">
-              <div className="flex-1 cursor-pointer" onClick={() => handlePlaySong(song.id)}>
-                <div className="font-semibold text-base hover:text-primary transition-colors">{song.title}</div>
+          {filteredSetlists.map(setlist => (
+            <div key={setlist.id} className="p-3 md:p-3 border border-border rounded-xl bg-card flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="flex-1 cursor-pointer" onClick={() => handlePlaySetlist(setlist.id)}>
+                <div className="font-semibold text-base hover:text-primary transition-colors">{setlist.name}</div>
                 <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-2">
-                  {song.artist && <span>{song.artist}</span>}
-                  {song.artist && song.genre && <span className="hidden md:inline">•</span>}
-                  {song.genre && <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs">{song.genre}</span>}
-                  {song.profiles?.name && (
+                  <span>{setlist.songs_count || 0} música{(setlist.songs_count || 0) !== 1 ? 's' : ''}</span>
+                  {setlist.user?.name && (
                     <>
                       <span className="hidden md:inline">•</span>
                       <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs">
-                        @{song.profiles.name}
+                        @{setlist.user?.name}
                       </span>
                     </>
                   )}
@@ -189,9 +209,9 @@ const OutrasCifras = () => {
               </div>
               <div className="flex items-center gap-3 w-full md:w-auto justify-end">
                 <button 
-                  onClick={() => handlePlaySong(song.id)} 
+                  onClick={() => handlePlaySetlist(setlist.id)} 
                   className="w-10 h-10 flex items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                  title="Tocar música"
+                  title="Tocar repertório"
                 >
                   <Play className="h-5 w-5 fill-current" />
                 </button>
@@ -200,11 +220,11 @@ const OutrasCifras = () => {
           ))}
         </div>
 
-        {filteredSongs.length === 0 && (
+        {filteredSetlists.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-muted-foreground text-lg mb-2">Nenhuma música encontrada</div>
+            <div className="text-muted-foreground text-lg mb-2">Nenhum repertório encontrado</div>
             <div className="text-muted-foreground text-sm">
-              {searchQuery ? 'Tente alterar os termos de busca' : 'Ainda não há músicas cadastradas'}
+              {searchQuery ? 'Tente alterar os termos de busca' : 'Ainda não há repertórios cadastrados por outros usuários'}
             </div>
           </div>
         )}
@@ -213,4 +233,4 @@ const OutrasCifras = () => {
   );
 };
 
-export default OutrasCifras;
+export default OutrosRepertorios;

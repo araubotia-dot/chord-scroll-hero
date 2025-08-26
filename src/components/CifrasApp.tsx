@@ -567,7 +567,7 @@ export default function CifrasApp() {
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <nav className="flex items-center gap-1 md:gap-2 text-xs md:text-sm overflow-x-auto">
+            <nav className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
               <button 
                 onClick={() => setView("home")} 
                 className={`px-5 py-2.5 text-sm md:text-base rounded-full transition-colors whitespace-nowrap ${
@@ -582,13 +582,41 @@ export default function CifrasApp() {
               >
                 Repertório
               </button>
-              <button 
-                onClick={() => window.location.href = '/outras-cifras'} 
-                className={`px-5 py-2.5 text-sm md:text-base rounded-full transition-colors whitespace-nowrap bg-secondary text-secondary-foreground hover:bg-secondary/80`}
-              >
-                Outras Cifras
-              </button>
             </nav>
+            <div className="relative">
+              <button 
+                onClick={() => setActiveControl(activeControl === 'menu' ? null : 'menu')}
+                className="rounded-full w-10 h-10 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-white transition-colors"
+              >
+                <div className="flex flex-col gap-1">
+                  <div className="w-4 h-0.5 bg-current"></div>
+                  <div className="w-4 h-0.5 bg-current"></div>
+                  <div className="w-4 h-0.5 bg-current"></div>
+                </div>
+              </button>
+              {activeControl === 'menu' && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-background border border-border rounded-lg shadow-lg z-50">
+                  <button 
+                    onClick={() => {
+                      window.location.href = '/outras-cifras';
+                      setActiveControl(null);
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-muted transition-colors"
+                  >
+                    Outras Cifras
+                  </button>
+                  <button 
+                    onClick={() => {
+                      window.location.href = '/outros-repertorios';
+                      setActiveControl(null);
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-muted transition-colors border-t border-border"
+                  >
+                    Outros Repertórios
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -653,13 +681,6 @@ export default function CifrasApp() {
                       title="Tocar música"
                     >
                       <Play className="h-5 w-5 fill-current" />
-                    </button>
-                    <button 
-                      onClick={() => { setSelectedSongId(s.id); setView("editar"); }} 
-                      className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 transition-colors"
-                      title="Editar música"
-                    >
-                      <Edit className="h-4 w-4" />
                     </button>
                   </div>
                 </div>

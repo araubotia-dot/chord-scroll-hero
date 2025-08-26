@@ -15,6 +15,7 @@ import Repertorio from "./pages/Repertorio";
 import NotFound from "./pages/NotFound";
 import EditSetlist from "./pages/EditSetlist";
 import OutrasCifras from "./pages/OutrasCifras";
+import OutrosRepertorios from "./pages/OutrosRepertorios";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/repertorio" element={<Repertorio />} />
             <Route path="/repertorio/:setlistId/editar" element={<EditSetlist />} />
             <Route path="/outras-cifras" element={<OutrasCifras />} />
+            <Route path="/outros-repertorios" element={<OutrosRepertorios />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
