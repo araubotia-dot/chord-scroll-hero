@@ -1017,7 +1017,7 @@ export default function CifrasApp() {
               />
             )}
             
-            <div className="container mx-auto px-6 py-6">
+            <div className="w-full px-8 py-6 max-w-none">
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
@@ -1071,14 +1071,20 @@ export default function CifrasApp() {
               </div>
 
               {/* Song Content */}
-              <div className="bg-card rounded-lg p-6">
+              <div className="bg-card rounded-lg p-8 w-full">
                 {selectedSong.content ? (
-                  <div style={{ fontSize: `${showFontSize}px` }}>
+                  <div 
+                    style={{ 
+                      fontSize: `${showFontSize}px`,
+                      lineHeight: '1.6'
+                    }}
+                    className="w-full"
+                  >
                     <ChordRenderer
                       text={selectedSong.content}
                       semitones={showSemitones}
                       preferFlats={preferFlats}
-                      className="font-mono"
+                      className="font-mono w-full"
                     />
                   </div>
                 ) : (

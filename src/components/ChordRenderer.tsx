@@ -13,7 +13,7 @@ export function ChordRenderer({ text, semitones = 0, preferFlats = false, classN
   const lines = transposed.split(/\r?\n/);
   
   return (
-    <div className={`whitespace-pre-wrap leading-relaxed tracking-wide ${className}`}>
+    <div className={`whitespace-pre-wrap leading-relaxed tracking-wide w-full ${className}`}>
       {lines.map((line, i) => {
         // Se a linha está vazia, renderiza um espaço para manter o espaçamento
         if (line.trim() === "") {

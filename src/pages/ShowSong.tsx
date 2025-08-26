@@ -138,7 +138,7 @@ export default function ShowSong() {
   return (
     <div className="min-h-screen bg-background">
       <AutoScrollControls />
-      <div className="container mx-auto px-4 py-6">
+      <div className="w-full px-8 py-6 max-w-none">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
@@ -227,14 +227,20 @@ export default function ShowSong() {
         )}
 
         {/* Song Content */}
-        <Card>
-          <CardContent className="p-6">
+        <Card className="w-full">
+          <CardContent className="p-8">
             {song.content ? (
-              <div style={{ fontSize: `${fontSize}px` }}>
+              <div 
+                style={{ 
+                  fontSize: `${fontSize}px`,
+                  lineHeight: '1.6'
+                }}
+                className="w-full"
+              >
                 <ChordRenderer 
                   text={song.content} 
                   semitones={semitones}
-                  className="font-mono"
+                  className="font-mono w-full"
                 />
               </div>
             ) : (

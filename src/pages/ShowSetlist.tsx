@@ -207,7 +207,7 @@ export default function ShowSetlist() {
         onPrev={goToPrevious}
         onNext={goToNext}
       />
-      <div className="container mx-auto px-6 py-6">
+      <div className="w-full px-8 py-6 max-w-none">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
@@ -336,14 +336,20 @@ export default function ShowSetlist() {
             </div>
 
             {/* Song Content */}
-            <Card>
-              <CardContent className="p-6">
+            <Card className="w-full">
+              <CardContent className="p-8">
                 {currentSong.songs.content ? (
-                  <div style={{ fontSize: `${fontSize}px` }}>
+                  <div 
+                    style={{ 
+                      fontSize: `${fontSize}px`,
+                      lineHeight: '1.6'
+                    }}
+                    className="w-full"
+                  >
                     <ChordRenderer
                       text={currentSong.songs.content}
                       semitones={semitones}
-                      className="font-mono"
+                      className="font-mono w-full"
                     />
                   </div>
                 ) : (
