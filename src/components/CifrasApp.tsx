@@ -5,11 +5,9 @@ import { ChordRenderer } from './ChordRenderer';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { UserAvatar } from './UserAvatar';
-import { Trash2, ChevronUp, Play, Pause, RotateCcw, Edit, Search, FileText } from 'lucide-react';
+import { Trash2, ChevronUp, Play, Pause, RotateCcw, Edit, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import * as dataService from '@/services/data';
-import PDFUpload from './PDFUpload';
-import PDFViewer from './PDFViewer';
 
 // Types
 export type Song = {
@@ -19,8 +17,6 @@ export type Song = {
   genre?: string;
   key: string;
   content: string;
-  kind: 'chords' | 'pdf';
-  pdf_url?: string;
   user_id: string;
   created_at: string;
   updated_at: string;
@@ -110,9 +106,7 @@ export default function CifrasApp() {
     selectedSong.artist !== originalSong.artist ||
     selectedSong.genre !== originalSong.genre ||
     selectedSong.key !== originalSong.key ||
-    selectedSong.content !== originalSong.content ||
-    selectedSong.kind !== originalSong.kind ||
-    selectedSong.pdf_url !== originalSong.pdf_url
+    selectedSong.content !== originalSong.content
   );
 
   // Load initial data
@@ -140,10 +134,7 @@ export default function CifrasApp() {
           dataService.listMySongs(), // Usar listMySongs ao invés de listSongs
           dataService.listSetlists()
         ]);
-        setSongs(songsData.map(song => ({
-          ...song,
-          kind: (song.kind as 'chords' | 'pdf') || 'chords'
-        })));
+        setSongs(songsData);
         setSetlists(setlistsData);
       } catch (error) {
         console.error('Error loading data:', error);
@@ -208,10 +199,7 @@ export default function CifrasApp() {
             setlist_id: setlist.id,
             song_id: s.song?.id || '',
             position: s.position,
-            song: s.song ? {
-              ...s.song,
-              kind: (s.song.kind as 'chords' | 'pdf') || 'chords'
-            } as Song : undefined
+            song: s.song as Song
           }));
           return { [setlist.id]: mappedSongs };
         });
@@ -297,14 +285,10 @@ export default function CifrasApp() {
         artist: "",
         genre: "",
         key: "C",
-        content: "",
-        kind: "chords"
+        content: ""
       });
       
-      setSongs(prev => [{
-        ...songData,
-        kind: (songData.kind as 'chords' | 'pdf') || 'chords'
-      }, ...prev]);
+      setSongs(prev => [songData, ...prev]);
       setSelectedSongId(songData.id);
       setView("editar");
       
@@ -329,19 +313,11 @@ export default function CifrasApp() {
         artist: song.artist,
         genre: song.genre,
         key: song.key,
-        content: song.content,
-        kind: song.kind,
-        pdf_url: song.pdf_url
+        content: song.content
       });
       
-      setSongs(prev => prev.map(s => s.id === song.id ? {
-        ...updatedSong,
-        kind: (updatedSong.kind as 'chords' | 'pdf') || 'chords'
-      } : s));
-      setOriginalSong({ 
-        ...updatedSong, 
-        kind: (updatedSong.kind as 'chords' | 'pdf') || 'chords'
-      });
+      setSongs(prev => prev.map(s => s.id === song.id ? updatedSong : s));
+      setOriginalSong({ ...updatedSong });
       
       toast({
         title: "Salvo com sucesso!",
@@ -512,10 +488,7 @@ export default function CifrasApp() {
         setlist_id: repertoireId,
         song_id: s.song?.id || '',
         position: s.position,
-        song: s.song ? {
-          ...s.song,
-          kind: (s.song.kind as 'chords' | 'pdf') || 'chords'
-        } as Song : undefined
+        song: s.song as Song
       }));
       
       setSetlistSongs(prev => ({ ...prev, [repertoireId]: mappedSongs }));
@@ -692,15 +665,7 @@ export default function CifrasApp() {
                         setSelectedSongId(s.id); 
                         setView("show"); 
                       }}>
-                    <div className="font-semibold text-sm hover:text-primary transition-colors truncate flex items-center gap-2">
-                      {s.title}
-                      {s.kind === 'pdf' && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 gap-1">
-                          <FileText className="h-3 w-3" />
-                          PDF
-                        </span>
-                      )}
-                    </div>
+                    <div className="font-semibold text-sm hover:text-primary transition-colors truncate">{s.title}</div>
                     <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
                       {s.artist && <span className="truncate">{s.artist}</span>}
                       {s.artist && s.genre && <span>•</span>}
@@ -783,17 +748,9 @@ export default function CifrasApp() {
                           if (!setlistSong.song) return null;
                           return (
                             <div key={setlistSong.id} className="flex items-center justify-between bg-muted/50 rounded p-2 text-sm">
-                              <div className="flex items-center gap-2">
-                                <div>
-                                  <span className="font-medium">{setlistSong.song.title}</span>
-                                  {setlistSong.song.artist && <span className="text-muted-foreground ml-2">- {setlistSong.song.artist}</span>}
-                                </div>
-                                {setlistSong.song.kind === 'pdf' && (
-                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800 gap-1">
-                                    <FileText className="h-3 w-3" />
-                                    PDF
-                                  </span>
-                                )}
+                              <div>
+                                <span className="font-medium">{setlistSong.song.title}</span>
+                                {setlistSong.song.artist && <span className="text-muted-foreground ml-2">- {setlistSong.song.artist}</span>}
                               </div>
                               <button
                                 onClick={() => removeFromSetlist(setlistSong.song_id, setlist.id)}
@@ -832,33 +789,6 @@ export default function CifrasApp() {
         {view === "editar" && selectedSong && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="space-y-3">
-              {/* Seletor de tipo */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Tipo de música:</label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => updateSongField('kind', 'chords')}
-                    className={`px-4 py-2 rounded-lg border transition-colors ${
-                      selectedSong.kind === 'chords'
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-muted text-muted-foreground border-border hover:bg-muted-hover'
-                    }`}
-                  >
-                    Cifra (texto)
-                  </button>
-                  <button
-                    onClick={() => updateSongField('kind', 'pdf')}
-                    className={`px-4 py-2 rounded-lg border transition-colors ${
-                      selectedSong.kind === 'pdf'
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-muted text-muted-foreground border-border hover:bg-muted-hover'
-                    }`}
-                  >
-                    Partitura (PDF)
-                  </button>
-                </div>
-              </div>
-
               <input 
                 value={selectedSong.title === "Nova Música" ? "" : selectedSong.title} 
                 onChange={e => updateSongField('title', e.target.value)}
@@ -883,38 +813,22 @@ export default function CifrasApp() {
                   </option>
                 ))}
               </select>
-              
-              {selectedSong.kind === 'chords' && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm text-muted-foreground">Tom original:</label>
-                    <select 
-                      value={selectedSong.key} 
-                      onChange={e => updateSongField('key', normalizeNote(e.target.value) as Note)}
-                      className="bg-input border border-border rounded-xl px-3 py-2 text-base"
-                    >
-                      {NOTES_SHARP.map(n => <option key={n} value={n}>{n}</option>)}
-                    </select>
-                  </div>
-                  <textarea 
-                    value={selectedSong.content} 
-                    onChange={e => updateSongField('content', e.target.value)}
-                    className="w-full h-[300px] lg:h-[320px] bg-input border border-border rounded-xl p-3 font-mono text-sm"
-                    placeholder="Digite os acordes e letra aqui..."
-                  />
-                </>
-              )}
-
-              {selectedSong.kind === 'pdf' && (
-                <div className="space-y-3">
-                  <PDFUpload
-                    onUpload={(url) => updateSongField('pdf_url', url)}
-                    currentUrl={selectedSong.pdf_url}
-                    onRemove={() => updateSongField('pdf_url', '')}
-                  />
-                </div>
-              )}
-
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-muted-foreground">Tom original:</label>
+                <select 
+                  value={selectedSong.key} 
+                  onChange={e => updateSongField('key', normalizeNote(e.target.value) as Note)}
+                  className="bg-input border border-border rounded-xl px-3 py-2 text-base"
+                >
+                  {NOTES_SHARP.map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </div>
+              <textarea 
+                value={selectedSong.content} 
+                onChange={e => updateSongField('content', e.target.value)}
+                className="w-full h-[300px] lg:h-[320px] bg-input border border-border rounded-xl p-3 font-mono text-sm"
+                placeholder="Digite os acordes e letra aqui..."
+              />
               <div className="flex gap-2 flex-wrap">
                 <button 
                   onClick={() => saveSong(selectedSong)} 
@@ -950,43 +864,33 @@ export default function CifrasApp() {
             <div className="space-y-3">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2">
                 <div className="font-semibold">Pré-visualização</div>
-                {selectedSong.kind === 'chords' && (
-                  <div className="flex items-center gap-2 text-sm flex-wrap">
-                    <span>Transpor:</span>
-                    <button 
-                      onClick={() => setTranspose(t => t - 1)} 
-                      className="px-3 py-2 rounded bg-muted hover:bg-muted-hover"
-                    >
-                      -
-                    </button>
-                    <div className="w-10 text-center">{transpose}</div>
-                    <button 
-                      onClick={() => setTranspose(t => t + 1)} 
-                      className="px-3 py-2 rounded bg-muted hover:bg-muted-hover"
-                    >
-                      +
-                    </button>
-                    <label className="ml-2 flex items-center gap-1">
-                      <input 
-                        type="checkbox" 
-                        checked={preferFlats} 
-                        onChange={e => setPreferFlats(e.target.checked)} 
-                      /> 
-                      bemóis
-                    </label>
-                  </div>
-                )}
+                <div className="flex items-center gap-2 text-sm flex-wrap">
+                  <span>Transpor:</span>
+                  <button 
+                    onClick={() => setTranspose(t => t - 1)} 
+                    className="px-3 py-2 rounded bg-muted hover:bg-muted-hover"
+                  >
+                    -
+                  </button>
+                  <div className="w-10 text-center">{transpose}</div>
+                  <button 
+                    onClick={() => setTranspose(t => t + 1)} 
+                    className="px-3 py-2 rounded bg-muted hover:bg-muted-hover"
+                  >
+                    +
+                  </button>
+                  <label className="ml-2 flex items-center gap-1">
+                    <input 
+                      type="checkbox" 
+                      checked={preferFlats} 
+                      onChange={e => setPreferFlats(e.target.checked)} 
+                    /> 
+                    bemóis
+                  </label>
+                </div>
               </div>
               <div className="rounded-xl border border-border bg-card p-4 overflow-auto h-[300px] lg:h-[420px]">
-                {selectedSong.kind === 'chords' ? (
-                  <ChordRenderer text={selectedSong.content} semitones={transpose} preferFlats={preferFlats} />
-                ) : selectedSong.pdf_url ? (
-                  <PDFViewer file={selectedSong.pdf_url} />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-muted-foreground">
-                    Selecione um arquivo PDF para visualizar
-                  </div>
-                )}
+                <ChordRenderer text={selectedSong.content} semitones={transpose} preferFlats={preferFlats} />
               </div>
               <button 
                 onClick={() => { setView("show"); }} 
@@ -1007,28 +911,14 @@ export default function CifrasApp() {
                 {selectedSong.artist && (
                   <p className="text-sm text-muted-foreground mt-1">{selectedSong.artist}</p>
                 )}
-                {selectedSong.kind === 'pdf' && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 gap-1 mt-2">
-                    <FileText className="h-3 w-3" />
-                    PDF
-                  </span>
-                )}
               </div>
             </div>
             
-            {/* Conteúdo da música */}
+            {/* Conteúdo da cifra */}
             <div className="p-4">
-              {selectedSong.kind === 'chords' ? (
-                <div className="bg-card rounded-lg p-4">
-                  <ChordRenderer text={selectedSong.content} />
-                </div>
-              ) : selectedSong.pdf_url ? (
-                <PDFViewer file={selectedSong.pdf_url} />
-              ) : (
-                <div className="bg-card rounded-lg p-8 text-center">
-                  <p className="text-muted-foreground">Nenhum arquivo PDF encontrado para esta música.</p>
-                </div>
-              )}
+              <div className="bg-card rounded-lg p-4">
+                <ChordRenderer text={selectedSong.content} />
+              </div>
             </div>
           </div>
         )}

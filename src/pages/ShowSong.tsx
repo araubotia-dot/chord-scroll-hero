@@ -5,8 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ChordRenderer } from '@/components/ChordRenderer';
 import { PickSetlistModal } from '@/components/PickSetlistModal';
 import AutoScrollControls from '@/components/AutoScrollControls';
-import PDFViewer from '@/components/PDFViewer';
-import { ArrowLeft, Copy, Plus, Minus, Edit, FileText } from 'lucide-react';
+import { ArrowLeft, Copy, Plus, Minus, Edit } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -147,84 +146,62 @@ export default function ShowSong() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-xl font-bold flex items-center gap-2">
-                {song.title}
-                {song.kind === 'pdf' && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 gap-1">
-                    <FileText className="h-3 w-3" />
-                    PDF
-                  </span>
-                )}
-              </h1>
+              <h1 className="text-xl font-bold">{song.title}</h1>
               {song.artist && (
                 <p className="text-sm text-muted-foreground">{song.artist}</p>
               )}
             </div>
           </div>
           
-          {/* Controls - só mostrar para cifras */}
-          {song.kind === 'chords' && (
-            <div className="flex items-center gap-2">
-              {/* Edit button for own songs */}
-              {isOwnSong && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.location.href = `/?edit=${songId}`}
-                  className="bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20"
-                >
-                  <Edit className="h-4 w-4 text-yellow-500" />
-                </Button>
-              )}
-              
-              {/* Transposition */}
+          {/* Controls */}
+          <div className="flex items-center gap-2">
+            {/* Edit button for own songs */}
+            {isOwnSong && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setSemitones(s => s - 1)}
+                onClick={() => window.location.href = `/?edit=${songId}`}
+                className="bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20"
               >
-                <Minus className="h-4 w-4" />
+                <Edit className="h-4 w-4 text-yellow-500" />
               </Button>
-              <span className="px-3 py-1 text-sm bg-muted rounded font-mono">
-                {semitones > 0 ? `+${semitones}` : semitones}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSemitones(s => s + 1)}
-              >
-                +
-              </Button>
-
-              {/* Font Size */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setFontSize(s => Math.max(12, s - 2))}
-              >
-                A-
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setFontSize(s => Math.min(24, s + 2))}
-              >
-                A+
-              </Button>
-            </div>
-          )}
-
-          {/* Edit button for PDF songs */}
-          {song.kind === 'pdf' && isOwnSong && (
+            )}
+            
+            {/* Transposition */}
             <Button
               variant="outline"
               size="sm"
-              onClick={() => window.location.href = `/?edit=${songId}`}
-              className="bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20"
+              onClick={() => setSemitones(s => s - 1)}
             >
-              <Edit className="h-4 w-4 text-yellow-500" />
+              <Minus className="h-4 w-4" />
             </Button>
-          )}
+            <span className="px-3 py-1 text-sm bg-muted rounded font-mono">
+              {semitones > 0 ? `+${semitones}` : semitones}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSemitones(s => s + 1)}
+            >
+              +
+            </Button>
+
+            {/* Font Size */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFontSize(s => Math.max(12, s - 2))}
+            >
+              A-
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFontSize(s => Math.min(24, s + 2))}
+            >
+              A+
+            </Button>
+          </div>
         </div>
 
         {/* Actions (apenas se não for própria música) */}
@@ -252,7 +229,7 @@ export default function ShowSong() {
         {/* Song Content */}
         <Card>
           <CardContent className="p-6">
-            {song.kind === 'chords' && song.content ? (
+            {song.content ? (
               <div style={{ fontSize: `${fontSize}px` }}>
                 <ChordRenderer 
                   text={song.content} 
@@ -260,16 +237,9 @@ export default function ShowSong() {
                   className="font-mono"
                 />
               </div>
-            ) : song.kind === 'pdf' && song.pdf_url ? (
-              <PDFViewer file={song.pdf_url} />
             ) : (
               <div className="text-center text-muted-foreground py-8">
-                <p>
-                  {song.kind === 'chords' 
-                    ? 'Esta música não possui conteúdo disponível.' 
-                    : 'Nenhum arquivo PDF encontrado para esta música.'
-                  }
-                </p>
+                <p>Esta música não possui conteúdo disponível.</p>
               </div>
             )}
           </CardContent>
