@@ -62,6 +62,17 @@ const MUSIC_GENRES = [
   "Clássica"
 ];
 
+// Todos os tons maiores e menores
+const ALL_KEYS = [
+  "C", "Cm", "C#", "C#m", "Db", "Dbm",
+  "D", "Dm", "D#", "D#m", "Eb", "Ebm",
+  "E", "Em",
+  "F", "Fm", "F#", "F#m", "Gb", "Gbm",
+  "G", "Gm", "G#", "G#m", "Ab", "Abm",
+  "A", "Am", "A#", "A#m", "Bb", "Bbm",
+  "B", "Bm"
+];
+
 export default function CifrasApp() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -875,11 +886,30 @@ export default function CifrasApp() {
                 <label className="text-sm text-muted-foreground">Tom original:</label>
                 <select 
                   value={selectedSong.key} 
-                  onChange={e => updateSongField('key', normalizeNote(e.target.value) as Note)}
+                  onChange={e => updateSongField('key', e.target.value)}
                   className="bg-input border border-border rounded-xl px-3 py-2 text-base"
                 >
-                  {NOTES_SHARP.map(n => <option key={n} value={n}>{n}</option>)}
+                  {ALL_KEYS.filter(key => {
+                    // Se preferFlats for true, mostrar tons com bemóis (b) e tons naturais
+                    // Se preferFlats for false, mostrar tons com sustenidos (#) e tons naturais
+                    if (preferFlats) {
+                      return !key.includes('#'); // Não mostrar sustenidos
+                    } else {
+                      return !key.includes('b'); // Não mostrar bemóis
+                    }
+                  }).map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
+                <button
+                  onClick={() => setPreferFlats(!preferFlats)}
+                  className={`px-3 py-2 rounded-xl text-sm transition-colors ${
+                    preferFlats 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  }`}
+                  title={preferFlats ? "Mostrar sustenidos (#)" : "Mostrar bemóis (♭)"}
+                >
+                  {preferFlats ? "♭" : "#"}
+                </button>
               </div>
               <textarea 
                 value={selectedSong.content} 
@@ -975,7 +1005,7 @@ export default function CifrasApp() {
             {/* Conteúdo da cifra */}
             <div className="p-4">
               <div className="bg-card rounded-lg p-4">
-                <ChordRenderer text={selectedSong.content} />
+                <ChordRenderer text={selectedSong.content} semitones={transpose} preferFlats={preferFlats} />
               </div>
             </div>
           </div>
