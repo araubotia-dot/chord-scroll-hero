@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, ChevronLeft, ChevronRight, Heart, Edit } from 'lucide-react';
 import { ChordRenderer } from '@/components/ChordRenderer';
 import AutoScrollControls from '@/components/AutoScrollControls';
+import EdgeNavArrows from '@/components/EdgeNavArrows';
 import { useAuth } from '@/hooks/useAuth';
 import { getSetlistWithSongs, getPublicProfile, duplicateSetlist } from '@/services/publicData';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,22 +58,6 @@ export default function ShowSetlist() {
     if (!setlistId) return;
     loadSetlist();
   }, [setlistId]);
-
-  // Atalhos de teclado
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowLeft') {
-        event.preventDefault();
-        goToPrevious();
-      } else if (event.key === 'ArrowRight') {
-        event.preventDefault();
-        goToNext();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentIndex, setlist]);
 
   useEffect(() => {
     // Atualizar last_viewed_at quando acessar o setlist
@@ -216,6 +201,12 @@ export default function ShowSetlist() {
   return (
     <div className="min-h-screen bg-background">
       <AutoScrollControls />
+      <EdgeNavArrows
+        canPrev={currentIndex > 0}
+        canNext={setlist ? currentIndex < setlist.songs.length - 1 : false}
+        onPrev={goToPrevious}
+        onNext={goToNext}
+      />
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
