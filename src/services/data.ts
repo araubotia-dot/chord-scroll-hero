@@ -1,13 +1,13 @@
 import { supabase } from '@/integrations/supabase/client';
 
 // SONGS
-export async function createSong({ title, artist, genre, key, content }: any) {
+export async function createSong({ title, artist, genre, key, content, kind = 'chords', pdf_url }: any) {
   const { data: { user }, error: authErr } = await supabase.auth.getUser();
   if (authErr || !user) throw new Error('Sem sessão. Faça login.');
   
   const { data, error } = await supabase
     .from('songs')
-    .insert([{ user_id: user.id, title, artist, genre, key, content }])
+    .insert([{ user_id: user.id, title, artist, genre, key, content, kind, pdf_url }])
     .select()
     .single();
   
@@ -18,7 +18,7 @@ export async function createSong({ title, artist, genre, key, content }: any) {
 export async function listSongs() {
   const { data, error } = await supabase
     .from('songs')
-    .select('id, title, artist, genre, key, content, created_at, updated_at, user_id')
+    .select('id, title, artist, genre, key, content, kind, pdf_url, created_at, updated_at, user_id')
     .order('created_at', { ascending: false });
   
   if (error) throw error;
@@ -33,7 +33,7 @@ export async function listMySongs() {
   
   const { data, error } = await supabase
     .from('songs')
-    .select('id, title, artist, genre, key, content, created_at, updated_at, user_id')
+    .select('id, title, artist, genre, key, content, kind, pdf_url, created_at, updated_at, user_id')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
   
@@ -145,7 +145,7 @@ export async function addSongToSetlist({ setlist_id, song_id, position }: any) {
 export async function listSetlistSongs(setlist_id: string) {
   const { data, error } = await supabase
     .from('setlist_songs')
-    .select('id, position, song:songs(id, title, artist, genre, key, content)')
+    .select('id, position, song:songs(id, title, artist, genre, key, content, kind, pdf_url)')
     .eq('setlist_id', setlist_id)
     .order('position', { ascending: true });
   
