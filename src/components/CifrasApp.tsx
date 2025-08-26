@@ -100,6 +100,7 @@ export default function CifrasApp() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSetlistModal, setShowSetlistModal] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [showAddToRepertoireSuccess, setShowAddToRepertoireSuccess] = useState(false);
   const [fontSize, setFontSize] = useState(16); // Font size in px
   const [showControls, setShowControls] = useState(false); // Show/hide bottom controls
   const [activeControl, setActiveControl] = useState<string | null>(null); // Active control panel
@@ -540,10 +541,9 @@ export default function CifrasApp() {
         }));
       }
       
-      toast({
-        title: "Música adicionada ao repertório!",
-        description: "A música foi adicionada com sucesso.",
-      });
+      // Show success popup instead of toast
+      setShowAddToRepertoireSuccess(true);
+      setTimeout(() => setShowAddToRepertoireSuccess(false), 2000);
     } catch (error) {
       console.error('addToSetlist error:', error);
       toast({
@@ -1184,6 +1184,22 @@ export default function CifrasApp() {
               >
                 Cancelar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pop-up de sucesso ao adicionar ao repertório */}
+      {showAddToRepertoireSuccess && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+          <div className="bg-green-100 border border-green-300 text-green-800 px-6 py-4 rounded-lg shadow-lg animate-in fade-in duration-300">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <span className="font-medium">Música adicionada ao repertório!</span>
             </div>
           </div>
         </div>
