@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { normalizeNote, NOTES_SHARP, Note } from '@/lib/music-utils';
 import { ChordRenderer } from './ChordRenderer';
+import { Button } from './ui/button';
 import AutoScrollControls from './AutoScrollControls';
 import EdgeNavArrows from './EdgeNavArrows';
 import { toast } from '@/hooks/use-toast';
@@ -1043,43 +1044,49 @@ export default function CifrasApp() {
                 {/* Controls */}
                 <div className="flex items-center gap-2">
                   {/* Edit button */}
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setView("editar")}
-                    className="flex items-center justify-center w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/30 hover:bg-yellow-500/20 transition-colors"
+                    className="bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20"
                   >
                     <Edit className="h-4 w-4 text-yellow-500" />
-                  </button>
+                  </Button>
                   
                   {/* Transposition */}
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setShowSemitones(s => s - 1)}
-                    className="flex items-center justify-center w-10 h-10 rounded-full bg-muted hover:bg-muted/80 transition-colors text-sm font-semibold"
                   >
                     ♭
-                  </button>
+                  </Button>
                   <span className="text-sm font-mono w-8 text-center">
                     {showSemitones === 0 ? '0' : showSemitones > 0 ? `+${showSemitones}` : showSemitones}
                   </span>
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setShowSemitones(s => s + 1)}
-                    className="flex items-center justify-center w-10 h-10 rounded-full bg-muted hover:bg-muted/80 transition-colors text-sm font-semibold"
                   >
                     ♯
-                  </button>
+                  </Button>
 
                   {/* Font Size */}
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setShowFontSize(s => Math.max(12, s - 2))}
-                    className="flex items-center justify-center w-10 h-10 rounded-full bg-muted hover:bg-muted/80 transition-colors text-sm"
                   >
                     A-
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setShowFontSize(s => Math.min(24, s + 2))}
-                    className="flex items-center justify-center w-10 h-10 rounded-full bg-muted hover:bg-muted/80 transition-colors text-sm"
                   >
                     A+
-                  </button>
+                  </Button>
                 </div>
               </div>
 
