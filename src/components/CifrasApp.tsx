@@ -1143,6 +1143,16 @@ export default function CifrasApp() {
                       key={setlist.id}
                       onClick={() => {
                         if (selectedSong) {
+                          // Check if song is temporary (not saved yet)
+                          if (selectedSong.id.startsWith('temp-')) {
+                            setShowSetlistModal(false);
+                            toast({
+                              title: "Salve a música primeiro",
+                              description: "Você precisa salvar a música antes de adicioná-la a um repertório.",
+                              variant: "destructive"
+                            });
+                            return;
+                          }
                           addToSetlist(selectedSong.id, setlist.id);
                           setShowSetlistModal(false);
                         }
