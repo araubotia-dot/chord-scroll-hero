@@ -7,7 +7,17 @@ import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, GripVertical, X, Save, Play } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { ArrowLeft, GripVertical, X, Save, Play, Trash2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -121,6 +131,8 @@ export default function EditSetlist() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -251,6 +263,46 @@ export default function EditSetlist() {
     }
   };
 
+  const handleDeleteSetlist = async () => {
+    try {
+      setDeleting(true);
+      
+      // Primeiro, deletar todas as músicas do setlist
+      const { error: songsError } = await supabase
+        .from('setlist_songs')
+        .delete()
+        .eq('setlist_id', setlistId);
+
+      if (songsError) throw songsError;
+
+      // Depois, deletar o setlist
+      const { error: setlistError } = await supabase
+        .from('setlists')
+        .delete()
+        .eq('id', setlistId)
+        .eq('user_id', user?.id);
+
+      if (setlistError) throw setlistError;
+
+      toast({
+        title: "Repertório excluído",
+        description: "O repertório foi excluído com sucesso.",
+      });
+
+      navigate('/repertorio');
+    } catch (error) {
+      console.error('Erro ao excluir repertório:', error);
+      toast({
+        title: "Erro ao excluir repertório",
+        description: error instanceof Error ? error.message : String(error),
+        variant: "destructive"
+      });
+    } finally {
+      setDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
   const filteredSongs = songs.filter(song => 
     !searchTerm || 
     song.song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -299,6 +351,14 @@ export default function EditSetlist() {
             <Button onClick={handleSaveOrder} disabled={saving}>
               <Save className="h-4 w-4 mr-2" />
               {saving ? 'Salvando...' : 'Salvar Ordem'}
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setShowDeleteDialog(true)}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -360,6 +420,29 @@ export default function EditSetlist() {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Repertório</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o repertório "{setlist.name}"? 
+              Esta ação não pode ser desfeita e todas as músicas do repertório serão removidas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteSetlist}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? 'Excluindo...' : 'Excluir Repertório'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
