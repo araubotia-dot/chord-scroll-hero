@@ -659,30 +659,37 @@ export default function CifrasApp() {
             </div>
             <div className="space-y-2">
               {(searchQuery ? filteredSongs : songs.slice(0, 10)).map(s => (
-                <div key={s.id} className="p-3 md:p-3 border border-border rounded-xl bg-card flex flex-col md:flex-row md:items-center justify-between gap-3">
-                  <div className="flex-1 cursor-pointer" onClick={() => { 
+                <div key={s.id} className="p-2 border border-border rounded-lg bg-card flex items-center justify-between gap-3">
+                  <div className="flex-1 cursor-pointer min-w-0" onClick={() => { 
                         setCurrentRepertoireId(null); // Clear repertoire mode for individual songs
                         setSelectedSongId(s.id); 
                         setView("show"); 
                       }}>
-                    <div className="font-semibold text-base hover:text-primary transition-colors">{s.title}</div>
-                    <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-2">
-                      {s.artist && <span>{s.artist}</span>}
-                      {s.artist && s.genre && <span className="hidden md:inline">•</span>}
-                      {s.genre && <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs">{s.genre}</span>}
+                    <div className="font-semibold text-sm hover:text-primary transition-colors truncate">{s.title}</div>
+                    <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
+                      {s.artist && <span className="truncate">{s.artist}</span>}
+                      {s.artist && s.genre && <span>•</span>}
+                      {s.genre && <span className="bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full text-xs">{s.genre}</span>}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <button 
                       onClick={() => { 
                         setCurrentRepertoireId(null); // Clear repertoire mode for individual songs
                         setSelectedSongId(s.id); 
                         setView("show"); 
                       }} 
-                      className="w-10 h-10 flex items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                       title="Tocar música"
                     >
-                      <Play className="h-5 w-5 fill-current" />
+                      <Play className="h-4 w-4 fill-current" />
+                    </button>
+                    <button 
+                      onClick={() => { setSelectedSongId(s.id); setView("editar"); }} 
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 transition-colors"
+                      title="Editar música"
+                    >
+                      <Edit className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>
