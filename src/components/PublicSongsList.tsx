@@ -46,72 +46,70 @@ export function PublicSongsList({
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="space-y-3">
       {songs.map((song) => (
         <Card key={song.id} className="hover:shadow-md transition-shadow">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">{song.title}</CardTitle>
-            {song.artist && (
-              <p className="text-sm text-muted-foreground">{song.artist}</p>
-            )}
-          </CardHeader>
-          
-          <CardContent className="space-y-3">
-            <div className="flex gap-2 flex-wrap">
-              {song.genre && (
-                <Badge variant="outline">{song.genre}</Badge>
-              )}
-              {song.key && (
-                <Badge variant="secondary">Tom: {song.key}</Badge>
-              )}
-            </div>
-            
-            <div className="flex gap-2 flex-col sm:flex-row">
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-                className="flex-1"
-              >
-                <Link to={`/show/song/${song.id}`}>
-                  <Eye className="h-4 w-4" />
-                  Ver cifra
-                </Link>
-              </Button>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-lg truncate">{song.title}</h3>
+                {song.artist && (
+                  <p className="text-sm text-muted-foreground truncate">{song.artist}</p>
+                )}
+                <div className="flex gap-2 flex-wrap mt-2">
+                  {song.genre && (
+                    <Badge variant="outline">{song.genre}</Badge>
+                  )}
+                  {song.key && (
+                    <Badge variant="secondary">Tom: {song.key}</Badge>
+                  )}
+                </div>
+              </div>
               
-              {!isOwnProfile && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDuplicate(song)}
-                    disabled={loadingDuplicate === song.id}
-                    className="flex-1"
-                  >
-                    {loadingDuplicate === song.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                    Duplicar
-                  </Button>
-                  
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleAddToSetlist(song.id)}
-                    disabled={loadingAddToSetlist === song.id}
-                    className="flex-1"
-                  >
-                    {loadingAddToSetlist === song.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Plus className="h-4 w-4" />
-                    )}
-                    Adicionar
-                  </Button>
-                </>
-              )}
+              <div className="flex gap-2 flex-shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  title="Ver cifra"
+                >
+                  <Link to={`/show/song/${song.id}`}>
+                    <Eye className="h-4 w-4" />
+                  </Link>
+                </Button>
+                
+                {!isOwnProfile && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDuplicate(song)}
+                      disabled={loadingDuplicate === song.id}
+                      title="Duplicar"
+                    >
+                      {loadingDuplicate === song.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                    
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleAddToSetlist(song.id)}
+                      disabled={loadingAddToSetlist === song.id}
+                      title="Adicionar"
+                    >
+                      {loadingAddToSetlist === song.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Plus className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>

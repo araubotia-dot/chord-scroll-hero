@@ -35,46 +35,46 @@ export function PublicSetlistsList({
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="space-y-3">
       {setlists.map((setlist) => (
         <Card key={setlist.id} className="hover:shadow-md transition-shadow">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">{setlist.name}</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Criado em {new Date(setlist.created_at).toLocaleDateString('pt-BR')}
-            </p>
-          </CardHeader>
-          
-          <CardContent>
-            <div className="flex gap-2 flex-col">
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-                className="w-full"
-              >
-                <Link to={`/show/setlist/${setlist.id}`}>
-                  <Eye className="h-4 w-4 mr-2" />
-                  Ver repertório
-                </Link>
-              </Button>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-lg truncate">{setlist.name}</h3>
+                <p className="text-sm text-muted-foreground">
+                  Criado em {new Date(setlist.created_at).toLocaleDateString('pt-BR')}
+                </p>
+              </div>
               
-              {!isOwnProfile && (
+              <div className="flex gap-2 flex-shrink-0">
                 <Button
-                  variant="secondary"
+                  variant="outline"
                   size="sm"
-                  onClick={() => handleDuplicate(setlist)}
-                  disabled={loadingDuplicate === setlist.id}
-                  className="w-full"
+                  asChild
+                  title="Ver repertório"
                 >
-                  {loadingDuplicate === setlist.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <Copy className="h-4 w-4 mr-2" />
-                  )}
-                  Salvar repertório na minha conta
+                  <Link to={`/show/setlist/${setlist.id}`}>
+                    <Eye className="h-4 w-4" />
+                  </Link>
                 </Button>
-              )}
+                
+                {!isOwnProfile && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleDuplicate(setlist)}
+                    disabled={loadingDuplicate === setlist.id}
+                    title="Duplicar"
+                  >
+                    {loadingDuplicate === setlist.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
