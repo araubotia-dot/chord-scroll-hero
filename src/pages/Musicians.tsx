@@ -137,7 +137,10 @@ export default function Musicians() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold">Músicos</h1>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold">Ranking dos músicos</h1>
+            <p className="text-sm text-muted-foreground mt-1">adicione cifras e repertórios para subir no ranking</p>
+          </div>
         </div>
       </header>
 
