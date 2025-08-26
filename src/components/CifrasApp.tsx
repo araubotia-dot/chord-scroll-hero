@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { normalizeNote, NOTES_SHARP, Note } from '@/lib/music-utils';
 import { ChordRenderer } from './ChordRenderer';
@@ -101,6 +101,7 @@ export default function CifrasApp() {
   const [showSetlistModal, setShowSetlistModal] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [showAddToRepertoireSuccess, setShowAddToRepertoireSuccess] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState(16); // Font size in px
   const [showControls, setShowControls] = useState(false); // Show/hide bottom controls
   const [activeControl, setActiveControl] = useState<string | null>(null); // Active control panel
@@ -134,6 +135,23 @@ export default function CifrasApp() {
 
   // Load initial data
   // Check URL parameters for editing
+  // Fechar menu ao clicar fora dele
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node) && activeControl === 'menu') {
+        setActiveControl(null);
+      }
+    };
+
+    if (activeControl === 'menu') {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [activeControl]);
+
   useEffect(() => {
     const editSongId = searchParams.get('edit');
     if (editSongId && songs.length > 0) {
@@ -656,7 +674,7 @@ export default function CifrasApp() {
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="relative">
+              <div className="relative" ref={menuRef}>
                 <button 
                   onClick={() => setActiveControl(activeControl === 'menu' ? null : 'menu')}
                   className="rounded-full w-10 h-10 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-white transition-colors"
