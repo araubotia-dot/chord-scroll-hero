@@ -5,7 +5,7 @@ import { ChordRenderer } from './ChordRenderer';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { UserAvatar } from './UserAvatar';
-import { Trash2, ChevronUp, Play, Pause, RotateCcw } from 'lucide-react';
+import { Trash2, ChevronUp, Play, Pause, RotateCcw, Edit } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import * as dataService from '@/services/data';
 
@@ -637,30 +637,36 @@ export default function CifrasApp() {
             <div className="space-y-2">
               {(searchQuery ? filteredSongs : songs.slice(0, 10)).map(s => (
                 <div key={s.id} className="p-3 md:p-3 border border-border rounded-xl bg-card flex flex-col md:flex-row md:items-center justify-between gap-3">
-                  <div className="flex-1">
-                    <div className="font-semibold text-base">{s.title}</div>
+                  <div className="flex-1 cursor-pointer" onClick={() => { 
+                        setCurrentRepertoireId(null); // Clear repertoire mode for individual songs
+                        setSelectedSongId(s.id); 
+                        setView("show"); 
+                      }}>
+                    <div className="font-semibold text-base hover:text-primary transition-colors">{s.title}</div>
                     <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-2">
                       {s.artist && <span>{s.artist}</span>}
                       {s.artist && s.genre && <span className="hidden md:inline">•</span>}
                       {s.genre && <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs">{s.genre}</span>}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 w-full md:w-auto">
+                  <div className="flex items-center gap-3 w-full md:w-auto justify-end">
                     <button 
                       onClick={() => { 
                         setCurrentRepertoireId(null); // Clear repertoire mode for individual songs
                         setSelectedSongId(s.id); 
                         setView("show"); 
                       }} 
-                      className="flex-1 md:flex-none px-4 py-2 md:px-3 md:py-1.5 rounded bg-primary text-primary-foreground hover:bg-primary-hover font-medium"
+                      className="w-10 h-10 flex items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                      title="Tocar música"
                     >
-                      TOCAR
+                      <Play className="h-5 w-5 fill-current" />
                     </button>
                     <button 
                       onClick={() => { setSelectedSongId(s.id); setView("editar"); }} 
-                      className="px-4 py-2 md:px-3 md:py-1.5 rounded bg-yellow-500 text-black hover:bg-yellow-600"
+                      className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 transition-colors"
+                      title="Editar música"
                     >
-                      ✏️
+                      <Edit className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
