@@ -18,7 +18,7 @@ interface Setlist {
 type SortOption = 'alpha' | 'created' | 'viewed';
 
 export default function Repertorio() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [setlists, setSetlists] = useState<Setlist[]>([]);
@@ -26,12 +26,23 @@ export default function Repertorio() {
   const [sortBy, setSortBy] = useState<SortOption>('created');
 
   useEffect(() => {
+    console.log('🔍 Repertorio - Auth state:', { user: !!user, authLoading, userId: user?.id });
+    
+    // Aguardar o carregamento da auth antes de decidir redirecionar
+    if (authLoading) {
+      console.log('⏳ Aguardando carregamento da autenticação...');
+      return;
+    }
+    
     if (!user) {
+      console.log('❌ Usuário não autenticado, redirecionando para /auth');
       navigate('/auth');
       return;
     }
+    
+    console.log('✅ Usuário autenticado, carregando setlists');
     loadSetlists();
-  }, [user, sortBy]);
+  }, [user, authLoading, sortBy]);
 
   const loadSetlists = async () => {
     try {
@@ -103,6 +114,15 @@ export default function Repertorio() {
       default: return '';
     }
   };
+
+  // Mostrar loading enquanto autentica
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Verificando autenticação...</div>
+      </div>
+    );
+  }
 
   if (!user) return null;
 
