@@ -7,7 +7,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, GripVertical, X, Save } from 'lucide-react';
+import { ArrowLeft, GripVertical, X, Save, Play } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -274,10 +274,20 @@ export default function EditSetlist() {
             </div>
           </div>
           
-          <Button onClick={handleSaveOrder} disabled={saving}>
-            <Save className="h-4 w-4 mr-2" />
-            {saving ? 'Salvando...' : 'Salvar Ordem'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => navigate(`/show/setlist/${setlistId}`)}
+              disabled={songs.length === 0}
+            >
+              <Play className="h-4 w-4 mr-2" />
+              Tocar
+            </Button>
+            <Button onClick={handleSaveOrder} disabled={saving}>
+              <Save className="h-4 w-4 mr-2" />
+              {saving ? 'Salvando...' : 'Salvar Ordem'}
+            </Button>
+          </div>
         </div>
 
         {/* Search */}
