@@ -567,55 +567,57 @@ export default function CifrasApp() {
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <nav className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
-              <button 
-                onClick={() => setView("home")} 
-                className={`px-5 py-2.5 text-sm md:text-base rounded-full transition-colors whitespace-nowrap ${
-                  view === 'home' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                }`}
-              >
-                Minhas Cifras
-              </button>
-              <button 
-                onClick={() => window.location.href = '/repertorio'} 
-                className={`px-5 py-2.5 text-sm md:text-base rounded-full transition-colors whitespace-nowrap bg-secondary text-secondary-foreground hover:bg-secondary/80`}
-              >
-                Repertório
-              </button>
-            </nav>
-            <div className="relative">
-              <button 
-                onClick={() => setActiveControl(activeControl === 'menu' ? null : 'menu')}
-                className="rounded-full w-10 h-10 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-white transition-colors"
-              >
-                <div className="flex flex-col gap-1">
-                  <div className="w-4 h-0.5 bg-current"></div>
-                  <div className="w-4 h-0.5 bg-current"></div>
-                  <div className="w-4 h-0.5 bg-current"></div>
-                </div>
-              </button>
-              {activeControl === 'menu' && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-background border border-border rounded-lg shadow-lg z-50">
-                  <button 
-                    onClick={() => {
-                      window.location.href = '/outras-cifras';
-                      setActiveControl(null);
-                    }}
-                    className="w-full px-4 py-3 text-left hover:bg-muted transition-colors"
-                  >
-                    Outras Cifras
-                  </button>
-                  <button 
-                    onClick={() => {
-                      window.location.href = '/outros-repertorios';
-                      setActiveControl(null);
-                    }}
-                    className="w-full px-4 py-3 text-left hover:bg-muted transition-colors border-t border-border"
-                  >
-                    Outros Repertórios
-                  </button>
-                </div>
-              )}
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <button 
+                  onClick={() => setActiveControl(activeControl === 'menu' ? null : 'menu')}
+                  className="rounded-full w-10 h-10 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-white transition-colors"
+                >
+                  <div className="flex flex-col gap-1">
+                    <div className="w-4 h-0.5 bg-current"></div>
+                    <div className="w-4 h-0.5 bg-current"></div>
+                    <div className="w-4 h-0.5 bg-current"></div>
+                  </div>
+                </button>
+                {activeControl === 'menu' && (
+                  <div className="absolute left-0 top-full mt-2 w-48 bg-background border border-border rounded-lg shadow-lg z-50">
+                    <button 
+                      onClick={() => {
+                        window.location.href = '/outras-cifras';
+                        setActiveControl(null);
+                      }}
+                      className="w-full px-4 py-3 text-left hover:bg-muted transition-colors"
+                    >
+                      Outras Cifras
+                    </button>
+                    <button 
+                      onClick={() => {
+                        window.location.href = '/outros-repertorios';
+                        setActiveControl(null);
+                      }}
+                      className="w-full px-4 py-3 text-left hover:bg-muted transition-colors border-t border-border"
+                    >
+                      Outros Repertórios
+                    </button>
+                  </div>
+                )}
+              </div>
+              <nav className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
+                <button 
+                  onClick={() => setView("home")} 
+                  className={`px-5 py-2.5 text-sm md:text-base rounded-full transition-colors whitespace-nowrap ${
+                    view === 'home' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  }`}
+                >
+                  Minhas Cifras
+                </button>
+                <button 
+                  onClick={() => window.location.href = '/repertorio'} 
+                  className={`px-5 py-2.5 text-sm md:text-base rounded-full transition-colors whitespace-nowrap bg-secondary text-secondary-foreground hover:bg-secondary/80`}
+                >
+                  Repertório
+                </button>
+              </nav>
             </div>
           </div>
         </div>

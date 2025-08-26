@@ -23,6 +23,7 @@ const OutrosRepertorios = () => {
   const [setlists, setSetlists] = useState<SetlistWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeControl, setActiveControl] = useState<string | null>(null);
 
   useEffect(() => {
     loadSetlists();
@@ -141,28 +142,66 @@ const OutrosRepertorios = () => {
           </div>
 
           {/* Navigation */}
-          <div className="flex gap-2 mb-4">
-            <button
-              onClick={() => navigate('/')}
-              className="px-5 py-2.5 text-sm md:text-base rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
-            >
-              Minhas Cifras
-            </button>
-            <button
-              onClick={() => navigate('/repertorio')}
-              className="px-5 py-2.5 text-sm md:text-base rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
-            >
-              Repertório
-            </button>
-            <button
-              onClick={() => navigate('/outras-cifras')}
-              className="px-5 py-2.5 text-sm md:text-base rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
-            >
-              Outras Cifras
-            </button>
-            <button className="px-5 py-2.5 text-sm md:text-base rounded-full bg-primary text-primary-foreground">
-              Outros Repertórios
-            </button>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <button 
+                  onClick={() => setActiveControl(activeControl === 'menu' ? null : 'menu')}
+                  className="rounded-full w-10 h-10 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-white transition-colors"
+                >
+                  <div className="flex flex-col gap-1">
+                    <div className="w-4 h-0.5 bg-current"></div>
+                    <div className="w-4 h-0.5 bg-current"></div>
+                    <div className="w-4 h-0.5 bg-current"></div>
+                  </div>
+                </button>
+                {activeControl === 'menu' && (
+                  <div className="absolute left-0 top-full mt-2 w-48 bg-background border border-border rounded-lg shadow-lg z-50">
+                    <button 
+                      onClick={() => {
+                        navigate('/outras-cifras');
+                        setActiveControl(null);
+                      }}
+                      className="w-full px-4 py-3 text-left hover:bg-muted transition-colors"
+                    >
+                      Outras Cifras
+                    </button>
+                    <button 
+                      onClick={() => {
+                        navigate('/outros-repertorios');
+                        setActiveControl(null);
+                      }}
+                      className="w-full px-4 py-3 text-left hover:bg-muted transition-colors border-t border-border"
+                    >
+                      Outros Repertórios
+                    </button>
+                  </div>
+                )}
+              </div>
+              <nav className="flex gap-2">
+                <button
+                  onClick={() => navigate('/')}
+                  className="px-5 py-2.5 text-sm md:text-base rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+                >
+                  Minhas Cifras
+                </button>
+                <button
+                  onClick={() => navigate('/repertorio')}
+                  className="px-5 py-2.5 text-sm md:text-base rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+                >
+                  Repertório
+                </button>
+                <button
+                  onClick={() => navigate('/outras-cifras')}
+                  className="px-5 py-2.5 text-sm md:text-base rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+                >
+                  Outras Cifras
+                </button>
+                <button className="px-5 py-2.5 text-sm md:text-base rounded-full bg-primary text-primary-foreground">
+                  Outros Repertórios
+                </button>
+              </nav>
+            </div>
           </div>
 
           {/* Search Bar */}
