@@ -187,9 +187,9 @@ export default function ShowSetlist() {
               : 'Este repertório ainda não possui músicas.'
             }
           </p>
-          <Link to="/musicians">
-            <Button>Voltar ao Ranking</Button>
-          </Link>
+          <Button onClick={() => navigate(-1)}>
+            Voltar
+          </Button>
         </div>
       </div>
     );
@@ -211,11 +211,9 @@ export default function ShowSetlist() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Link to="/musicians">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
             <div>
               <h1 className="text-xl font-bold">{setlist.name}</h1>
               {owner && (
