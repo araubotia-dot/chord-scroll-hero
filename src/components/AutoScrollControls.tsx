@@ -59,7 +59,7 @@ export default function AutoScrollControls() {
   };
 
   return (
-    <div className="fixed top-4 right-4 bg-background/90 backdrop-blur-sm border rounded-lg p-3 shadow-lg z-50">
+    <div className="fixed bottom-4 right-4 bg-background/90 backdrop-blur-sm border rounded-lg p-3 shadow-lg z-50">
       <div className="flex items-center gap-3">
         <Button
           variant="outline"
