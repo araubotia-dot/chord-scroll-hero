@@ -30,10 +30,11 @@ interface SortableItemProps {
   song: SetlistSong;
   searchTerm: string;
   setlistId: string;
+  navigate: (path: string) => void;
   onRemove: (id: string) => void;
 }
 
-function SortableItem({ song, searchTerm, setlistId, onRemove }: SortableItemProps) {
+function SortableItem({ song, searchTerm, setlistId, navigate, onRemove }: SortableItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: song.id });
 
   const style = {
@@ -87,7 +88,7 @@ function SortableItem({ song, searchTerm, setlistId, onRemove }: SortableItemPro
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => window.location.href = `/show/setlist/${setlistId}?pos=${song.position}`}
+                  onClick={() => navigate(`/show/setlist/${setlistId}?pos=${song.position}`)}
                   className="text-muted-foreground hover:text-foreground"
                 >
                   <Play className="h-3 w-3 mr-1" />
@@ -341,6 +342,7 @@ export default function EditSetlist() {
                     song={song}
                     searchTerm={searchTerm}
                     setlistId={setlistId!}
+                    navigate={navigate}
                     onRemove={handleRemoveSong}
                   />
                 ))}
