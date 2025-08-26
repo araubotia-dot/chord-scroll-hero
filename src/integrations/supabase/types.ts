@@ -25,7 +25,6 @@ export type Database = {
           instagram: string | null
           instruments: string[] | null
           name: string
-          nickname: string | null
           past_bands: string[] | null
           tiktok: string | null
           updated_at: string
@@ -40,7 +39,6 @@ export type Database = {
           instagram?: string | null
           instruments?: string[] | null
           name: string
-          nickname?: string | null
           past_bands?: string[] | null
           tiktok?: string | null
           updated_at?: string
@@ -55,7 +53,6 @@ export type Database = {
           instagram?: string | null
           instruments?: string[] | null
           name?: string
-          nickname?: string | null
           past_bands?: string[] | null
           tiktok?: string | null
           updated_at?: string
@@ -181,40 +178,34 @@ export type Database = {
       public_profiles: {
         Row: {
           avatar_url: string | null
-          created_at: string | null
           current_band: string | null
           description: string | null
           id: string | null
           instagram: string | null
           instruments: string[] | null
           name: string | null
-          nickname: string | null
           past_bands: string[] | null
           tiktok: string | null
         }
         Insert: {
           avatar_url?: string | null
-          created_at?: string | null
           current_band?: string | null
           description?: string | null
           id?: string | null
           instagram?: string | null
           instruments?: string[] | null
           name?: string | null
-          nickname?: string | null
           past_bands?: string[] | null
           tiktok?: string | null
         }
         Update: {
           avatar_url?: string | null
-          created_at?: string | null
           current_band?: string | null
           description?: string | null
           id?: string | null
           instagram?: string | null
           instruments?: string[] | null
           name?: string | null
-          nickname?: string | null
           past_bands?: string[] | null
           tiktok?: string | null
         }

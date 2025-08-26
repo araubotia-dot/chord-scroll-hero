@@ -5,7 +5,7 @@ import { ChordRenderer } from './ChordRenderer';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { UserAvatar } from './UserAvatar';
-import { Trash2, ChevronUp, Play, Pause, RotateCcw, Edit, Search } from 'lucide-react';
+import { Trash2, ChevronUp, Play, Pause, RotateCcw, Edit } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import * as dataService from '@/services/data';
 
@@ -570,23 +570,35 @@ export default function CifrasApp() {
             <nav className="flex items-center gap-1 md:gap-2 text-xs md:text-sm overflow-x-auto">
               <button 
                 onClick={() => setView("home")} 
-                className={`px-5 py-2.5 text-sm md:text-base rounded-full transition-colors whitespace-nowrap ${
-                  view === 'home' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                className={`px-2 md:px-3 py-1.5 rounded-2xl transition-colors whitespace-nowrap ${
+                  view === 'home' ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted-hover'
                 }`}
               >
-                Minhas Cifras
+                Início
               </button>
               <button 
                 onClick={() => window.location.href = '/repertorio'} 
-                className={`px-5 py-2.5 text-sm md:text-base rounded-full transition-colors whitespace-nowrap bg-secondary text-secondary-foreground hover:bg-secondary/80`}
+                className={`px-2 md:px-3 py-1.5 rounded-2xl transition-colors whitespace-nowrap bg-muted hover:bg-muted-hover`}
               >
                 Repertório
               </button>
               <button 
-                onClick={() => window.location.href = '/outras-cifras'} 
-                className={`px-5 py-2.5 text-sm md:text-base rounded-full transition-colors whitespace-nowrap bg-secondary text-secondary-foreground hover:bg-secondary/80`}
+                onClick={() => selectedSong && setView("editar")} 
+                disabled={!selectedSong} 
+                className={`px-2 md:px-3 py-1.5 rounded-2xl transition-colors disabled:opacity-50 whitespace-nowrap ${
+                  view === 'editar' ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted-hover'
+                }`}
               >
-                Outras Cifras
+                Editar
+              </button>
+              <button 
+                onClick={() => selectedSong && setView("show")} 
+                disabled={!selectedSong} 
+                className={`px-2 md:px-3 py-1.5 rounded-2xl transition-colors disabled:opacity-50 whitespace-nowrap ${
+                  view === 'show' ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted-hover'
+                }`}
+              >
+                Show
               </button>
             </nav>
           </div>
@@ -605,18 +617,13 @@ export default function CifrasApp() {
                 >
                   + Adicionar Música
                 </button>
-                <div className="relative w-full max-w-xl">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-700">
-                    <Search className="h-5 w-5" />
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Pesquisar por artista, música ou ritmo..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full h-12 pl-11 pr-4 rounded-xl bg-white text-black placeholder:text-zinc-500 shadow border border-input"
-                  />
-                </div>
+                <input
+                  type="text"
+                  placeholder="Pesquisar por artista, música ou ritmo..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full md:w-80 bg-input border border-border rounded-xl px-3 py-3 md:py-2 text-sm"
+                />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
