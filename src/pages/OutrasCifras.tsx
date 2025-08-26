@@ -215,30 +215,30 @@ const OutrasCifras = () => {
 
         <div className="space-y-2">
           {filteredSongs.map(song => (
-            <div key={song.id} className="p-3 md:p-3 border border-border rounded-xl bg-card flex flex-col md:flex-row md:items-center justify-between gap-3">
-              <div className="flex-1 cursor-pointer" onClick={() => handlePlaySong(song.id)}>
-                <div className="font-semibold text-base hover:text-primary transition-colors">{song.title}</div>
-                <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-2">
-                  {song.artist && <span>{song.artist}</span>}
-                  {song.artist && song.genre && <span className="hidden md:inline">•</span>}
-                  {song.genre && <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs">{song.genre}</span>}
+            <div key={song.id} className="p-2 border border-border rounded-lg bg-card flex items-center justify-between gap-3">
+              <div className="flex-1 cursor-pointer min-w-0" onClick={() => handlePlaySong(song.id)}>
+                <div className="font-semibold text-sm hover:text-primary transition-colors truncate">{song.title}</div>
+                <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
+                  {song.artist && <span className="truncate">{song.artist}</span>}
+                  {song.artist && song.genre && <span>•</span>}
+                  {song.genre && <span className="bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full text-xs">{song.genre}</span>}
                   {song.profiles?.name && (
                     <>
-                      <span className="hidden md:inline">•</span>
-                      <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs">
+                      <span>•</span>
+                      <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-full text-xs">
                         @{song.profiles.name}
                       </span>
                     </>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <button 
                   onClick={() => handlePlaySong(song.id)} 
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                   title="Tocar música"
                 >
-                  <Play className="h-5 w-5 fill-current" />
+                  <Play className="h-4 w-4 fill-current" />
                 </button>
               </div>
             </div>
