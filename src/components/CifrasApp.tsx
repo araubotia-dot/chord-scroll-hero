@@ -561,10 +561,8 @@ export default function CifrasApp() {
                 Início
               </button>
               <button 
-                onClick={() => setView("biblioteca")} 
-                className={`px-2 md:px-3 py-1.5 rounded-2xl transition-colors whitespace-nowrap ${
-                  view === 'biblioteca' ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted-hover'
-                }`}
+                onClick={() => window.location.href = '/repertorio'} 
+                className={`px-2 md:px-3 py-1.5 rounded-2xl transition-colors whitespace-nowrap bg-muted hover:bg-muted-hover`}
               >
                 Repertório
               </button>

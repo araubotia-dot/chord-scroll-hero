@@ -11,6 +11,8 @@ import Musicians from "./pages/Musicians";
 import PublicProfile from "./pages/PublicProfile";
 import ShowSong from "./pages/ShowSong";
 import ShowSetlist from "./pages/ShowSetlist";
+import Repertorio from "./pages/Repertorio";
+import EditSetlist from "./pages/EditSetlist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,8 @@ const App = () => (
             <Route path="/musico/:id" element={<PublicProfile />} />
             <Route path="/show/song/:songId" element={<ShowSong />} />
             <Route path="/show/setlist/:setlistId" element={<ShowSetlist />} />
+            <Route path="/repertorio" element={<Repertorio />} />
+            <Route path="/repertorio/:setlistId/editar" element={<EditSetlist />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

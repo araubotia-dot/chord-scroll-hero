@@ -103,6 +103,7 @@ export type Database = {
           created_at: string
           id: string
           is_imported: boolean | null
+          last_viewed_at: string | null
           name: string
           origin_user_id: string | null
           updated_at: string
@@ -112,6 +113,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_imported?: boolean | null
+          last_viewed_at?: string | null
           name: string
           origin_user_id?: string | null
           updated_at?: string
@@ -121,6 +123,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_imported?: boolean | null
+          last_viewed_at?: string | null
           name?: string
           origin_user_id?: string | null
           updated_at?: string
