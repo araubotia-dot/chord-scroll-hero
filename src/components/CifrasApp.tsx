@@ -313,6 +313,43 @@ export default function CifrasApp() {
 
   async function saveSong(song: Song) {
     try {
+      // Validar campos obrigatórios
+      if (!song.title || song.title.trim() === "") {
+        toast({
+          title: "Campo obrigatório",
+          description: "O título da música é obrigatório.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (!song.artist || song.artist.trim() === "") {
+        toast({
+          title: "Campo obrigatório", 
+          description: "O artista da música é obrigatório.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (!song.genre || song.genre.trim() === "") {
+        toast({
+          title: "Campo obrigatório",
+          description: "O ritmo/gênero da música é obrigatório.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (!song.content || song.content.trim() === "") {
+        toast({
+          title: "Campo obrigatório",
+          description: "O conteúdo/letra da música é obrigatório.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       let savedSong: Song;
       
       // Verificar se é uma música nova (ID temporário) ou uma música existente
