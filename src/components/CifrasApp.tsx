@@ -629,7 +629,18 @@ export default function CifrasApp() {
       <header className="sticky top-0 z-30 backdrop-blur bg-background/70 border-b border-border">
         <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-2 md:mb-0">
-            <div className="text-lg font-bold tracking-tight">CifraSet</div>
+            <button 
+              onClick={() => {
+                setView("home");
+                setSelectedSongId(null);
+                setCurrentSetlistId(null);
+                setViewingSetlistId(null);
+                setCurrentRepertoireId(null);
+              }}
+              className="text-lg font-bold tracking-tight hover:text-primary transition-colors cursor-pointer"
+            >
+              CifraSet
+            </button>
             <div className="flex items-center gap-2">
               <div className="hidden md:block text-xs text-muted-foreground">Olá, {userProfile.name}</div>
               <UserAvatar />

@@ -132,7 +132,12 @@ const OutrosRepertorios = () => {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold">CifraSet</h1>
+              <button
+                onClick={() => navigate('/')}
+                className="text-2xl font-bold hover:text-primary transition-colors cursor-pointer"
+              >
+                CifraSet
+              </button>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">
