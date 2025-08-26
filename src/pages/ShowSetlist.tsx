@@ -227,7 +227,7 @@ export default function ShowSetlist() {
               : 'Este repertório ainda não possui músicas.'
             }
           </p>
-          <Button onClick={() => navigate(-1)}>
+          <Button onClick={() => navigate('/')}>
             Voltar
           </Button>
         </div>
@@ -252,7 +252,13 @@ export default function ShowSetlist() {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <Button variant="ghost" size="icon" onClick={() => {
+                if (owner) {
+                  navigate(`/musico/${owner.id}`);
+                } else {
+                  navigate('/');
+                }
+              }}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div>
