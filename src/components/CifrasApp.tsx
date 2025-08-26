@@ -280,16 +280,21 @@ export default function CifrasApp() {
 
   async function newSong() {
     try {
-      const songData = await dataService.createSong({
+      // Criar música temporária apenas no estado local - não salvar no banco ainda
+      const tempSong: Song = {
+        id: `temp-${Date.now()}`, // ID temporário
         title: "Nova Música",
         artist: "",
         genre: "",
         key: "C",
-        content: ""
-      });
+        content: "",
+        user_id: user?.id || "",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
       
-      setSongs(prev => [songData, ...prev]);
-      setSelectedSongId(songData.id);
+      setSongs(prev => [tempSong, ...prev]);
+      setSelectedSongId(tempSong.id);
       setView("editar");
       
       toast({
@@ -308,16 +313,32 @@ export default function CifrasApp() {
 
   async function saveSong(song: Song) {
     try {
-      const updatedSong = await dataService.updateSong(song.id, {
-        title: song.title,
-        artist: song.artist,
-        genre: song.genre,
-        key: song.key,
-        content: song.content
-      });
+      let savedSong: Song;
       
-      setSongs(prev => prev.map(s => s.id === song.id ? updatedSong : s));
-      setOriginalSong({ ...updatedSong });
+      // Verificar se é uma música nova (ID temporário) ou uma música existente
+      if (song.id.startsWith('temp-')) {
+        // Música nova - criar no banco de dados
+        savedSong = await dataService.createSong({
+          title: song.title,
+          artist: song.artist,
+          genre: song.genre,
+          key: song.key,
+          content: song.content
+        });
+      } else {
+        // Música existente - atualizar no banco de dados
+        savedSong = await dataService.updateSong(song.id, {
+          title: song.title,
+          artist: song.artist,
+          genre: song.genre,
+          key: song.key,
+          content: song.content
+        });
+      }
+      
+      setSongs(prev => prev.map(s => s.id === song.id ? savedSong : s));
+      setOriginalSong({ ...savedSong });
+      setSelectedSongId(savedSong.id); // Atualizar para o ID real do banco
       
       toast({
         title: "Salvo com sucesso!",
