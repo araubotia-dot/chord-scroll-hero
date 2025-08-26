@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import EditSetlist from "./pages/EditSetlist";
 import OutrasCifras from "./pages/OutrasCifras";
 import OutrosRepertorios from "./pages/OutrosRepertorios";
+import Favorites from "./pages/Favorites";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/repertorio/:setlistId/editar" element={<EditSetlist />} />
             <Route path="/outras-cifras" element={<OutrasCifras />} />
             <Route path="/outros-repertorios" element={<OutrosRepertorios />} />
+            <Route path="/favoritos" element={<Favorites />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

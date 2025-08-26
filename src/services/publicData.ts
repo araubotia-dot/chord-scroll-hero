@@ -180,27 +180,33 @@ export async function listFavoriteSongs() {
   const { data: { user }, error: authErr } = await supabase.auth.getUser();
   if (authErr || !user) throw new Error('Sem sessão. Faça login.');
   
-  const { data, error } = await supabase
+  // Get favorite song IDs
+  const { data: favorites, error: favError } = await supabase
     .from('favorites_songs')
-    .select(`
-      id,
-      created_at,
-      song_id,
-      songs!inner (
-        id,
-        title,
-        artist,
-        genre,
-        key,
-        content,
-        user_id
-      )
-    `)
+    .select('id, created_at, song_id')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
   
-  if (error) throw error;
-  return data ?? [];
+  if (favError) throw favError;
+  
+  if (!favorites || favorites.length === 0) {
+    return [];
+  }
+  
+  // Get songs data
+  const songIds = favorites.map(fav => fav.song_id);
+  const { data: songs, error: songsError } = await supabase
+    .from('songs')
+    .select('id, title, artist, genre, key, content, user_id')
+    .in('id', songIds);
+  
+  if (songsError) throw songsError;
+  
+  // Combine data
+  return favorites.map(fav => ({
+    ...fav,
+    songs: songs?.find(song => song.id === fav.song_id)
+  })).filter(fav => fav.songs); // Remove favorites where song was not found
 }
 
 // LIST FAVORITE SETLISTS
@@ -208,22 +214,31 @@ export async function listFavoriteSetlists() {
   const { data: { user }, error: authErr } = await supabase.auth.getUser();
   if (authErr || !user) throw new Error('Sem sessão. Faça login.');
   
-  const { data, error } = await supabase
+  // Get favorite setlist IDs
+  const { data: favorites, error: favError } = await supabase
     .from('favorites_setlists')
-    .select(`
-      id,
-      created_at,
-      setlist_id,
-      setlists!inner (
-        id,
-        name,
-        user_id,
-        created_at
-      )
-    `)
+    .select('id, created_at, setlist_id')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
   
-  if (error) throw error;
-  return data ?? [];
+  if (favError) throw favError;
+  
+  if (!favorites || favorites.length === 0) {
+    return [];
+  }
+  
+  // Get setlists data
+  const setlistIds = favorites.map(fav => fav.setlist_id);
+  const { data: setlists, error: setlistsError } = await supabase
+    .from('setlists')
+    .select('id, name, user_id, created_at')
+    .in('id', setlistIds);
+  
+  if (setlistsError) throw setlistsError;
+  
+  // Combine data
+  return favorites.map(fav => ({
+    ...fav,
+    setlists: setlists?.find(setlist => setlist.id === fav.setlist_id)
+  })).filter(fav => fav.setlists); // Remove favorites where setlist was not found
 }

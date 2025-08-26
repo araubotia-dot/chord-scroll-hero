@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import { normalizeNote, NOTES_SHARP, Note } from '@/lib/music-utils';
 import { ChordRenderer } from './ChordRenderer';
 import { Button } from './ui/button';
@@ -685,28 +685,31 @@ export default function CifrasApp() {
                     <div className="w-4 h-0.5 bg-current"></div>
                   </div>
                 </button>
-                {activeControl === 'menu' && (
-                  <div className="absolute left-0 top-full mt-2 w-48 bg-background border border-border rounded-lg shadow-lg z-50">
-                    <button 
-                      onClick={() => {
-                        window.location.href = '/outras-cifras';
-                        setActiveControl(null);
-                      }}
-                      className="w-full px-4 py-3 text-left hover:bg-muted transition-colors"
-                    >
-                      Outras Cifras
-                    </button>
-                    <button 
-                      onClick={() => {
-                        window.location.href = '/outros-repertorios';
-                        setActiveControl(null);
-                      }}
-                      className="w-full px-4 py-3 text-left hover:bg-muted transition-colors border-t border-border"
-                    >
-                      Outros Repertórios
-                    </button>
-                  </div>
-                )}
+                 {activeControl === 'menu' && (
+                   <div className="absolute left-0 top-full mt-2 w-48 bg-background border border-border rounded-lg shadow-lg z-50">
+                     <Link 
+                       to="/outras-cifras"
+                       onClick={() => setActiveControl(null)}
+                       className="block w-full px-4 py-3 text-left hover:bg-muted transition-colors"
+                     >
+                       Outras Cifras
+                     </Link>
+                     <Link 
+                       to="/outros-repertorios"
+                       onClick={() => setActiveControl(null)}
+                       className="block w-full px-4 py-3 text-left hover:bg-muted transition-colors border-t border-border"
+                     >
+                       Outros Repertórios
+                     </Link>
+                     <Link 
+                       to="/favoritos"
+                       onClick={() => setActiveControl(null)}
+                       className="block w-full px-4 py-3 text-left hover:bg-muted transition-colors border-t border-border"
+                     >
+                       ❤️ Meus Favoritos
+                     </Link>
+                   </div>
+                 )}
               </div>
               <nav className={`flex items-center gap-1 md:gap-2 text-xs md:text-sm ${isShowRoute ? 'hidden md:flex' : ''}`}>
                 <button 
@@ -717,12 +720,12 @@ export default function CifrasApp() {
                 >
                   Minhas Cifras
                 </button>
-                <button 
-                  onClick={() => window.location.href = '/repertorio'} 
-                  className={`px-5 py-2.5 text-sm md:text-base rounded-full transition-colors whitespace-nowrap bg-secondary text-secondary-foreground hover:bg-secondary/80`}
-                >
-                  Repertório
-                </button>
+                 <Link 
+                   to="/repertorio" 
+                   className={`px-5 py-2.5 text-sm md:text-base rounded-full transition-colors whitespace-nowrap bg-secondary text-secondary-foreground hover:bg-secondary/80`}
+                 >
+                   Repertório
+                 </Link>
               </nav>
             </div>
           </div>
