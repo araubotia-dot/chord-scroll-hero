@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { normalizeNote, NOTES_SHARP, Note } from '@/lib/music-utils';
 import { ChordRenderer } from './ChordRenderer';
 import AutoScrollControls from './AutoScrollControls';
@@ -77,7 +77,12 @@ const ALL_KEYS = [
 
 export default function CifrasApp() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Check if we're in a show route to hide navigation pills on mobile
+  const isShowRoute = location.pathname.startsWith('/show');
   const [songs, setSongs] = useState<Song[]>([]);
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [setlistSongs, setSetlistSongs] = useState<{[key: string]: SetlistSong[]}>({});
@@ -686,7 +691,7 @@ export default function CifrasApp() {
                   </div>
                 )}
               </div>
-              <nav className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
+              <nav className={`flex items-center gap-1 md:gap-2 text-xs md:text-sm ${isShowRoute ? 'hidden md:flex' : ''}`}>
                 <button 
                   onClick={() => setView("home")} 
                   className={`px-5 py-2.5 text-sm md:text-base rounded-full transition-colors whitespace-nowrap ${
@@ -1006,7 +1011,7 @@ export default function CifrasApp() {
         )}
 
         {view === "show" && selectedSong && (
-          <div className="min-h-screen bg-background">
+          <div className="min-h-screen bg-background show-root">
             <AutoScrollControls />
             {currentRepertoireId && (
               <EdgeNavArrows
@@ -1017,7 +1022,7 @@ export default function CifrasApp() {
               />
             )}
             
-            <div className="w-full px-8 py-6 max-w-none">
+            <div className="px-2 md:px-6 py-6">
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
@@ -1071,28 +1076,30 @@ export default function CifrasApp() {
               </div>
 
               {/* Song Content */}
-              <div className="bg-card rounded-lg p-8 w-full">
-                {selectedSong.content ? (
-                  <div 
-                    style={{ 
-                      fontSize: `${showFontSize}px`,
-                      lineHeight: '1.6'
-                    }}
-                    className="w-full"
-                  >
-                    <ChordRenderer
-                      text={selectedSong.content}
-                      semitones={showSemitones}
-                      preferFlats={preferFlats}
-                      className="font-mono w-full"
-                    />
-                  </div>
-                ) : (
-                  <div className="text-center text-muted-foreground py-8">
-                    <p>Esta música não possui conteúdo disponível.</p>
-                  </div>
-                )}
-              </div>
+              <article className="show-content w-full max-w-none mx-0 rounded-lg shadow-none bg-transparent md:max-w-3xl md:mx-auto md:rounded-2xl md:shadow md:bg-card">
+                <div className="p-4 md:p-8">
+                  {selectedSong.content ? (
+                    <div 
+                      style={{ 
+                        fontSize: `${showFontSize}px`,
+                        lineHeight: '1.6'
+                      }}
+                      className="w-full"
+                    >
+                      <ChordRenderer
+                        text={selectedSong.content}
+                        semitones={showSemitones}
+                        preferFlats={preferFlats}
+                        className="font-mono w-full"
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center text-muted-foreground py-8">
+                      <p>Esta música não possui conteúdo disponível.</p>
+                    </div>
+                  )}
+                </div>
+              </article>
             </div>
           </div>
         )}

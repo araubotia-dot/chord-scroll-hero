@@ -207,161 +207,163 @@ export default function ShowSetlist() {
         onPrev={goToPrevious}
         onNext={goToNext}
       />
-      <div className="w-full px-8 py-6 max-w-none">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-xl font-bold">{setlist.name}</h1>
-              {owner && (
-                <Link 
-                  to={`/musico/${owner.id}`}
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  por {owner.name}
-                </Link>
+      <main className="show-root px-2 md:px-6">
+        <div className="py-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-xl font-bold">{setlist.name}</h1>
+                {owner && (
+                  <Link 
+                    to={`/musico/${owner.id}`}
+                    className="text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    por {owner.name}
+                  </Link>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {/* Navigation */}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={goToPrevious}
+                disabled={currentIndex === 0}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm text-muted-foreground px-2">
+                {currentIndex + 1} de {setlist.songs.length}
+              </span>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={goToNext}
+                disabled={currentIndex === setlist.songs.length - 1}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+
+              {!isOwner && user && (
+                <Button onClick={handleDuplicate}>
+                  <Heart className="h-4 w-4 mr-2" />
+                  Salvar
+                </Button>
               )}
             </div>
           </div>
-          
-          <div className="flex items-center gap-2">
-            {/* Navigation */}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={goToPrevious}
-              disabled={currentIndex === 0}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm text-muted-foreground px-2">
-              {currentIndex + 1} de {setlist.songs.length}
-            </span>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={goToNext}
-              disabled={currentIndex === setlist.songs.length - 1}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
 
-            {!isOwner && user && (
-              <Button onClick={handleDuplicate}>
-                <Heart className="h-4 w-4 mr-2" />
-                Salvar
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Current Song */}
-        {currentSong && (
-          <>
-            {/* Song Header */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold">{currentSong.songs.title}</h2>
-                  <div className="text-muted-foreground">
-                    {currentSong.songs.artist && <span>{currentSong.songs.artist}</span>}
-                    {currentSong.songs.genre && (
-                      <>
-                        {currentSong.songs.artist && <span> • </span>}
-                        <span>{currentSong.songs.genre}</span>
-                      </>
-                    )}
-                    {currentSong.songs.key && (
-                      <>
-                        {(currentSong.songs.artist || currentSong.songs.genre) && <span> • </span>}
-                        <span className="font-mono">{currentSong.songs.key}</span>
-                      </>
-                    )}
+          {/* Current Song */}
+          {currentSong && (
+            <>
+              {/* Song Header */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">{currentSong.songs.title}</h2>
+                    <div className="text-muted-foreground">
+                      {currentSong.songs.artist && <span>{currentSong.songs.artist}</span>}
+                      {currentSong.songs.genre && (
+                        <>
+                          {currentSong.songs.artist && <span> • </span>}
+                          <span>{currentSong.songs.genre}</span>
+                        </>
+                      )}
+                      {currentSong.songs.key && (
+                        <>
+                          {(currentSong.songs.artist || currentSong.songs.genre) && <span> • </span>}
+                          <span className="font-mono">{currentSong.songs.key}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Controls */}
-                <div className="flex items-center gap-2">
-                  {/* Edit button for own songs */}
-                  {user?.id === currentSong.songs.user_id && (
+                  {/* Controls */}
+                  <div className="flex items-center gap-2">
+                    {/* Edit button for own songs */}
+                    {user?.id === currentSong.songs.user_id && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.location.href = `/?edit=${currentSong.songs.id}`}
+                        className="bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20"
+                      >
+                        <Edit className="h-4 w-4 text-yellow-500" />
+                      </Button>
+                    )}
+                    
+                    {/* Transposition */}
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.location.href = `/?edit=${currentSong.songs.id}`}
-                      className="bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20"
+                      onClick={() => setSemitones(s => s - 1)}
                     >
-                      <Edit className="h-4 w-4 text-yellow-500" />
+                      ♭
                     </Button>
-                  )}
-                  
-                  {/* Transposition */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSemitones(s => s - 1)}
-                  >
-                    ♭
-                  </Button>
-                  <span className="text-sm font-mono w-8 text-center">
-                    {semitones === 0 ? '0' : semitones > 0 ? `+${semitones}` : semitones}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSemitones(s => s + 1)}
-                  >
-                    ♯
-                  </Button>
+                    <span className="text-sm font-mono w-8 text-center">
+                      {semitones === 0 ? '0' : semitones > 0 ? `+${semitones}` : semitones}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSemitones(s => s + 1)}
+                    >
+                      ♯
+                    </Button>
 
-                  {/* Font Size */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setFontSize(s => Math.max(12, s - 2))}
-                  >
-                    A-
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setFontSize(s => Math.min(24, s + 2))}
-                  >
-                    A+
-                  </Button>
+                    {/* Font Size */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFontSize(s => Math.max(12, s - 2))}
+                    >
+                      A-
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFontSize(s => Math.min(24, s + 2))}
+                    >
+                      A+
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Song Content */}
-            <Card className="w-full">
-              <CardContent className="p-8">
-                {currentSong.songs.content ? (
-                  <div 
-                    style={{ 
-                      fontSize: `${fontSize}px`,
-                      lineHeight: '1.6'
-                    }}
-                    className="w-full"
-                  >
-                    <ChordRenderer
-                      text={currentSong.songs.content}
-                      semitones={semitones}
-                      className="font-mono w-full"
-                    />
-                  </div>
-                ) : (
-                  <div className="text-center text-muted-foreground py-8">
-                    <p>Esta música não possui conteúdo disponível.</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </div>
+              {/* Song Content */}
+              <article className="show-content w-full max-w-none mx-0 rounded-lg shadow-none bg-transparent md:max-w-3xl md:mx-auto md:rounded-2xl md:shadow md:bg-card">
+                <div className="p-4 md:p-8">
+                  {currentSong.songs.content ? (
+                    <div 
+                      style={{ 
+                        fontSize: `${fontSize}px`,
+                        lineHeight: '1.6'
+                      }}
+                      className="w-full"
+                    >
+                      <ChordRenderer
+                        text={currentSong.songs.content}
+                        semitones={semitones}
+                        className="font-mono w-full"
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center text-muted-foreground py-8">
+                      <p>Esta música não possui conteúdo disponível.</p>
+                    </div>
+                  )}
+                </div>
+              </article>
+            </>
+          )}
+        </div>
+      </main>
     </div>
   );
 }

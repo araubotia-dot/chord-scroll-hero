@@ -59,8 +59,9 @@ export default function AutoScrollControls() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 bg-background/90 backdrop-blur-sm border rounded-lg p-3 shadow-lg z-50">
-      <div className="flex items-center gap-3">
+    <div className="fixed left-1/2 -translate-x-1/2 bottom-[max(12px,env(safe-area-inset-bottom))] w-[92vw] max-w-[720px] z-50">
+      <div className="bg-background/90 backdrop-blur-sm border rounded-lg p-3 shadow-lg">
+        <div className="flex items-center gap-3">
         <Button
           variant="outline"
           size="sm"
@@ -92,6 +93,7 @@ export default function AutoScrollControls() {
         >
           <RotateCcw className="h-4 w-4" />
         </Button>
+        </div>
       </div>
     </div>
   );

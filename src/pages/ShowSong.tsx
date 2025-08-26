@@ -136,9 +136,9 @@ export default function ShowSong() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background show-root px-2 md:px-6">
       <AutoScrollControls />
-      <div className="w-full px-8 py-6 max-w-none">
+      <div className="py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
@@ -227,8 +227,8 @@ export default function ShowSong() {
         )}
 
         {/* Song Content */}
-        <Card className="w-full">
-          <CardContent className="p-8">
+        <article className="show-content w-full max-w-none mx-0 rounded-lg shadow-none bg-transparent md:max-w-3xl md:mx-auto md:rounded-2xl md:shadow md:bg-card">
+          <div className="p-4 md:p-8">
             {song.content ? (
               <div 
                 style={{ 
@@ -248,8 +248,8 @@ export default function ShowSong() {
                 <p>Esta música não possui conteúdo disponível.</p>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </article>
       </div>
 
       <PickSetlistModal
@@ -258,6 +258,6 @@ export default function ShowSong() {
         mySetlists={mySetlists}
         onConfirm={handleSetlistSelection}
       />
-    </div>
+    </main>
   );
 }
