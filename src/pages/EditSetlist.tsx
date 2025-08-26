@@ -41,7 +41,7 @@ interface SortableItemProps {
   searchTerm: string;
   setlistId: string;
   navigate: (path: string) => void;
-  onRemove: (id: string) => void;
+  onRemove: (id: string, songTitle: string) => void;
 }
 
 function SortableItem({ song, searchTerm, setlistId, navigate, onRemove }: SortableItemProps) {
@@ -107,10 +107,10 @@ function SortableItem({ song, searchTerm, setlistId, navigate, onRemove }: Sorta
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => onRemove(song.id)}
+                  onClick={() => onRemove(song.id, song.song.title)}
                   className="text-muted-foreground hover:text-destructive h-8 w-8 md:h-10 md:w-10"
                 >
-                  <X className="h-3 w-3 md:h-4 md:w-4" />
+                  <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                 </Button>
               </div>
             </div>
@@ -133,6 +133,9 @@ export default function EditSetlist() {
   const [saving, setSaving] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showDeleteSongDialog, setShowDeleteSongDialog] = useState(false);
+  const [deletingSong, setDeletingSong] = useState(false);
+  const [songToDelete, setSongToDelete] = useState<{ id: string; title: string } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -201,20 +204,29 @@ export default function EditSetlist() {
     }
   };
 
-  const handleRemoveSong = async (setlistSongId: string) => {
+  const handleRemoveSong = async (setlistSongId: string, songTitle: string) => {
+    setSongToDelete({ id: setlistSongId, title: songTitle });
+    setShowDeleteSongDialog(true);
+  };
+
+  const confirmDeleteSong = async () => {
+    if (!songToDelete) return;
+    
     try {
+      setDeletingSong(true);
+      
       const { error } = await supabase
         .from('setlist_songs')
         .delete()
-        .eq('id', setlistSongId);
+        .eq('id', songToDelete.id);
 
       if (error) throw error;
 
-      setSongs(prev => prev.filter(item => item.id !== setlistSongId));
+      setSongs(prev => prev.filter(item => item.id !== songToDelete.id));
       
       toast({
         title: "Música removida",
-        description: "A música foi removida do repertório.",
+        description: `"${songToDelete.title}" foi removida do repertório.`,
       });
     } catch (error) {
       console.error('Erro ao remover música:', error);
@@ -223,6 +235,10 @@ export default function EditSetlist() {
         description: error instanceof Error ? error.message : String(error),
         variant: "destructive"
       });
+    } finally {
+      setDeletingSong(false);
+      setShowDeleteSongDialog(false);
+      setSongToDelete(null);
     }
   };
 
@@ -453,6 +469,34 @@ export default function EditSetlist() {
               className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleting ? 'Excluindo...' : 'Excluir Repertório'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Song Confirmation Dialog */}
+      <AlertDialog open={showDeleteSongDialog} onOpenChange={setShowDeleteSongDialog}>
+        <AlertDialogContent className="mx-4 max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg">Remover Música</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
+              Tem certeza que deseja remover "{songToDelete?.title}" do repertório? 
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel 
+              disabled={deletingSong}
+              className="w-full sm:w-auto"
+            >
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDeleteSong}
+              disabled={deletingSong}
+              className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingSong ? 'Removendo...' : 'Remover Música'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
