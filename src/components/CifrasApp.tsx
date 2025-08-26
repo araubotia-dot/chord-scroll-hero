@@ -1042,6 +1042,14 @@ export default function CifrasApp() {
                 
                 {/* Controls */}
                 <div className="flex items-center gap-2">
+                  {/* Edit button */}
+                  <button
+                    onClick={() => setView("editar")}
+                    className="flex items-center justify-center w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/30 hover:bg-yellow-500/20 transition-colors"
+                  >
+                    <Edit className="h-4 w-4 text-yellow-500" />
+                  </button>
+                  
                   {/* Transposition */}
                   <button
                     onClick={() => setShowSemitones(s => s - 1)}
