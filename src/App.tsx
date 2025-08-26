@@ -10,6 +10,7 @@ import Profile from "./pages/Profile";
 import Musicians from "./pages/Musicians";
 import PublicProfile from "./pages/PublicProfile";
 import ShowSong from "./pages/ShowSong";
+import ViewSetlist from "./pages/ViewSetlist";
 import ShowSetlist from "./pages/ShowSetlist";
 import Repertorio from "./pages/Repertorio";
 import NotFound from "./pages/NotFound";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/musicians" element={<Musicians />} />
             <Route path="/musico/:id" element={<PublicProfile />} />
+            <Route path="/setlist/:setlistId" element={<ViewSetlist />} />
             <Route path="/show/song/:songId" element={<ShowSong />} />
             <Route path="/show/setlist/:setlistId" element={<ShowSetlist />} />
             <Route path="/repertorio" element={<Repertorio />} />

@@ -78,9 +78,9 @@ export function PublicSetlistsList({
                   variant="outline"
                   size="sm"
                   asChild
-                  title="Ver repertório"
+                  title="Ver conteúdo"
                 >
-                  <Link to={`/show/setlist/${setlist.id}`}>
+                  <Link to={`/setlist/${setlist.id}`}>
                     <Eye className="h-4 w-4" />
                   </Link>
                 </Button>
