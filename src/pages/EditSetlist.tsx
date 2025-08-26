@@ -63,54 +63,54 @@ function SortableItem({ song, searchTerm, setlistId, navigate, onRemove }: Sorta
 
   return (
     <Card ref={setNodeRef} style={style} className={isDragging ? 'shadow-lg' : ''}>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
+      <CardContent className="p-3 md:p-4">
+        <div className="flex items-start md:items-center gap-2 md:gap-3">
           <button
-            className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing"
+            className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing mt-1 md:mt-0 shrink-0"
             {...attributes}
             {...listeners}
           >
             <GripVertical className="h-4 w-4" />
           </button>
           
-          <div className="flex-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-medium">{song.song.title}</h4>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {song.song.artist && <span>{song.song.artist}</span>}
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <h4 className="font-medium text-sm md:text-base truncate">{song.song.title}</h4>
+                <div className="flex flex-wrap items-center gap-1 md:gap-2 text-xs md:text-sm text-muted-foreground">
+                  {song.song.artist && <span className="truncate">{song.song.artist}</span>}
                   {song.song.genre && (
                     <>
                       {song.song.artist && <span>•</span>}
-                      <span>{song.song.genre}</span>
+                      <span className="truncate">{song.song.genre}</span>
                     </>
                   )}
                   {song.song.key && (
                     <>
                       {(song.song.artist || song.song.genre) && <span>•</span>}
-                      <span className="font-mono">{song.song.key}</span>
+                      <span className="font-mono shrink-0">{song.song.key}</span>
                     </>
                   )}
                 </div>
               </div>
               
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 shrink-0">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate(`/show/setlist/${setlistId}?pos=${song.position}`)}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground text-xs md:text-sm px-2 md:px-3"
                 >
                   <Play className="h-3 w-3 mr-1" />
-                  Tocar
+                  <span className="hidden sm:inline">Tocar</span>
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => onRemove(song.id)}
-                  className="text-muted-foreground hover:text-destructive"
+                  className="text-muted-foreground hover:text-destructive h-8 w-8 md:h-10 md:w-10"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3 w-3 md:h-4 md:w-4" />
                 </Button>
               </div>
             </div>
@@ -314,8 +314,10 @@ export default function EditSetlist() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Carregando repertório...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-muted-foreground text-center">
+          <div className="text-sm">Carregando repertório...</div>
+        </div>
       </div>
     );
   }
@@ -324,9 +326,9 @@ export default function EditSetlist() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-2 md:px-4 py-4 md:py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 md:mb-6 gap-4">
           <div className="flex items-center gap-4">
             <Link to="/repertorio">
               <Button variant="ghost" size="icon">
@@ -334,21 +336,28 @@ export default function EditSetlist() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-2xl font-bold">Editar Repertório</h1>
-              <p className="text-muted-foreground">{setlist.name}</p>
+              <h1 className="text-xl md:text-2xl font-bold">Editar Repertório</h1>
+              <p className="text-muted-foreground text-sm md:text-base">{setlist.name}</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button 
               variant="outline"
+              size="sm"
               onClick={() => navigate(`/show/setlist/${setlistId}?pos=1`)}
               disabled={songs.length === 0}
+              className="flex-1 md:flex-none"
             >
               <Play className="h-4 w-4 mr-2" />
               Tocar
             </Button>
-            <Button onClick={handleSaveOrder} disabled={saving}>
+            <Button 
+              size="sm"
+              onClick={handleSaveOrder} 
+              disabled={saving}
+              className="flex-1 md:flex-none"
+            >
               <Save className="h-4 w-4 mr-2" />
               {saving ? 'Salvando...' : 'Salvar Ordem'}
             </Button>
@@ -356,7 +365,7 @@ export default function EditSetlist() {
               variant="ghost" 
               size="icon"
               onClick={() => setShowDeleteDialog(true)}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -364,12 +373,12 @@ export default function EditSetlist() {
         </div>
 
         {/* Search */}
-        <div className="mb-6">
+        <div className="mb-4 md:mb-6">
           <Input
             placeholder="Pesquisar neste repertório..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-md"
+            className="w-full md:max-w-md"
           />
         </div>
 
@@ -412,7 +421,7 @@ export default function EditSetlist() {
         )}
 
         {/* Stats */}
-        <div className="mt-6 text-center text-sm text-muted-foreground">
+        <div className="mt-4 md:mt-6 text-center text-xs md:text-sm text-muted-foreground px-2">
           {searchTerm ? (
             <>Mostrando {filteredSongs.length} de {songs.length} músicas</>
           ) : (
@@ -423,20 +432,25 @@ export default function EditSetlist() {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="mx-4 max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir Repertório</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-lg">Excluir Repertório</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
               Tem certeza que deseja excluir o repertório "{setlist.name}"? 
               Esta ação não pode ser desfeita e todas as músicas do repertório serão removidas.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel 
+              disabled={deleting}
+              className="w-full sm:w-auto"
+            >
+              Cancelar
+            </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDeleteSetlist}
               disabled={deleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleting ? 'Excluindo...' : 'Excluir Repertório'}
             </AlertDialogAction>
