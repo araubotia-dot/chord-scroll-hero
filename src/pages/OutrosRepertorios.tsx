@@ -110,8 +110,8 @@ const OutrosRepertorios = () => {
     return setlist.name.toLowerCase().includes(query);
   });
 
-  const handlePlaySetlist = (setlistId: string) => {
-    navigate(`/show/setlist/${setlistId}`);
+  const handleViewSetlist = (setlistId: string) => {
+    navigate(`/setlist/${setlistId}`);
   };
 
   if (loading) {
@@ -237,7 +237,7 @@ const OutrosRepertorios = () => {
         <div className="space-y-2">
           {filteredSetlists.map(setlist => (
             <div key={setlist.id} className="p-2 border border-border rounded-lg bg-card flex items-center justify-between gap-3">
-              <div className="flex-1 cursor-pointer min-w-0" onClick={() => handlePlaySetlist(setlist.id)}>
+              <div className="flex-1 cursor-pointer min-w-0" onClick={() => handleViewSetlist(setlist.id)}>
                 <div className="font-semibold text-sm hover:text-primary transition-colors truncate">{setlist.name}</div>
                 <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
                   <span>{setlist.songs_count || 0} música{(setlist.songs_count || 0) !== 1 ? 's' : ''}</span>
@@ -253,9 +253,9 @@ const OutrosRepertorios = () => {
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button 
-                  onClick={() => handlePlaySetlist(setlist.id)} 
+                  onClick={() => handleViewSetlist(setlist.id)} 
                   className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                  title="Tocar repertório"
+                  title="Ver repertório"
                 >
                   <Play className="h-4 w-4 fill-current" />
                 </button>
