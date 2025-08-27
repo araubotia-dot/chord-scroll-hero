@@ -42,6 +42,14 @@ interface Profile {
   id: string;
   name: string;
   avatar_url?: string;
+  description?: string;
+  instagram?: string;
+  tiktok?: string;
+  current_band?: string;
+  past_bands?: string[];
+  instruments?: string[];
+  state?: string;
+  city?: string;
 }
 
 export default function ViewSetlist() {
