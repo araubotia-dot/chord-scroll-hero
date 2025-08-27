@@ -261,11 +261,7 @@ export default function ShowSetlist() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="icon" onClick={() => {
-                if (owner) {
-                  navigate(`/musico/${owner.id}`);
-                } else {
-                  navigate('/');
-                }
+                navigate(`/setlist/${setlist.id}`);
               }}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
