@@ -75,6 +75,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          city: string | null
           created_at: string
           current_band: string | null
           description: string | null
@@ -85,11 +86,13 @@ export type Database = {
           name: string
           nickname: string | null
           past_bands: string[] | null
+          state: string | null
           tiktok: string | null
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
+          city?: string | null
           created_at?: string
           current_band?: string | null
           description?: string | null
@@ -100,11 +103,13 @@ export type Database = {
           name: string
           nickname?: string | null
           past_bands?: string[] | null
+          state?: string | null
           tiktok?: string | null
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
+          city?: string | null
           created_at?: string
           current_band?: string | null
           description?: string | null
@@ -115,6 +120,7 @@ export type Database = {
           name?: string
           nickname?: string | null
           past_bands?: string[] | null
+          state?: string | null
           tiktok?: string | null
           updated_at?: string
         }

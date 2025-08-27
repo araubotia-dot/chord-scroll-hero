@@ -7,10 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Camera, Plus, X, Image as ImageIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useImageUpload } from "@/hooks/useImageUpload";
+import { getStatesList, getCitiesByState } from "@/lib/brazilian-locations";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +35,8 @@ interface Profile {
   past_bands?: string[];
   instruments?: string[];
   avatar_url?: string;
+  state?: string;
+  city?: string;
 }
 
 export default function Profile() {
@@ -53,11 +57,14 @@ export default function Profile() {
     current_band: "",
     past_bands: [] as string[],
     instruments: [] as string[],
-    avatar_url: ""
+    avatar_url: "",
+    state: "",
+    city: ""
   });
 
   const [newPastBand, setNewPastBand] = useState("");
   const [newInstrument, setNewInstrument] = useState("");
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
 
   useEffect(() => {
     fetchProfile();
@@ -86,8 +93,15 @@ export default function Profile() {
           current_band: data.current_band || "",
           past_bands: data.past_bands || [],
           instruments: data.instruments || [],
-          avatar_url: data.avatar_url || ""
+          avatar_url: data.avatar_url || "",
+          state: data.state || "",
+          city: data.city || ""
         });
+        
+        // Update available cities if state is selected
+        if (data.state) {
+          setAvailableCities(getCitiesByState(data.state));
+        }
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -117,7 +131,9 @@ export default function Profile() {
           current_band: formData.current_band,
           past_bands: formData.past_bands,
           instruments: formData.instruments,
-          avatar_url: formData.avatar_url
+          avatar_url: formData.avatar_url,
+          state: formData.state,
+          city: formData.city
         })
         .eq("id", user.id);
 
@@ -253,6 +269,51 @@ export default function Profile() {
                     disabled
                     className="bg-muted"
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="state">Estado</Label>
+                  <Select
+                    value={formData.state}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, state: value, city: "" });
+                      setAvailableCities(getCitiesByState(value));
+                    }}
+                    name="state"
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getStatesList().map((state) => (
+                        <SelectItem key={state.code} value={state.code}>
+                          {state.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="city">Cidade</Label>
+                  <Select
+                    value={formData.city}
+                    onValueChange={(value) => setFormData({ ...formData, city: value })}
+                    disabled={!formData.state}
+                    name="city"
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a cidade" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableCities.map((city) => (
+                        <SelectItem key={city} value={city}>
+                          {city}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
