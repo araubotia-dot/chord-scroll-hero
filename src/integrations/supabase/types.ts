@@ -293,6 +293,7 @@ export type Database = {
       public_profiles_view: {
         Row: {
           avatar_url: string | null
+          city: string | null
           created_at: string | null
           current_band: string | null
           description: string | null
@@ -301,10 +302,12 @@ export type Database = {
           instruments: string[] | null
           name: string | null
           past_bands: string[] | null
+          state: string | null
           tiktok: string | null
         }
         Insert: {
           avatar_url?: string | null
+          city?: string | null
           created_at?: string | null
           current_band?: string | null
           description?: string | null
@@ -313,10 +316,12 @@ export type Database = {
           instruments?: string[] | null
           name?: string | null
           past_bands?: string[] | null
+          state?: string | null
           tiktok?: string | null
         }
         Update: {
           avatar_url?: string | null
+          city?: string | null
           created_at?: string | null
           current_band?: string | null
           description?: string | null
@@ -325,6 +330,7 @@ export type Database = {
           instruments?: string[] | null
           name?: string | null
           past_bands?: string[] | null
+          state?: string | null
           tiktok?: string | null
         }
         Relationships: []
