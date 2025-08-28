@@ -200,10 +200,11 @@ export type Database = {
       }
       songs: {
         Row: {
-          artist: string | null
-          content: string | null
+          artist: string
+          author_id: string
+          content: string
           created_at: string
-          genre: string | null
+          genre: string
           id: string
           is_imported: boolean | null
           key: string | null
@@ -215,10 +216,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          artist?: string | null
-          content?: string | null
+          artist: string
+          author_id: string
+          content: string
           created_at?: string
-          genre?: string | null
+          genre: string
           id?: string
           is_imported?: boolean | null
           key?: string | null
@@ -230,10 +232,11 @@ export type Database = {
           user_id: string
         }
         Update: {
-          artist?: string | null
-          content?: string | null
+          artist?: string
+          author_id?: string
+          content?: string
           created_at?: string
-          genre?: string | null
+          genre?: string
           id?: string
           is_imported?: boolean | null
           key?: string | null
@@ -301,6 +304,7 @@ export type Database = {
           instagram: string | null
           instruments: string[] | null
           name: string | null
+          nickname: string | null
           past_bands: string[] | null
           state: string | null
           tiktok: string | null
@@ -315,6 +319,7 @@ export type Database = {
           instagram?: string | null
           instruments?: string[] | null
           name?: string | null
+          nickname?: string | null
           past_bands?: string[] | null
           state?: string | null
           tiktok?: string | null
@@ -329,6 +334,7 @@ export type Database = {
           instagram?: string | null
           instruments?: string[] | null
           name?: string | null
+          nickname?: string | null
           past_bands?: string[] | null
           state?: string | null
           tiktok?: string | null
@@ -345,6 +351,10 @@ export type Database = {
       }
     }
     Functions: {
+      check_nickname_available: {
+        Args: { n: string }
+        Returns: boolean
+      }
       get_public_profile: {
         Args: { user_id: string }
         Returns: {
@@ -358,6 +368,10 @@ export type Database = {
           past_bands: string[]
           tiktok: string
         }[]
+      }
+      set_nickname: {
+        Args: { n: string }
+        Returns: Json
       }
     }
     Enums: {
