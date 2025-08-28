@@ -88,7 +88,24 @@ export default function Repertorio() {
 
   const handlePlay = async (setlistId: string) => {
     try {
-      // Atualizar last_viewed_at
+      // Verificar se o setlist tem músicas antes de navegar
+      const { data: songsCount, error: countError } = await supabase
+        .from('setlist_songs')
+        .select('id', { count: 'exact' })
+        .eq('setlist_id', setlistId);
+
+      if (countError) {
+        console.error('Erro ao verificar músicas do setlist:', countError);
+        throw countError;
+      }
+
+      // Se não tem músicas, redirecionar para edição
+      if (!songsCount || songsCount.length === 0) {
+        navigate(`/repertorio/${setlistId}/editar`);
+        return;
+      }
+
+      // Se tem músicas, atualizar last_viewed_at e ir para o show
       const { error } = await supabase
         .from('setlists')
         .update({ last_viewed_at: new Date().toISOString() })

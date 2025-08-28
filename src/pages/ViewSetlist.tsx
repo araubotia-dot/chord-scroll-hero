@@ -203,12 +203,17 @@ export default function ViewSetlist() {
           </div>
           
           <div className="flex items-center gap-2">
-            {setlist.songs.length > 0 && (
+            {setlist.songs.length > 0 ? (
               <Button asChild>
                 <Link to={`/show/setlist/${setlist.id}?pos=1`}>
                   <Play className="h-4 w-4 mr-2" />
                   Tocar repertório
                 </Link>
+              </Button>
+            ) : isOwner && (
+              <Button onClick={() => navigate(`/repertorio/${setlist.id}/editar`)}>
+                <Play className="h-4 w-4 mr-2" />
+                Adicionar músicas
               </Button>
             )}
             
