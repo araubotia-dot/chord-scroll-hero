@@ -12,7 +12,7 @@ type SongWithUser = {
   genre?: string;
   key: string;
   user_id: string;
-  profiles?: {
+  author?: {
     id: string;
     nickname: string;
     name: string;
@@ -66,13 +66,19 @@ const OutrasCifras = () => {
         .select('id, nickname, name')
         .in('id', userIds);
 
-      // Map profiles to songs
-      const songsWithProfiles = data?.map(song => ({
+      // Map profiles to songs as author
+      const songsWithAuthor = data?.map(song => ({
         ...song,
-        profiles: profilesData?.find(profile => profile.id === song.user_id)
+        author: profilesData?.find(profile => profile.id === song.user_id)
       })) || [];
 
-      setSongs(songsWithProfiles);
+      // Add console warning for debugging
+      const songsWithMissingAuthor = songsWithAuthor.filter(song => !song.author?.nickname);
+      if (songsWithMissingAuthor.length > 0) {
+        console.warn(`${songsWithMissingAuthor.length} songs missing author nickname - check RLS policies and FK constraints`);
+      }
+
+      setSongs(songsWithAuthor);
     } catch (error) {
       console.error('Error loading songs:', error);
       toast({
@@ -230,16 +236,16 @@ const OutrasCifras = () => {
                    {song.genre && (
                      <div className="flex items-center gap-2">
                        <span className="bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full text-xs">{song.genre}</span>
-                       {song.profiles?.nickname && (
-                         <Link
-                           to={`/musico/${song.profiles.nickname}`}
-                           className="text-xs hover:text-primary underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40 rounded"
-                           aria-label={`Ver perfil de ${song.profiles.nickname}`}
-                           onClick={(e) => e.stopPropagation()}
-                         >
-                           @{song.profiles.nickname}
-                         </Link>
-                       )}
+                        {song.author?.nickname && (
+                          <Link
+                            to={`/musico/${song.author.nickname}`}
+                            className="text-[inherit] hover:text-foreground underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40 rounded"
+                            aria-label={`Ver perfil de ${song.author.nickname}`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            @{song.author.nickname}
+                          </Link>
+                        )}
                      </div>
                    )}
                 </div>

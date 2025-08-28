@@ -10,9 +10,10 @@ type SetlistWithUser = {
   name: string;
   user_id: string;
   created_at: string;
-  user?: {
+  author?: {
     id: string;
     nickname: string;
+    name: string;
   };
   songs_count?: number;
 };
@@ -59,7 +60,7 @@ const OutrosRepertorios = () => {
       // Get profiles for these users
       const { data: profilesData } = await supabase
         .from('profiles')
-        .select('id, nickname')
+        .select('id, nickname, name')
         .in('id', userIds);
 
       // Get song counts for each setlist
@@ -84,14 +85,23 @@ const OutrosRepertorios = () => {
         }));
       }
 
-      // Map profiles and song counts to setlists
-      const setlistsWithProfiles = data?.map(setlist => ({
+      // Add console warning for debugging
+      const setlistsWithMissingAuthor = data?.filter(setlist => {
+        const profile = profilesData?.find(p => p.id === setlist.user_id);
+        return !profile?.nickname;
+      }) || [];
+      if (setlistsWithMissingAuthor.length > 0) {
+        console.warn(`${setlistsWithMissingAuthor.length} setlists missing author nickname - check RLS policies and FK constraints`);
+      }
+
+      // Map profiles and songs count to setlists
+      const setlistsWithData = data?.map(setlist => ({
         ...setlist,
-        user: profilesData?.find(profile => profile.id === setlist.user_id),
-        songs_count: songsCountData.find(s => s.setlist_id === setlist.id)?.songs_count || 0
+        author: profilesData?.find(profile => profile.id === setlist.user_id),
+        songs_count: songsCountData.find(count => count.setlist_id === setlist.id)?.songs_count || 0
       })) || [];
 
-      setSetlists(setlistsWithProfiles);
+      setSetlists(setlistsWithData);
     } catch (error) {
       console.error('Error loading setlists:', error);
       toast({
@@ -241,16 +251,16 @@ const OutrosRepertorios = () => {
                 <div className="font-semibold text-sm hover:text-primary transition-colors truncate">{setlist.name}</div>
                  <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-2">
                    <span>{setlist.songs_count || 0} música{(setlist.songs_count || 0) !== 1 ? 's' : ''}</span>
-                   {setlist.user?.nickname && (
-                     <Link
-                       to={`/musico/${setlist.user.nickname}`}
-                       className="text-xs hover:text-primary underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40 rounded"
-                       aria-label={`Ver perfil de ${setlist.user.nickname}`}
-                       onClick={(e) => e.stopPropagation()}
-                     >
-                       @{setlist.user.nickname}
-                     </Link>
-                   )}
+                    {setlist.author?.nickname && (
+                      <Link
+                        to={`/musico/${setlist.author.nickname}`}
+                        className="text-[inherit] hover:text-foreground underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40 rounded"
+                        aria-label={`Ver perfil de ${setlist.author.nickname}`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        @{setlist.author.nickname}
+                      </Link>
+                    )}
                  </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
