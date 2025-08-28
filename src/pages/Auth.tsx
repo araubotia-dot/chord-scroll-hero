@@ -69,7 +69,7 @@ export default function Auth() {
     
     setIsLoading(true)
     
-    const { error } = await signUp(email, password, name, '')
+    const { error } = await signUp(email, password, name)
     
     if (error) {
       if (error.message.includes("User already registered")) {
