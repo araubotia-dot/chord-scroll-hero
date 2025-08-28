@@ -1,25 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Search, Play } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
-
-type AuthorRef = { id: string; nickname: string | null };
-
-type SetlistWithUser = {
-  id: string;
-  name: string;
-  user_id: string;
-  created_at: string;
-  songs_count?: number;
-  author?: AuthorRef | null;
-};
+import { fetchSetlistsWithAuthors, type SetlistListItem } from '@/lib/fetchWithAuthors';
 
 const OutrosRepertorios = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [setlists, setSetlists] = useState<SetlistWithUser[]>([]);
+  const [setlists, setSetlists] = useState<SetlistListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeControl, setActiveControl] = useState<string | null>(null);
@@ -31,55 +20,15 @@ const OutrosRepertorios = () => {
   const loadSetlists = async () => {
     try {
       setLoading(true);
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
       
-      // Get all setlists excluding current user's
-      let setlistQuery = supabase
-        .from('setlists')
-        .select(`
-          id, name, user_id, created_at
-        `)
-        .order('created_at', { ascending: false });
+      const setlistsWithAuthor = await fetchSetlistsWithAuthors({
+        excludeCurrentUser: true,
+        orderBy: 'created_at',
+        ascending: false,
+        includeSongsCount: true
+      });
 
-      if (currentUser) {
-        setlistQuery = setlistQuery.neq('user_id', currentUser.id);
-      }
-
-      const { data: setlistsData, error: setlistsError } = await setlistQuery;
-      if (setlistsError) throw setlistsError;
-
-      // Get unique user IDs
-      const userIds = [...new Set(setlistsData?.map(setlist => setlist.user_id))];
-      
-      // Get profiles for these users
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('id, nickname')
-        .in('id', userIds);
-
-      // Get songs count for each setlist
-      const setlistsWithCount = await Promise.all(
-        (setlistsData || []).map(async (setlist) => {
-          const { count } = await supabase
-            .from('setlist_songs')
-            .select('*', { count: 'exact', head: true })
-            .eq('setlist_id', setlist.id);
-          
-          return {
-            ...setlist,
-            songs_count: count || 0,
-            author: profilesData?.find(profile => profile.id === setlist.user_id) || null
-          };
-        })
-      );
-
-      // Add console warning for debugging
-      const setlistsWithMissingAuthor = setlistsWithCount.filter(setlist => !setlist.author?.nickname);
-      if (setlistsWithMissingAuthor.length > 0) {
-        console.warn(`${setlistsWithMissingAuthor.length} setlists missing author nickname - check RLS policies and FK constraints`);
-      }
-
-      setSetlists(setlistsWithCount);
+      setSetlists(setlistsWithAuthor);
     } catch (error) {
       console.error('Error loading setlists:', error);
       toast({

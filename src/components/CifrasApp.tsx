@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import * as dataService from '@/services/data';
 
 // Types  
-export type AuthorRef = { id: string; nickname: string | null };
+import type { AuthorRef } from '@/lib/fetchWithAuthors';
 
 export type Song = {
   id: string;

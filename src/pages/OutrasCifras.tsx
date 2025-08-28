@@ -1,26 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Search, Play } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
-
-type AuthorRef = { id: string; nickname: string | null };
-
-type SongWithUser = {
-  id: string;
-  title: string;
-  artist?: string;
-  genre?: string;
-  key: string;
-  user_id: string;
-  author?: AuthorRef | null;
-};
+import { fetchSongsWithAuthors, type SongListItem } from '@/lib/fetchWithAuthors';
 
 const OutrasCifras = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [songs, setSongs] = useState<SongWithUser[]>([]);
+  const [songs, setSongs] = useState<SongListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeControl, setActiveControl] = useState<string | null>(null);
@@ -32,49 +20,12 @@ const OutrasCifras = () => {
   const loadSongs = async () => {
     try {
       setLoading(true);
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
       
-      let query = supabase
-        .from('songs')
-        .select(`
-          id, 
-          title, 
-          artist, 
-          genre, 
-          key, 
-          user_id
-        `)
-        .order('created_at', { ascending: false });
-
-      // Exclude current user's songs
-      if (currentUser) {
-        query = query.neq('user_id', currentUser.id);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      // Get unique user IDs
-      const userIds = [...new Set(data?.map(song => song.user_id))];
-      
-      // Get profiles for these users
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('id, nickname')
-        .in('id', userIds);
-
-      // Map profiles to songs as author
-      const songsWithAuthor = data?.map(song => ({
-        ...song,
-        author: profilesData?.find(profile => profile.id === song.user_id) || null
-      })) || [];
-
-      // Add console warning for debugging
-      const songsWithMissingAuthor = songsWithAuthor.filter(song => !song.author?.nickname);
-      if (songsWithMissingAuthor.length > 0) {
-        console.warn(`${songsWithMissingAuthor.length} songs missing author nickname - check RLS policies and FK constraints`);
-      }
+      const songsWithAuthor = await fetchSongsWithAuthors({
+        excludeCurrentUser: true,
+        orderBy: 'created_at',
+        ascending: false
+      });
 
       setSongs(songsWithAuthor);
     } catch (error) {
