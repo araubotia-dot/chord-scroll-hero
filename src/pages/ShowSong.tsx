@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChordRenderer } from '@/components/ChordRenderer';
 import AutoScrollControls from '@/components/AutoScrollControls';
-import { ArrowLeft, Heart, Plus, Minus, Edit } from 'lucide-react';
+import { PickSetlistModal } from '@/components/PickSetlistModal';
+import { ArrowLeft, Heart, Plus, Minus, Edit, ListMusic } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -13,6 +14,11 @@ import {
   removeSongFromFavorites,
   isSongFavorited
 } from '@/services/publicData';
+import {
+  listSetlists,
+  createSetlist,
+  addSongToSetlist
+} from '@/services/data';
 
 export default function ShowSong() {
   const { songId } = useParams<{ songId: string }>();
@@ -24,6 +30,9 @@ export default function ShowSong() {
   const [fontSize, setFontSize] = useState(16);
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [showSetlistModal, setShowSetlistModal] = useState(false);
+  const [mySetlists, setMySetlists] = useState<any[]>([]);
+  const [setlistLoading, setSetlistLoading] = useState(false);
 
   const isOwnSong = user?.id === song?.user_id;
 
@@ -97,6 +106,62 @@ export default function ShowSong() {
       });
     } finally {
       setFavoriteLoading(false);
+    }
+  };
+
+  const handleAddToSetlist = async () => {
+    if (setlistLoading) return;
+    
+    try {
+      setSetlistLoading(true);
+      const setlists = await listSetlists();
+      setMySetlists(setlists);
+      setShowSetlistModal(true);
+    } catch (error) {
+      console.error('Erro ao carregar repertórios:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar seus repertórios.",
+        variant: "destructive"
+      });
+    } finally {
+      setSetlistLoading(false);
+    }
+  };
+
+  const handleConfirmAddToSetlist = async (selection: { setlistId?: string; createNew?: string }) => {
+    if (!song) return;
+    
+    try {
+      let setlistId = selection.setlistId;
+      
+      if (selection.createNew) {
+        const newSetlist = await createSetlist({ name: selection.createNew });
+        setlistId = newSetlist.id;
+      }
+      
+      if (setlistId) {
+        await addSongToSetlist({
+          setlist_id: setlistId,
+          song_id: song.id,
+          position: 0
+        });
+        
+        toast({
+          title: "Música adicionada",
+          description: selection.createNew 
+            ? `Música adicionada ao novo repertório "${selection.createNew}"!`
+            : "Música adicionada ao repertório!",
+          className: "bg-green-50 border-green-200 text-green-800"
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao adicionar música ao repertório:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar a música ao repertório.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -195,21 +260,34 @@ export default function ShowSong() {
 
         {/* Actions (apenas se não for própria música) */}
         {!isOwnSong && user && (
-          <div className="mb-6 flex gap-3">
-            <Button
-              variant={isFavorited ? "default" : "outline"}
-              onClick={handleToggleFavorite}
-              disabled={favoriteLoading}
-              className={isFavorited ? "bg-red-500 hover:bg-red-600 text-white" : ""}
-            >
-              <Heart className={`h-4 w-4 mr-2 ${isFavorited ? "fill-current" : ""}`} />
-              {favoriteLoading 
-                ? 'Processando...' 
-                : isFavorited 
-                ? 'Remover dos favoritos' 
-                : 'Adicionar aos favoritos'
-              }
-            </Button>
+          <div className="mb-6">
+            {/* Layout responsivo: mobile side by side, desktop stacked */}
+            <div className="flex flex-row md:flex-col gap-3">
+              <Button
+                variant={isFavorited ? "default" : "outline"}
+                onClick={handleToggleFavorite}
+                disabled={favoriteLoading}
+                className={`flex-1 md:flex-none ${isFavorited ? "bg-red-500 hover:bg-red-600 text-white" : ""}`}
+              >
+                <Heart className={`h-4 w-4 mr-2 ${isFavorited ? "fill-current" : ""}`} />
+                {favoriteLoading 
+                  ? 'Processando...' 
+                  : isFavorited 
+                  ? 'Remover dos favoritos' 
+                  : 'Adicionar aos favoritos'
+                }
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={handleAddToSetlist}
+                disabled={setlistLoading}
+                className="flex-1 md:flex-none bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20"
+              >
+                <ListMusic className="h-4 w-4 mr-2 text-blue-500" />
+                {setlistLoading ? 'Carregando...' : '+ Adicionar ao repertório'}
+              </Button>
+            </div>
           </div>
         )}
 
@@ -238,6 +316,14 @@ export default function ShowSong() {
           </div>
         </article>
       </div>
+      
+      {/* Modal para escolher repertório */}
+      <PickSetlistModal
+        open={showSetlistModal}
+        onOpenChange={setShowSetlistModal}
+        mySetlists={mySetlists}
+        onConfirm={handleConfirmAddToSetlist}
+      />
     </main>
   );
 }
