@@ -261,31 +261,48 @@ export default function ShowSong() {
         {/* Actions (apenas se não for própria música) */}
         {!isOwnSong && user && (
           <div className="mb-6">
-            {/* Layout responsivo: mobile side by side, desktop stacked */}
-            <div className="flex flex-row md:flex-col gap-3">
+            {/* Layout responsivo: mobile full width, desktop compact left */}
+            <div className="flex flex-row md:flex-col gap-3 md:w-fit">
               <Button
                 variant={isFavorited ? "default" : "outline"}
                 onClick={handleToggleFavorite}
                 disabled={favoriteLoading}
-                className={`flex-1 md:flex-none ${isFavorited ? "bg-red-500 hover:bg-red-600 text-white" : ""}`}
+                size="sm"
+                className={`flex-1 md:flex-none md:w-auto ${isFavorited ? "bg-red-500 hover:bg-red-600 text-white" : ""}`}
               >
                 <Heart className={`h-4 w-4 mr-2 ${isFavorited ? "fill-current" : ""}`} />
-                {favoriteLoading 
-                  ? 'Processando...' 
-                  : isFavorited 
-                  ? 'Remover dos favoritos' 
-                  : 'Adicionar aos favoritos'
-                }
+                <span className="md:hidden">
+                  {favoriteLoading 
+                    ? 'Processando...' 
+                    : isFavorited 
+                    ? 'Remover dos favoritos' 
+                    : 'Adicionar aos favoritos'
+                  }
+                </span>
+                <span className="hidden md:inline">
+                  {favoriteLoading 
+                    ? 'Favoritar...' 
+                    : isFavorited 
+                    ? 'Favoritos' 
+                    : 'Favoritar'
+                  }
+                </span>
               </Button>
               
               <Button
                 variant="outline"
                 onClick={handleAddToSetlist}
                 disabled={setlistLoading}
-                className="flex-1 md:flex-none bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20"
+                size="sm"
+                className="flex-1 md:flex-none md:w-auto bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20"
               >
                 <ListMusic className="h-4 w-4 mr-2 text-blue-500" />
-                {setlistLoading ? 'Carregando...' : '+ Adicionar ao repertório'}
+                <span className="md:hidden">
+                  {setlistLoading ? 'Carregando...' : '+ Adicionar ao repertório'}
+                </span>
+                <span className="hidden md:inline">
+                  {setlistLoading ? 'Adicionando...' : '+ Repertório'}
+                </span>
               </Button>
             </div>
           </div>
