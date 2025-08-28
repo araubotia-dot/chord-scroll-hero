@@ -1,14 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Search, Play } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
-import { fetchSongsWithAuthors, type SongListItem } from '@/lib/fetchWithAuthors';
+
+type SongWithUser = {
+  id: string;
+  title: string;
+  artist?: string;
+  genre?: string;
+  key: string;
+  user_id: string;
+  profiles?: {
+    id: string;
+    name: string;
+  };
+};
 
 const OutrasCifras = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [songs, setSongs] = useState<SongListItem[]>([]);
+  const [songs, setSongs] = useState<SongWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeControl, setActiveControl] = useState<string | null>(null);
@@ -20,14 +33,45 @@ const OutrasCifras = () => {
   const loadSongs = async () => {
     try {
       setLoading(true);
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
       
-      const songsWithAuthor = await fetchSongsWithAuthors({
-        excludeCurrentUser: true,
-        orderBy: 'created_at',
-        ascending: false
-      });
+      let query = supabase
+        .from('songs')
+        .select(`
+          id, 
+          title, 
+          artist, 
+          genre, 
+          key, 
+          user_id
+        `)
+        .order('created_at', { ascending: false });
 
-      setSongs(songsWithAuthor);
+      // Exclude current user's songs
+      if (currentUser) {
+        query = query.neq('user_id', currentUser.id);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      // Get unique user IDs
+      const userIds = [...new Set(data?.map(song => song.user_id))];
+      
+      // Get profiles for these users
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, name')
+        .in('id', userIds);
+
+      // Map profiles to songs
+      const songsWithProfiles = data?.map(song => ({
+        ...song,
+        profiles: profilesData?.find(profile => profile.id === song.user_id)
+      })) || [];
+
+      setSongs(songsWithProfiles);
     } catch (error) {
       console.error('Error loading songs:', error);
       toast({
@@ -182,21 +226,15 @@ const OutrasCifras = () => {
                 <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
                   {song.artist && <span className="truncate">{song.artist}</span>}
                   {song.artist && song.genre && <span>•</span>}
-                   {song.genre && (
-                     <div className="flex items-center gap-2">
-                       <span className="bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full text-xs">{song.genre}</span>
-                        {song.author?.nickname && (
-                          <Link
-                            to={`/musico/${song.author.nickname}`}
-                            className="text-[inherit] hover:text-foreground underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40 rounded"
-                            aria-label={`Ver perfil de ${song.author.nickname}`}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            @{song.author.nickname}
-                          </Link>
-                        )}
-                     </div>
-                   )}
+                  {song.genre && <span className="bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full text-xs">{song.genre}</span>}
+                  {song.profiles?.name && (
+                    <>
+                      <span>•</span>
+                      <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-full text-xs">
+                        @{song.profiles.name}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">

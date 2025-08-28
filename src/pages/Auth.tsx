@@ -12,7 +12,6 @@ export default function Auth() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
-  const [nickname, setNickname] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const { signIn, signUp, signInWithGoogle, user } = useAuth()
   const navigate = useNavigate()
@@ -68,18 +67,9 @@ export default function Auth() {
       return
     }
     
-    if (!nickname.trim()) {
-      toast({
-        title: "Nome de usuário obrigatório",
-        description: "Por favor, escolha um nome de usuário.",
-        variant: "destructive"
-      })
-      return
-    }
-    
     setIsLoading(true)
     
-    const { error } = await signUp(email, password, name, nickname)
+    const { error } = await signUp(email, password, name)
     
     if (error) {
       if (error.message.includes("User already registered")) {
@@ -168,31 +158,17 @@ export default function Auth() {
             
             <TabsContent value="signup" className="space-y-4">
               <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">Nome</Label>
-                    <Input
-                      id="signup-name"
-                      type="text"
-                      placeholder="Seu nome completo"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-nickname">Nome de Usuário</Label>
-                    <Input
-                      id="signup-nickname"
-                      type="text"
-                      placeholder="usuario_unico"
-                      value={nickname}
-                      onChange={(e) => setNickname(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                      required
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Apenas letras minúsculas, números e _ são permitidos
-                    </p>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">Nome</Label>
+                  <Input
+                    id="signup-name"
+                    type="text"
+                    placeholder="Seu nome completo"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
                   <Input

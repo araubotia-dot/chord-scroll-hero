@@ -18,8 +18,6 @@ import EditSetlist from "./pages/EditSetlist";
 import OutrasCifras from "./pages/OutrasCifras";
 import OutrosRepertorios from "./pages/OutrosRepertorios";
 import Favorites from "./pages/Favorites";
-import Health from "./pages/Health";
-import MusicoProfile from "./pages/MusicoProfile";
 
 const queryClient = new QueryClient();
 
@@ -35,7 +33,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/musicians" element={<Musicians />} />
-            <Route path="/musico/:nickname" element={<MusicoProfile />} />
+            <Route path="/musico/:id" element={<PublicProfile />} />
             <Route path="/setlist/:setlistId" element={<ViewSetlist />} />
             <Route path="/show/song/:songId" element={<ShowSong />} />
             <Route path="/show/setlist/:setlistId" element={<ShowSetlist />} />
@@ -44,7 +42,6 @@ const App = () => (
             <Route path="/outras-cifras" element={<OutrasCifras />} />
             <Route path="/outros-repertorios" element={<OutrosRepertorios />} />
             <Route path="/favoritos" element={<Favorites />} />
-            <Route path="/health" element={<Health />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -1,14 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Search, Play } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
-import { fetchSetlistsWithAuthors, type SetlistListItem } from '@/lib/fetchWithAuthors';
+
+type SetlistWithUser = {
+  id: string;
+  name: string;
+  user_id: string;
+  created_at: string;
+  user?: {
+    id: string;
+    name: string;
+  };
+  songs_count?: number;
+};
 
 const OutrosRepertorios = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [setlists, setSetlists] = useState<SetlistListItem[]>([]);
+  const [setlists, setSetlists] = useState<SetlistWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeControl, setActiveControl] = useState<string | null>(null);
@@ -20,15 +32,66 @@ const OutrosRepertorios = () => {
   const loadSetlists = async () => {
     try {
       setLoading(true);
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
       
-      const setlistsWithAuthor = await fetchSetlistsWithAuthors({
-        excludeCurrentUser: true,
-        orderBy: 'created_at',
-        ascending: false,
-        includeSongsCount: true
-      });
+      let query = supabase
+        .from('setlists')
+        .select(`
+          id, 
+          name, 
+          user_id,
+          created_at
+        `)
+        .order('created_at', { ascending: false });
 
-      setSetlists(setlistsWithAuthor);
+      // Exclude current user's setlists
+      if (currentUser) {
+        query = query.neq('user_id', currentUser.id);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      // Get unique user IDs
+      const userIds = [...new Set(data?.map(setlist => setlist.user_id))];
+      
+      // Get profiles for these users
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, name')
+        .in('id', userIds);
+
+      // Get song counts for each setlist
+      const setlistIds = data?.map(setlist => setlist.id) || [];
+      let songsCountData: any[] = [];
+      
+      if (setlistIds.length > 0) {
+        const { data: countsData } = await supabase
+          .from('setlist_songs')
+          .select('setlist_id')
+          .in('setlist_id', setlistIds);
+        
+        // Count songs per setlist
+        const countsBySetlist = countsData?.reduce((acc, item) => {
+          acc[item.setlist_id] = (acc[item.setlist_id] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>) || {};
+
+        songsCountData = Object.entries(countsBySetlist).map(([setlist_id, count]) => ({
+          setlist_id,
+          songs_count: count
+        }));
+      }
+
+      // Map profiles and song counts to setlists
+      const setlistsWithProfiles = data?.map(setlist => ({
+        ...setlist,
+        user: profilesData?.find(profile => profile.id === setlist.user_id),
+        songs_count: songsCountData.find(s => s.setlist_id === setlist.id)?.songs_count || 0
+      })) || [];
+
+      setSetlists(setlistsWithProfiles);
     } catch (error) {
       console.error('Error loading setlists:', error);
       toast({
@@ -176,19 +239,17 @@ const OutrosRepertorios = () => {
             <div key={setlist.id} className="p-2 border border-border rounded-lg bg-card flex items-center justify-between gap-3">
               <div className="flex-1 cursor-pointer min-w-0" onClick={() => handleViewSetlist(setlist.id)}>
                 <div className="font-semibold text-sm hover:text-primary transition-colors truncate">{setlist.name}</div>
-                 <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-2">
-                   <span>{setlist.songs_count || 0} música{(setlist.songs_count || 0) !== 1 ? 's' : ''}</span>
-                    {setlist.author?.nickname && (
-                      <Link
-                        to={`/musico/${setlist.author.nickname}`}
-                        className="text-[inherit] hover:text-foreground underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40 rounded"
-                        aria-label={`Ver perfil de ${setlist.author.nickname}`}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        @{setlist.author.nickname}
-                      </Link>
-                    )}
-                 </div>
+                <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
+                  <span>{setlist.songs_count || 0} música{(setlist.songs_count || 0) !== 1 ? 's' : ''}</span>
+                  {setlist.user?.name && (
+                    <>
+                      <span>•</span>
+                      <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-full text-xs">
+                        @{setlist.user?.name}
+                      </span>
+                    </>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button 
