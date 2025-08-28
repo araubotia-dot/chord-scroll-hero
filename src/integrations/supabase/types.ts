@@ -301,6 +301,7 @@ export type Database = {
           instagram: string | null
           instruments: string[] | null
           name: string | null
+          nickname: string | null
           past_bands: string[] | null
           state: string | null
           tiktok: string | null
@@ -315,6 +316,7 @@ export type Database = {
           instagram?: string | null
           instruments?: string[] | null
           name?: string | null
+          nickname?: string | null
           past_bands?: string[] | null
           state?: string | null
           tiktok?: string | null
@@ -329,6 +331,7 @@ export type Database = {
           instagram?: string | null
           instruments?: string[] | null
           name?: string | null
+          nickname?: string | null
           past_bands?: string[] | null
           state?: string | null
           tiktok?: string | null
