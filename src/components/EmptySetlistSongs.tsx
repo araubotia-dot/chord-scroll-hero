@@ -33,6 +33,7 @@ export default function EmptySetlistSongs({ setlistId, onSongAdded }: EmptySetli
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     loadSongs();
@@ -75,11 +76,10 @@ export default function EmptySetlistSongs({ setlistId, onSongAdded }: EmptySetli
     }
   };
 
-  const handleAddToSetlist = async (e: React.MouseEvent, songId: string, songTitle: string) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleAddToSetlist = async (songId: string, songTitle: string) => {
+    if (adding === songId || isProcessing) return; // Prevent double clicks
     
-    if (adding === songId) return; // Prevent double clicks
+    setIsProcessing(true);
     
     try {
       setAdding(songId);
@@ -121,6 +121,8 @@ export default function EmptySetlistSongs({ setlistId, onSongAdded }: EmptySetli
       });
     } finally {
       setAdding(null);
+      // Aguardar um pouco antes de permitir nova ação
+      setTimeout(() => setIsProcessing(false), 1000);
     }
   };
 
@@ -206,9 +208,10 @@ export default function EmptySetlistSongs({ setlistId, onSongAdded }: EmptySetli
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={(e) => handleAddToSetlist(e, song.id, song.title)}
-                        disabled={adding === song.id}
+                        onClick={() => handleAddToSetlist(song.id, song.title)}
+                        disabled={adding === song.id || isProcessing}
                         className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        type="button"
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
@@ -266,9 +269,10 @@ export default function EmptySetlistSongs({ setlistId, onSongAdded }: EmptySetli
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={(e) => handleAddToSetlist(e, song.id, song.title)}
-                        disabled={adding === song.id}
+                        onClick={() => handleAddToSetlist(song.id, song.title)}
+                        disabled={adding === song.id || isProcessing}
                         className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        type="button"
                       >
                         <Plus className="h-4 w-4" />
                       </Button>

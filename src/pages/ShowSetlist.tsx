@@ -69,6 +69,7 @@ export default function ShowSetlist() {
   const [fontSize, setFontSize] = useState(16);
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     if (!setlistId) return;
@@ -160,9 +161,19 @@ export default function ShowSetlist() {
     }
   };
 
-  const handleToggleFavorite = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleBackClick = () => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    navigate('/repertorio');
+  };
+
+  const handleAddSongsClick = () => {
+    if (isNavigating || !setlist?.id) return;
+    setIsNavigating(true);
+    navigate(`/repertorio/${setlist.id}/editar`);
+  };
+
+  const handleToggleFavorite = async () => {
     
     if (!setlist || favoriteLoading) return;
 
@@ -241,21 +252,17 @@ export default function ShowSetlist() {
           <div className="flex gap-2 justify-center">
             <Button 
               variant="outline" 
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                navigate('/repertorio');
-              }}
+              onClick={handleBackClick}
+              disabled={isNavigating}
+              type="button"
             >
               Voltar
             </Button>
             {setlist && user?.id === setlist.user_id && (
               <Button 
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  navigate(`/repertorio/${setlist.id}/editar`);
-                }}
+                onClick={handleAddSongsClick}
+                disabled={isNavigating}
+                type="button"
               >
                 Adicionar Músicas
               </Button>
