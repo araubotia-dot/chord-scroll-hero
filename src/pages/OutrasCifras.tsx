@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Play } from 'lucide-react';
+import { Search, Play, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { PickSetlistModal } from '@/components/PickSetlistModal';
+import { listSetlists, createSetlist, addSongToSetlist } from '@/services/data';
 
 type SongWithUser = {
   id: string;
@@ -26,9 +28,13 @@ const OutrasCifras = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeControl, setActiveControl] = useState<string | null>(null);
+  const [mySetlists, setMySetlists] = useState<any[]>([]);
+  const [selectedSong, setSelectedSong] = useState<SongWithUser | null>(null);
+  const [showSetlistModal, setShowSetlistModal] = useState(false);
 
   useEffect(() => {
     loadSongs();
+    loadMySetlists();
   }, []);
 
   const loadSongs = async () => {
@@ -95,8 +101,75 @@ const OutrasCifras = () => {
     );
   });
 
+  const loadMySetlists = async () => {
+    try {
+      const setlists = await listSetlists();
+      setMySetlists(setlists);
+    } catch (error) {
+      console.error('Error loading setlists:', error);
+    }
+  };
+
   const handlePlaySong = (songId: string) => {
     navigate(`/show/song/${songId}`);
+  };
+
+  const handleAddToSetlist = (song: SongWithUser, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedSong(song);
+    setShowSetlistModal(true);
+  };
+
+  const handleSetlistSelection = async (selection: { setlistId?: string; createNew?: string }) => {
+    if (!selectedSong) return;
+
+    try {
+      let targetSetlistId = selection.setlistId;
+
+      // If creating new setlist
+      if (selection.createNew) {
+        const newSetlist = await createSetlist({ name: selection.createNew });
+        targetSetlistId = newSetlist.id;
+        // Refresh setlists
+        await loadMySetlists();
+      }
+
+      if (!targetSetlistId) return;
+
+      // Get the highest position in the setlist
+      const { data: existingSongs } = await supabase
+        .from('setlist_songs')
+        .select('position')
+        .eq('setlist_id', targetSetlistId)
+        .order('position', { ascending: false })
+        .limit(1);
+
+      const nextPosition = existingSongs && existingSongs.length > 0 
+        ? existingSongs[0].position + 1 
+        : 0;
+
+      // Add song to setlist
+      await addSongToSetlist({
+        setlist_id: targetSetlistId,
+        song_id: selectedSong.id,
+        position: nextPosition
+      });
+
+      toast({
+        title: "Sucesso!",
+        description: `Cifra "${selectedSong.title}" adicionada ao repertório.`,
+      });
+
+      setShowSetlistModal(false);
+      setSelectedSong(null);
+    } catch (error) {
+      console.error('Error adding song to setlist:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar a cifra ao repertório.",
+        variant: "destructive"
+      });
+    }
   };
 
   if (loading) {
@@ -246,6 +319,13 @@ const OutrasCifras = () => {
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button 
+                  onClick={(e) => handleAddToSetlist(song, e)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-green-500/10 text-green-600 hover:bg-green-500/20 transition-colors"
+                  title="Adicionar ao repertório"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+                <button 
                   onClick={() => handlePlaySong(song.id)} 
                   className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                   title="Tocar música"
@@ -265,6 +345,14 @@ const OutrasCifras = () => {
             </div>
           </div>
         )}
+
+        {/* Pick Setlist Modal */}
+        <PickSetlistModal
+          open={showSetlistModal}
+          onOpenChange={setShowSetlistModal}
+          mySetlists={mySetlists}
+          onConfirm={handleSetlistSelection}
+        />
       </div>
     </div>
   );
