@@ -12,7 +12,9 @@ import { Trash2, ChevronUp, Play, Pause, RotateCcw, Edit, Search, ArrowLeft, Min
 import { supabase } from '@/integrations/supabase/client';
 import * as dataService from '@/services/data';
 
-// Types
+// Types  
+export type AuthorRef = { id: string; nickname: string | null };
+
 export type Song = {
   id: string;
   title: string;
@@ -23,6 +25,7 @@ export type Song = {
   user_id: string;
   created_at: string;
   updated_at: string;
+  author?: AuthorRef | null;
 };
 
 type Setlist = {
@@ -31,6 +34,7 @@ type Setlist = {
   user_id: string;
   created_at: string;
   updated_at: string;
+  author?: AuthorRef | null;
 };
 
 type SetlistSong = {

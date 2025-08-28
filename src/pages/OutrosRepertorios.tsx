@@ -5,17 +5,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
+type AuthorRef = { id: string; nickname: string | null };
+
 type SetlistWithUser = {
   id: string;
   name: string;
   user_id: string;
   created_at: string;
-  author?: {
-    id: string;
-    nickname: string;
-    name: string;
-  };
   songs_count?: number;
+  author?: AuthorRef | null;
 };
 
 const OutrosRepertorios = () => {
@@ -35,73 +33,53 @@ const OutrosRepertorios = () => {
       setLoading(true);
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
-      let query = supabase
+      // Get all setlists excluding current user's
+      let setlistQuery = supabase
         .from('setlists')
         .select(`
-          id, 
-          name, 
-          user_id,
-          created_at
+          id, name, user_id, created_at
         `)
         .order('created_at', { ascending: false });
 
-      // Exclude current user's setlists
       if (currentUser) {
-        query = query.neq('user_id', currentUser.id);
+        setlistQuery = setlistQuery.neq('user_id', currentUser.id);
       }
 
-      const { data, error } = await query;
-
-      if (error) throw error;
+      const { data: setlistsData, error: setlistsError } = await setlistQuery;
+      if (setlistsError) throw setlistsError;
 
       // Get unique user IDs
-      const userIds = [...new Set(data?.map(setlist => setlist.user_id))];
+      const userIds = [...new Set(setlistsData?.map(setlist => setlist.user_id))];
       
       // Get profiles for these users
       const { data: profilesData } = await supabase
         .from('profiles')
-        .select('id, nickname, name')
+        .select('id, nickname')
         .in('id', userIds);
 
-      // Get song counts for each setlist
-      const setlistIds = data?.map(setlist => setlist.id) || [];
-      let songsCountData: any[] = [];
-      
-      if (setlistIds.length > 0) {
-        const { data: countsData } = await supabase
-          .from('setlist_songs')
-          .select('setlist_id')
-          .in('setlist_id', setlistIds);
-        
-        // Count songs per setlist
-        const countsBySetlist = countsData?.reduce((acc, item) => {
-          acc[item.setlist_id] = (acc[item.setlist_id] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>) || {};
-
-        songsCountData = Object.entries(countsBySetlist).map(([setlist_id, count]) => ({
-          setlist_id,
-          songs_count: count
-        }));
-      }
+      // Get songs count for each setlist
+      const setlistsWithCount = await Promise.all(
+        (setlistsData || []).map(async (setlist) => {
+          const { count } = await supabase
+            .from('setlist_songs')
+            .select('*', { count: 'exact', head: true })
+            .eq('setlist_id', setlist.id);
+          
+          return {
+            ...setlist,
+            songs_count: count || 0,
+            author: profilesData?.find(profile => profile.id === setlist.user_id) || null
+          };
+        })
+      );
 
       // Add console warning for debugging
-      const setlistsWithMissingAuthor = data?.filter(setlist => {
-        const profile = profilesData?.find(p => p.id === setlist.user_id);
-        return !profile?.nickname;
-      }) || [];
+      const setlistsWithMissingAuthor = setlistsWithCount.filter(setlist => !setlist.author?.nickname);
       if (setlistsWithMissingAuthor.length > 0) {
         console.warn(`${setlistsWithMissingAuthor.length} setlists missing author nickname - check RLS policies and FK constraints`);
       }
 
-      // Map profiles and songs count to setlists
-      const setlistsWithData = data?.map(setlist => ({
-        ...setlist,
-        author: profilesData?.find(profile => profile.id === setlist.user_id),
-        songs_count: songsCountData.find(count => count.setlist_id === setlist.id)?.songs_count || 0
-      })) || [];
-
-      setSetlists(setlistsWithData);
+      setSetlists(setlistsWithCount);
     } catch (error) {
       console.error('Error loading setlists:', error);
       toast({

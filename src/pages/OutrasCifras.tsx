@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
+type AuthorRef = { id: string; nickname: string | null };
+
 type SongWithUser = {
   id: string;
   title: string;
@@ -12,11 +14,7 @@ type SongWithUser = {
   genre?: string;
   key: string;
   user_id: string;
-  author?: {
-    id: string;
-    nickname: string;
-    name: string;
-  };
+  author?: AuthorRef | null;
 };
 
 const OutrasCifras = () => {
@@ -63,13 +61,13 @@ const OutrasCifras = () => {
       // Get profiles for these users
       const { data: profilesData } = await supabase
         .from('profiles')
-        .select('id, nickname, name')
+        .select('id, nickname')
         .in('id', userIds);
 
       // Map profiles to songs as author
       const songsWithAuthor = data?.map(song => ({
         ...song,
-        author: profilesData?.find(profile => profile.id === song.user_id)
+        author: profilesData?.find(profile => profile.id === song.user_id) || null
       })) || [];
 
       // Add console warning for debugging
