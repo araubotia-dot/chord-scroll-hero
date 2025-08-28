@@ -343,11 +343,6 @@ export default function CifrasApp() {
       setSongs(prev => [tempSong, ...prev]);
       setSelectedSongId(tempSong.id);
       setView("editar");
-      
-      toast({
-        title: "Nova música criada!",
-        description: "Preencha os dados e salve.",
-      });
     } catch (error) {
       console.error('newSong error:', error);
       toast({
