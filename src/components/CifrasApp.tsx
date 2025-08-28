@@ -941,11 +941,11 @@ export default function CifrasApp() {
                   </option>
                 ))}
               </select>
-              <div className="w-full bg-muted border border-border rounded-xl px-3 py-3 text-base text-muted-foreground">
-                <div className="text-sm mb-1">Autor da cifra:</div>
-                <div className="font-medium text-foreground">
+              <div className="w-full bg-muted border border-border rounded-xl px-3 py-3 text-base text-muted-foreground flex items-center gap-2">
+                <span>Autor da cifra:</span>
+                <span className="font-medium text-foreground">
                   @{userProfile.nickname || userProfile.name || 'usuário'}
-                </div>
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <label className="text-sm text-muted-foreground">Tom original:</label>
