@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Search, Play } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -227,16 +227,21 @@ const OutrasCifras = () => {
                 <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
                   {song.artist && <span className="truncate">{song.artist}</span>}
                   {song.artist && song.genre && <span>•</span>}
-                  {song.genre && (
-                    <div className="flex items-center gap-1">
-                      <span className="bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full text-xs">{song.genre}</span>
-                      {song.profiles && (
-                        <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-full text-xs">
-                          @{song.profiles.nickname || song.profiles.name || 'usuário'}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                   {song.genre && (
+                     <div className="flex items-center gap-2">
+                       <span className="bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full text-xs">{song.genre}</span>
+                       {song.profiles?.nickname && (
+                         <Link
+                           to={`/musico/${song.profiles.nickname}`}
+                           className="text-xs hover:text-primary underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40 rounded"
+                           aria-label={`Ver perfil de ${song.profiles.nickname}`}
+                           onClick={(e) => e.stopPropagation()}
+                         >
+                           @{song.profiles.nickname}
+                         </Link>
+                       )}
+                     </div>
+                   )}
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Search, Play } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -239,17 +239,19 @@ const OutrosRepertorios = () => {
             <div key={setlist.id} className="p-2 border border-border rounded-lg bg-card flex items-center justify-between gap-3">
               <div className="flex-1 cursor-pointer min-w-0" onClick={() => handleViewSetlist(setlist.id)}>
                 <div className="font-semibold text-sm hover:text-primary transition-colors truncate">{setlist.name}</div>
-                <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
-                  <span>{setlist.songs_count || 0} música{(setlist.songs_count || 0) !== 1 ? 's' : ''}</span>
-                  {setlist.user?.nickname && (
-                    <>
-                      <span>•</span>
-                      <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-full text-xs">
-                        @{setlist.user?.nickname}
-                      </span>
-                    </>
-                  )}
-                </div>
+                 <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-2">
+                   <span>{setlist.songs_count || 0} música{(setlist.songs_count || 0) !== 1 ? 's' : ''}</span>
+                   {setlist.user?.nickname && (
+                     <Link
+                       to={`/musico/${setlist.user.nickname}`}
+                       className="text-xs hover:text-primary underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40 rounded"
+                       aria-label={`Ver perfil de ${setlist.user.nickname}`}
+                       onClick={(e) => e.stopPropagation()}
+                     >
+                       @{setlist.user.nickname}
+                     </Link>
+                   )}
+                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button 

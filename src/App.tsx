@@ -19,6 +19,7 @@ import OutrasCifras from "./pages/OutrasCifras";
 import OutrosRepertorios from "./pages/OutrosRepertorios";
 import Favorites from "./pages/Favorites";
 import Health from "./pages/Health";
+import MusicoProfile from "./pages/MusicoProfile";
 
 const queryClient = new QueryClient();
 
@@ -34,7 +35,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/musicians" element={<Musicians />} />
-            <Route path="/musico/:id" element={<PublicProfile />} />
+            <Route path="/musico/:nickname" element={<MusicoProfile />} />
             <Route path="/setlist/:setlistId" element={<ViewSetlist />} />
             <Route path="/show/song/:songId" element={<ShowSong />} />
             <Route path="/show/setlist/:setlistId" element={<ShowSetlist />} />
