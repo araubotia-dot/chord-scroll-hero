@@ -22,6 +22,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import EmptySetlistSongs from '@/components/EmptySetlistSongs';
+import GlobalSearchBar from '@/components/GlobalSearchBar';
 
 interface Song {
   id: string;
@@ -473,11 +474,14 @@ export default function EditSetlist() {
           </div>
         </div>
 
-        {/* Search */}
+        {/* Global Search */}
+        <GlobalSearchBar setlistId={setlistId!} onSongAdded={loadSetlistData} />
+
+        {/* Search in current setlist */}
         {songs.length > 0 && (
           <div className="mb-4 md:mb-6">
             <Input
-              placeholder="Pesquisar neste repertório..."
+              placeholder="Filtrar neste repertório..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full md:max-w-md"
