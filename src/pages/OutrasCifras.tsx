@@ -15,6 +15,7 @@ type SongWithUser = {
   profiles?: {
     id: string;
     name: string;
+    nickname?: string;
   };
 };
 
@@ -62,7 +63,7 @@ const OutrasCifras = () => {
       // Get profiles for these users
       const { data: profilesData } = await supabase
         .from('profiles')
-        .select('id, name')
+        .select('id, name, nickname')
         .in('id', userIds);
 
       // Map profiles to songs
@@ -227,11 +228,11 @@ const OutrasCifras = () => {
                   {song.artist && <span className="truncate">{song.artist}</span>}
                   {song.artist && song.genre && <span>•</span>}
                   {song.genre && <span className="bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full text-xs">{song.genre}</span>}
-                  {song.profiles?.name && (
+                  {song.profiles && (
                     <>
                       <span>•</span>
                       <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-full text-xs">
-                        @{song.profiles.name}
+                        @{song.profiles.nickname || song.profiles.name}
                       </span>
                     </>
                   )}

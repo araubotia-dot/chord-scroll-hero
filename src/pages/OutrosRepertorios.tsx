@@ -13,6 +13,7 @@ type SetlistWithUser = {
   user?: {
     id: string;
     name: string;
+    nickname?: string;
   };
   songs_count?: number;
 };
@@ -59,7 +60,7 @@ const OutrosRepertorios = () => {
       // Get profiles for these users
       const { data: profilesData } = await supabase
         .from('profiles')
-        .select('id, name')
+        .select('id, name, nickname')
         .in('id', userIds);
 
       // Get song counts for each setlist
@@ -241,11 +242,11 @@ const OutrosRepertorios = () => {
                 <div className="font-semibold text-sm hover:text-primary transition-colors truncate">{setlist.name}</div>
                 <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
                   <span>{setlist.songs_count || 0} música{(setlist.songs_count || 0) !== 1 ? 's' : ''}</span>
-                  {setlist.user?.name && (
+                  {setlist.user && (
                     <>
                       <span>•</span>
                       <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-full text-xs">
-                        @{setlist.user?.name}
+                        @{setlist.user.nickname || setlist.user.name}
                       </span>
                     </>
                   )}
