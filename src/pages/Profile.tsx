@@ -13,6 +13,7 @@ import { ArrowLeft, Camera, Plus, X, Image as ImageIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { getStatesList, getCitiesByState } from "@/lib/brazilian-locations";
+import { NicknameInput } from "@/components/NicknameInput";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +29,7 @@ interface Profile {
   id: string;
   name: string;
   email: string;
+  nickname?: string;
   description?: string;
   instagram?: string;
   tiktok?: string;
@@ -51,6 +53,7 @@ export default function Profile() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    nickname: "",
     description: "",
     instagram: "",
     tiktok: "",
@@ -65,6 +68,7 @@ export default function Profile() {
   const [newPastBand, setNewPastBand] = useState("");
   const [newInstrument, setNewInstrument] = useState("");
   const [availableCities, setAvailableCities] = useState<string[]>([]);
+  const [nicknameValid, setNicknameValid] = useState(true);
 
   useEffect(() => {
     fetchProfile();
@@ -87,6 +91,7 @@ export default function Profile() {
         setFormData({
           name: data.name || "",
           email: data.email || "",
+          nickname: data.nickname || "",
           description: data.description || "",
           instagram: data.instagram || "",
           tiktok: data.tiktok || "",
@@ -119,8 +124,35 @@ export default function Profile() {
     e.preventDefault();
     if (!user) return;
 
+    // Validar nickname se foi alterado
+    if (formData.nickname !== profile?.nickname && !nicknameValid) {
+      toast({
+        title: "Erro",
+        description: "Nickname inválido ou não disponível",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setSaving(true);
     try {
+      // Primeiro atualizar o nickname se foi alterado
+      if (formData.nickname !== profile?.nickname && formData.nickname) {
+        const { data: nicknameResult, error: nicknameError } = await supabase.rpc('set_nickname', { 
+          n: formData.nickname 
+        });
+        
+        if (nicknameError) {
+          throw new Error(nicknameError.message || 'Erro ao definir nickname');
+        }
+        
+        const result = nicknameResult as { success: boolean; error?: string };
+        if (!result?.success) {
+          throw new Error(result?.error || 'Erro ao definir nickname');
+        }
+      }
+
+      // Depois atualizar os outros campos do perfil
       const { error } = await supabase
         .from("profiles")
         .update({
@@ -149,7 +181,7 @@ export default function Profile() {
       console.error("Error updating profile:", error);
       toast({
         title: "Erro",
-        description: "Erro ao atualizar perfil",
+        description: error instanceof Error ? error.message : "Erro ao atualizar perfil",
         variant: "destructive"
       });
     } finally {
@@ -317,6 +349,15 @@ export default function Profile() {
                 </div>
               </div>
 
+              <NicknameInput
+                currentNickname={profile?.nickname}
+                onNicknameChange={(nickname, isValid) => {
+                  setFormData({ ...formData, nickname });
+                  setNicknameValid(isValid);
+                }}
+                disabled={saving}
+              />
+
               <div>
                 <Label htmlFor="description">Descrição</Label>
                 <Textarea
@@ -444,7 +485,7 @@ export default function Profile() {
           </Card>
 
           <div className="flex justify-end">
-            <Button type="submit" disabled={saving}>
+            <Button type="submit" disabled={saving || !nicknameValid}>
               {saving ? "Salvando..." : "Salvar Alterações"}
             </Button>
           </div>

@@ -8,6 +8,7 @@ import EdgeNavArrows from './EdgeNavArrows';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { UserAvatar } from './UserAvatar';
+import { UserNickname } from './UserNickname';
 import { Trash2, ChevronUp, Play, Pause, RotateCcw, Edit, Search, ArrowLeft, Minus, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import * as dataService from '@/services/data';
@@ -669,7 +670,9 @@ export default function CifrasApp() {
               CifraSet
             </button>
             <div className="flex items-center gap-2">
-              <div className="hidden md:block text-xs text-muted-foreground">Olá, {userProfile.name}</div>
+              <div className="hidden md:block text-xs text-muted-foreground">
+                Olá, <UserNickname userId={user?.id || ''} showAt={false} fallbackName={userProfile.name} />
+              </div>
               <UserAvatar />
             </div>
           </div>
