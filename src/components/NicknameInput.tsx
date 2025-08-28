@@ -104,17 +104,11 @@ export function NicknameInput({ currentNickname, onNicknameChange, disabled }: N
   };
 
   const isCurrentNickname = nickname === currentNickname;
-  const canEdit = !currentNickname || currentNickname.startsWith('user');
 
   return (
     <div className="space-y-2">
       <Label htmlFor="nickname">
         Nickname público
-        {!canEdit && (
-          <span className="text-xs text-muted-foreground ml-2">
-            (Não pode ser alterado)
-          </span>
-        )}
       </Label>
       <div className="relative">
         <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -124,7 +118,7 @@ export function NicknameInput({ currentNickname, onNicknameChange, disabled }: N
           id="nickname"
           value={nickname}
           onChange={(e) => handleChange(e.target.value)}
-          disabled={disabled || !canEdit}
+          disabled={disabled}
           className={`pl-8 pr-10 ${getStatusColor()}`}
           placeholder="seunicknome"
           maxLength={20}
