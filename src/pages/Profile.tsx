@@ -27,6 +27,7 @@ import {
 interface Profile {
   id: string;
   name: string;
+  nickname: string;
   email: string;
   description?: string;
   instagram?: string;
@@ -50,6 +51,7 @@ export default function Profile() {
   
   const [formData, setFormData] = useState({
     name: "",
+    nickname: "",
     email: "",
     description: "",
     instagram: "",
@@ -86,6 +88,7 @@ export default function Profile() {
         setProfile(data);
         setFormData({
           name: data.name || "",
+          nickname: data.nickname || "",
           email: data.email || "",
           description: data.description || "",
           instagram: data.instagram || "",
@@ -125,6 +128,7 @@ export default function Profile() {
         .from("profiles")
         .update({
           name: formData.name,
+          nickname: formData.nickname,
           description: formData.description,
           instagram: formData.instagram,
           tiktok: formData.tiktok,
@@ -145,11 +149,17 @@ export default function Profile() {
       });
       
       fetchProfile();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating profile:", error);
+      let errorMessage = "Erro ao atualizar perfil";
+      
+      if (error?.code === '23505' && error?.message?.includes('profiles_nickname_unique')) {
+        errorMessage = "Este nome de usuário já está em uso. Escolha outro.";
+      }
+      
       toast({
         title: "Erro",
-        description: "Erro ao atualizar perfil",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -261,15 +271,29 @@ export default function Profile() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="nickname">Nome de Usuário</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    disabled
-                    className="bg-muted"
+                    id="nickname"
+                    value={formData.nickname}
+                    onChange={(e) => setFormData({ ...formData, nickname: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') })}
+                    placeholder="usuario_unico"
+                    required
                   />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Apenas letras minúsculas, números e _ são permitidos
+                  </p>
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  disabled
+                  className="bg-muted"
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
