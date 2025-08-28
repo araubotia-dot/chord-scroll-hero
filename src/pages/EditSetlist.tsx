@@ -21,6 +21,7 @@ import { ArrowLeft, GripVertical, X, Save, Play, Trash2, Edit2, Check } from 'lu
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import EmptySetlistSongs from '@/components/EmptySetlistSongs';
 
 interface Song {
   id: string;
@@ -473,29 +474,20 @@ export default function EditSetlist() {
         </div>
 
         {/* Search */}
-        <div className="mb-4 md:mb-6">
-          <Input
-            placeholder="Pesquisar neste repertório..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full md:max-w-md"
-          />
-        </div>
+        {songs.length > 0 && (
+          <div className="mb-4 md:mb-6">
+            <Input
+              placeholder="Pesquisar neste repertório..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full md:max-w-md"
+            />
+          </div>
+        )}
 
         {/* Songs List */}
         {songs.length === 0 ? (
-          <div className="text-center py-12">
-            <h3 className="text-lg font-medium mb-2">Repertório vazio</h3>
-            <p className="text-muted-foreground mb-4">
-              Este repertório ainda não possui músicas.
-            </p>
-            <Link to="/repertorio">
-              <Button variant="outline">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar
-              </Button>
-            </Link>
-          </div>
+          <EmptySetlistSongs setlistId={setlistId!} />
         ) : filteredSongs.length === 0 ? (
           <div className="text-center py-12">
             <h3 className="text-lg font-medium mb-2">Nenhuma música encontrada</h3>
