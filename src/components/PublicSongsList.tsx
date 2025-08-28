@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Eye } from 'lucide-react';
+import { Heart, Eye, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { isSongFavorited } from '@/services/publicData';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,12 +11,14 @@ interface PublicSongsListProps {
   songs: any[];
   isOwnProfile: boolean;
   onToggleFavorite: (song: any) => Promise<void>;
+  onAddToSetlist?: (songId: string) => void;
 }
 
 export function PublicSongsList({ 
   songs, 
   isOwnProfile, 
-  onToggleFavorite 
+  onToggleFavorite,
+  onAddToSetlist 
 }: PublicSongsListProps) {
   const { user } = useAuth();
   const [favorites, setFavorites] = useState<{[key: string]: boolean}>({});
@@ -93,6 +95,17 @@ export function PublicSongsList({
                     <Eye className="h-4 w-4" />
                   </Link>
                 </Button>
+                
+                {!isOwnProfile && user && onAddToSetlist && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onAddToSetlist(song.id)}
+                    title="Adicionar ao repertório"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                )}
                 
                 {!isOwnProfile && user && (
                   <Button

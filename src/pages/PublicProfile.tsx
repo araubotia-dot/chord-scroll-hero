@@ -19,6 +19,7 @@ import {
   isSongFavorited,
   isSetlistFavorited
 } from '@/services/publicData';
+import { listSetlists, createSetlist, addSongToSetlist, listSetlistSongs } from '@/services/data';
 
 export default function PublicProfile() {
   const { id } = useParams<{ id: string }>();
@@ -36,7 +37,10 @@ export default function PublicProfile() {
   useEffect(() => {
     if (!id) return;
     loadProfileData();
-  }, [id]);
+    if (user && !isOwnProfile) {
+      loadMySetlists();
+    }
+  }, [id, user, isOwnProfile]);
 
   const loadProfileData = async () => {
     try {
@@ -59,6 +63,15 @@ export default function PublicProfile() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMySetlists = async () => {
+    try {
+      const setlistsData = await listSetlists();
+      setMySetlists(setlistsData);
+    } catch (error) {
+      console.error('Erro ao carregar repertórios:', error);
     }
   };
 
@@ -118,6 +131,55 @@ export default function PublicProfile() {
     }
   };
 
+  const handleAddToSetlist = (songId: string) => {
+    setSelectedSongForSetlist(songId);
+    setPickSetlistModalOpen(true);
+  };
+
+  const handleSetlistSelection = async (selection: { setlistId?: string; createNew?: string }) => {
+    try {
+      if (!selectedSongForSetlist) return;
+
+      let targetSetlistId = selection.setlistId;
+
+      // Se for para criar novo repertório
+      if (selection.createNew) {
+        const newSetlist = await createSetlist({ name: selection.createNew });
+        targetSetlistId = newSetlist.id;
+        await loadMySetlists(); // Atualizar lista
+      }
+
+      if (!targetSetlistId) return;
+
+      // Verificar quantas músicas já existem no repertório para definir a posição
+      const existingSongs = await listSetlistSongs(targetSetlistId);
+      const position = existingSongs.length;
+
+      // Adicionar a música ao repertório
+      await addSongToSetlist({
+        setlist_id: targetSetlistId,
+        song_id: selectedSongForSetlist,
+        position
+      });
+
+      toast({
+        title: "Sucesso!",
+        description: "Cifra adicionada ao repertório com sucesso!",
+        className: "bg-green-50 border-green-200 text-green-800"
+      });
+
+      setPickSetlistModalOpen(false);
+      setSelectedSongForSetlist(null);
+    } catch (error) {
+      console.error('Erro ao adicionar ao repertório:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar a cifra ao repertório.",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 flex justify-center">
@@ -157,6 +219,7 @@ export default function PublicProfile() {
             songs={songs}
             isOwnProfile={isOwnProfile}
             onToggleFavorite={handleToggleSongFavorite}
+            onAddToSetlist={handleAddToSetlist}
           />
         </TabsContent>
         
@@ -168,6 +231,13 @@ export default function PublicProfile() {
           />
         </TabsContent>
       </Tabs>
+
+      <PickSetlistModal
+        open={pickSetlistModalOpen}
+        onOpenChange={setPickSetlistModalOpen}
+        mySetlists={mySetlists}
+        onConfirm={handleSetlistSelection}
+      />
     </div>
   );
 }
