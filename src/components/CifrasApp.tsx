@@ -100,6 +100,8 @@ export default function CifrasApp() {
   const [scrollSpeed, setScrollSpeed] = useState(3); // 1-5 scale
   const [searchQuery, setSearchQuery] = useState("");
   const [showSetlistModal, setShowSetlistModal] = useState(false);
+  const [showCreateSetlistModal, setShowCreateSetlistModal] = useState(false);
+  const [newSetlistName, setNewSetlistName] = useState("");
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [showAddToRepertoireSuccess, setShowAddToRepertoireSuccess] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -465,10 +467,16 @@ export default function CifrasApp() {
     }
   }
 
-  async function newSetlist() {
+  async function newSetlist(name?: string) {
+    // Se não foi fornecido um nome, abrir modal para criação
+    if (!name) {
+      setShowCreateSetlistModal(true);
+      return;
+    }
+
     try {
       const setlistData = await dataService.createSetlist({
-        name: `Repertório ${new Date().toLocaleDateString()}`
+        name: name.trim()
       });
       
       setSetlists(prev => [setlistData, ...prev]);
@@ -830,7 +838,7 @@ export default function CifrasApp() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold">Repertório</h2>
               <button 
-                onClick={newSetlist} 
+                onClick={() => newSetlist()} 
                 className="px-3 py-2 rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover"
               >
                 + Novo Repertório
@@ -1208,7 +1216,7 @@ export default function CifrasApp() {
             
             <div className="flex gap-2">
               <button
-                onClick={newSetlist}
+                onClick={() => newSetlist()}
                 className="flex-1 px-3 py-2 rounded bg-primary text-primary-foreground hover:bg-primary-hover"
               >
                 Criar Novo Repertório
@@ -1251,6 +1259,72 @@ export default function CifrasApp() {
                 </svg>
               </div>
               <span className="font-medium">Música salva com sucesso!</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para criar novo repertório */}
+      {showCreateSetlistModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background border border-border rounded-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Criar Novo Repertório</h3>
+              <button
+                onClick={() => {
+                  setShowCreateSetlistModal(false);
+                  setNewSetlistName("");
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Nome do repertório</label>
+                <input
+                  type="text"
+                  value={newSetlistName}
+                  onChange={(e) => setNewSetlistName(e.target.value)}
+                  placeholder="Digite o nome do repertório..."
+                  className="w-full bg-input border border-border rounded-xl px-3 py-3 text-base"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newSetlistName.trim()) {
+                      newSetlist(newSetlistName);
+                      setShowCreateSetlistModal(false);
+                      setNewSetlistName("");
+                    }
+                  }}
+                  autoFocus
+                />
+              </div>
+              
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    if (newSetlistName.trim()) {
+                      newSetlist(newSetlistName);
+                      setShowCreateSetlistModal(false);
+                      setNewSetlistName("");
+                    }
+                  }}
+                  disabled={!newSetlistName.trim()}
+                  className="flex-1 px-3 py-2 rounded bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Criar
+                </button>
+                <button
+                  onClick={() => {
+                    setShowCreateSetlistModal(false);
+                    setNewSetlistName("");
+                  }}
+                  className="px-3 py-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
           </div>
         </div>
