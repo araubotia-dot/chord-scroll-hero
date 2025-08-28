@@ -15,6 +15,7 @@ interface Setlist {
   name: string;
   created_at: string;
   last_viewed_at?: string;
+  songs_count?: number;
 }
 
 type SortOption = 'alpha' | 'created' | 'viewed';
@@ -57,7 +58,13 @@ export default function Repertorio() {
 
       let query = supabase
         .from('setlists')
-        .select('id, name, created_at, last_viewed_at')
+        .select(`
+          id, 
+          name, 
+          created_at, 
+          last_viewed_at,
+          setlist_songs(count)
+        `)
         .eq('user_id', currentUser.id);
 
       // Aplicar ordenação
@@ -73,7 +80,13 @@ export default function Repertorio() {
       const { data, error } = await query;
       if (error) throw error;
 
-      setSetlists(data || []);
+      // Transformar os dados para incluir a contagem de músicas
+      const setlistsWithCount = (data || []).map(setlist => ({
+        ...setlist,
+        songs_count: setlist.setlist_songs?.[0]?.count || 0
+      }));
+
+      setSetlists(setlistsWithCount);
     } catch (error) {
       console.error('Erro ao carregar setlists:', error);
       toast({
@@ -269,6 +282,9 @@ export default function Repertorio() {
               <div key={setlist.id} className="p-2 border border-border rounded-lg bg-card flex items-center justify-between gap-3">
                 <div className="flex-1 cursor-pointer min-w-0" onClick={() => handlePlay(setlist.id)}>
                   <div className="font-semibold text-sm hover:text-primary transition-colors truncate">{setlist.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {setlist.songs_count || 0} música{(setlist.songs_count || 0) !== 1 ? 's' : ''}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button
