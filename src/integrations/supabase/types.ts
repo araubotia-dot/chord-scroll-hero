@@ -201,6 +201,7 @@ export type Database = {
       songs: {
         Row: {
           artist: string | null
+          author_id: string
           content: string | null
           created_at: string
           genre: string | null
@@ -216,6 +217,7 @@ export type Database = {
         }
         Insert: {
           artist?: string | null
+          author_id: string
           content?: string | null
           created_at?: string
           genre?: string | null
@@ -231,6 +233,7 @@ export type Database = {
         }
         Update: {
           artist?: string | null
+          author_id?: string
           content?: string | null
           created_at?: string
           genre?: string | null
@@ -301,6 +304,7 @@ export type Database = {
           instagram: string | null
           instruments: string[] | null
           name: string | null
+          nickname: string | null
           past_bands: string[] | null
           state: string | null
           tiktok: string | null
@@ -315,6 +319,7 @@ export type Database = {
           instagram?: string | null
           instruments?: string[] | null
           name?: string | null
+          nickname?: string | null
           past_bands?: string[] | null
           state?: string | null
           tiktok?: string | null
@@ -329,6 +334,7 @@ export type Database = {
           instagram?: string | null
           instruments?: string[] | null
           name?: string | null
+          nickname?: string | null
           past_bands?: string[] | null
           state?: string | null
           tiktok?: string | null
@@ -345,6 +351,10 @@ export type Database = {
       }
     }
     Functions: {
+      check_nickname_available: {
+        Args: { n: string }
+        Returns: boolean
+      }
       get_public_profile: {
         Args: { user_id: string }
         Returns: {
@@ -358,6 +368,10 @@ export type Database = {
           past_bands: string[]
           tiktok: string
         }[]
+      }
+      set_nickname: {
+        Args: { n: string }
+        Returns: Json
       }
     }
     Enums: {
