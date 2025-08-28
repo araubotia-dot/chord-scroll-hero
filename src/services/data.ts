@@ -7,7 +7,15 @@ export async function createSong({ title, artist, genre, key, content }: any) {
   
   const { data, error } = await supabase
     .from('songs')
-    .insert([{ user_id: user.id, title, artist, genre, key, content }])
+    .insert({
+      user_id: user.id,
+      author_id: user.id, // Will be overridden by trigger but required by schema
+      title,
+      artist,
+      genre,
+      key,
+      content
+    })
     .select()
     .single();
   

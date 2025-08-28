@@ -5,6 +5,7 @@ import { ChordRenderer } from './ChordRenderer';
 import { Button } from './ui/button';
 import AutoScrollControls from './AutoScrollControls';
 import EdgeNavArrows from './EdgeNavArrows';
+import { AuthorStamp } from './AuthorStamp';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { UserAvatar } from './UserAvatar';
@@ -922,6 +923,7 @@ export default function CifrasApp() {
                   </option>
                 ))}
               </select>
+              <AuthorStamp className="flex items-center gap-2 text-sm" />
               <div className="flex items-center gap-2">
                 <label className="text-sm text-muted-foreground">Tom original:</label>
                 <select 
