@@ -39,9 +39,9 @@ const MusicoProfile = () => {
     try {
       setLoading(true);
       
-      // Find profile by nickname (case-insensitive)
+      // Find profile by nickname (case-insensitive) using public view
       const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
+        .from('public_profiles_view')
         .select('id, nickname, name, avatar_url, description, instagram, tiktok, current_band, past_bands, instruments, state, city')
         .ilike('nickname', nickname)
         .maybeSingle();
