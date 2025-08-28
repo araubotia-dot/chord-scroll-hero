@@ -334,7 +334,7 @@ export default function CifrasApp() {
         title: "", // Começar com título vazio
         artist: "",
         genre: "",
-        key: "C",
+        key: "", // Começar com tom vazio - obrigatório
         content: "",
         user_id: user?.id || "",
         created_at: new Date().toISOString(),
@@ -379,6 +379,15 @@ export default function CifrasApp() {
         toast({
           title: "Campo obrigatório",
           description: "O ritmo/gênero da música é obrigatório.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (!song.key || song.key.trim() === "") {
+        toast({
+          title: "Campo obrigatório",
+          description: "O tom da música é obrigatório.",
           variant: "destructive"
         });
         return;
@@ -933,6 +942,7 @@ export default function CifrasApp() {
                   onChange={e => updateSongField('key', e.target.value)}
                   className="bg-input border border-border rounded-xl px-3 py-2 text-base"
                 >
+                  <option value="">Selecione o tom...</option>
                   {ALL_KEYS.filter(key => {
                     // Se preferFlats for true, mostrar tons com bemóis (b) e tons naturais
                     // Se preferFlats for false, mostrar tons com sustenidos (#) e tons naturais
