@@ -166,10 +166,12 @@ export default function EditSetlist() {
         .select('id, name')
         .eq('id', setlistId)
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (setlistError) throw setlistError;
-      if (!setlistData) throw new Error('Repertório não encontrado');
+      if (!setlistData) {
+        throw new Error('Repertório não encontrado ou você não tem permissão para acessá-lo');
+      }
       
       setSetlist(setlistData);
       setNewName(setlistData.name);
