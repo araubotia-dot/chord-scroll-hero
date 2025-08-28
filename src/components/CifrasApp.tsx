@@ -114,10 +114,14 @@ export default function CifrasApp() {
   const showRef = React.useRef<HTMLDivElement>(null);
   
   // Get user profile data or fallback to email/default
-  const userProfile = user ? {
+  const [userProfile, setUserProfile] = useState<{
+    id: string;
+    name: string;
+    nickname?: string;
+  }>(user ? {
     id: user.id,
     name: user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuário'
-  } : { id: 'guest', name: 'Usuário' };
+  } : { id: 'guest', name: 'Usuário' });
   const lastFrame = React.useRef<number | null>(null);
   const selectedSong = songs.find(s => s.id === selectedSongId) || null;
   const currentSetlist = setlists.find(s => s.id === currentSetlistId) || null;
@@ -177,6 +181,21 @@ export default function CifrasApp() {
         ]);
         setSongs(songsData);
         setSetlists(setlistsData);
+        
+        // Load user profile with nickname
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('nickname, name')
+          .eq('id', user.id)
+          .single();
+          
+        if (profileData) {
+          setUserProfile({
+            id: user.id,
+            name: profileData.name || user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuário',
+            nickname: profileData.nickname
+          });
+        }
       } catch (error) {
         console.error('Error loading data:', error);
         toast({
@@ -922,6 +941,12 @@ export default function CifrasApp() {
                   </option>
                 ))}
               </select>
+              <div className="w-full bg-muted border border-border rounded-xl px-3 py-3 text-base text-muted-foreground">
+                <div className="text-sm mb-1">Autor da cifra:</div>
+                <div className="font-medium text-foreground">
+                  @{userProfile.nickname || userProfile.name || 'usuário'}
+                </div>
+              </div>
               <div className="flex items-center gap-2">
                 <label className="text-sm text-muted-foreground">Tom original:</label>
                 <select 
