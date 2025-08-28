@@ -75,7 +75,12 @@ export default function EmptySetlistSongs({ setlistId, onSongAdded }: EmptySetli
     }
   };
 
-  const handleAddToSetlist = async (songId: string, songTitle: string) => {
+  const handleAddToSetlist = async (e: React.MouseEvent, songId: string, songTitle: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (adding === songId) return; // Prevent double clicks
+    
     try {
       setAdding(songId);
 
@@ -201,7 +206,7 @@ export default function EmptySetlistSongs({ setlistId, onSongAdded }: EmptySetli
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleAddToSetlist(song.id, song.title)}
+                        onClick={(e) => handleAddToSetlist(e, song.id, song.title)}
                         disabled={adding === song.id}
                         className="h-8 w-8 text-muted-foreground hover:text-primary"
                       >
@@ -261,7 +266,7 @@ export default function EmptySetlistSongs({ setlistId, onSongAdded }: EmptySetli
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleAddToSetlist(song.id, song.title)}
+                        onClick={(e) => handleAddToSetlist(e, song.id, song.title)}
                         disabled={adding === song.id}
                         className="h-8 w-8 text-muted-foreground hover:text-primary"
                       >
