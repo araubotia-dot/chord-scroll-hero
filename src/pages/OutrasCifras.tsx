@@ -231,9 +231,15 @@ const OutrasCifras = () => {
                   {song.profiles && (
                     <>
                       <span>•</span>
-                      <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-full text-xs">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/musico/${song.profiles.id}`);
+                        }}
+                        className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-full text-xs hover:bg-primary/20 transition-colors"
+                      >
                         @{song.profiles.nickname || song.profiles.name}
-                      </span>
+                      </button>
                     </>
                   )}
                 </div>
