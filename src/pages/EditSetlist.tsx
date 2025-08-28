@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ArrowLeft, GripVertical, X, Save, Play, Trash2 } from 'lucide-react';
+import { ArrowLeft, GripVertical, X, Save, Play, Trash2, Edit2, Check } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -136,6 +136,8 @@ export default function EditSetlist() {
   const [showDeleteSongDialog, setShowDeleteSongDialog] = useState(false);
   const [deletingSong, setDeletingSong] = useState(false);
   const [songToDelete, setSongToDelete] = useState<{ id: string; title: string } | null>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [newName, setNewName] = useState('');
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -168,6 +170,7 @@ export default function EditSetlist() {
       if (!setlistData) throw new Error('Repertório não encontrado');
       
       setSetlist(setlistData);
+      setNewName(setlistData.name);
 
       // Carregar músicas do setlist
       const { data: songsData, error: songsError } = await supabase
@@ -319,7 +322,46 @@ export default function EditSetlist() {
     }
   };
 
-  const filteredSongs = songs.filter(song => 
+  const handleStartEditingName = () => {
+    setEditingName(true);
+    setNewName(setlist?.name || '');
+  };
+
+  const handleSaveName = async () => {
+    if (!newName.trim() || !setlist) return;
+
+    try {
+      const { error } = await supabase
+        .from('setlists')
+        .update({ name: newName.trim() })
+        .eq('id', setlist.id)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      setSetlist({ ...setlist, name: newName.trim() });
+      setEditingName(false);
+      
+      toast({
+        title: "Nome atualizado",
+        description: "O nome do repertório foi atualizado com sucesso.",
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar nome:', error);
+      toast({
+        title: "Erro ao atualizar nome",
+        description: error instanceof Error ? error.message : String(error),
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCancelEditingName = () => {
+    setEditingName(false);
+    setNewName(setlist?.name || '');
+  };
+
+  const filteredSongs = songs.filter(song =>
     !searchTerm || 
     song.song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     song.song.artist?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -353,7 +395,49 @@ export default function EditSetlist() {
             </Link>
             <div>
               <h1 className="text-xl md:text-2xl font-bold">Editar Repertório</h1>
-              <p className="text-muted-foreground text-sm md:text-base">{setlist.name}</p>
+              {editingName ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="text-sm md:text-base h-8"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveName();
+                      if (e.key === 'Escape') handleCancelEditingName();
+                    }}
+                    autoFocus
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleSaveName}
+                    disabled={!newName.trim()}
+                    className="h-8 w-8"
+                  >
+                    <Check className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleCancelEditingName}
+                    className="h-8 w-8"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <p className="text-muted-foreground text-sm md:text-base">{setlist.name}</p>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleStartEditingName}
+                    className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                  >
+                    <Edit2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
           
@@ -402,9 +486,15 @@ export default function EditSetlist() {
         {songs.length === 0 ? (
           <div className="text-center py-12">
             <h3 className="text-lg font-medium mb-2">Repertório vazio</h3>
-            <p className="text-muted-foreground">
-              Adicione músicas ao repertório para começar a organizar.
+            <p className="text-muted-foreground mb-4">
+              Este repertório ainda não possui músicas.
             </p>
+            <Link to="/repertorio">
+              <Button variant="outline">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Voltar
+              </Button>
+            </Link>
           </div>
         ) : filteredSongs.length === 0 ? (
           <div className="text-center py-12">
