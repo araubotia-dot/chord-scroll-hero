@@ -310,6 +310,9 @@ export default function CifrasApp() {
   
   // Filter songs based on search query
   const filteredSongs = songs.filter(song => {
+    // Filtrar músicas temporárias primeiro
+    if (song.id.startsWith('temp-')) return false;
+    
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -318,6 +321,9 @@ export default function CifrasApp() {
       (song.genre && song.genre.toLowerCase().includes(query))
     );
   });
+
+  // Lista de músicas reais (sem temporárias) para exibição na home
+  const realSongs = songs.filter(s => !s.id.startsWith('temp-'));
 
   async function newSong() {
     try {
@@ -767,7 +773,7 @@ export default function CifrasApp() {
               </div>
             </div>
             <div className="space-y-2">
-              {(searchQuery ? filteredSongs : songs.slice(0, 10)).map(s => (
+              {(searchQuery ? filteredSongs : songs.filter(s => !s.id.startsWith('temp-')).slice(0, 10)).map(s => (
                 <div key={s.id} className="p-2 border border-border rounded-lg bg-card flex items-center justify-between gap-3">
                   <div className="flex-1 cursor-pointer min-w-0" onClick={() => { 
                         setCurrentRepertoireId(null); // Clear repertoire mode for individual songs
@@ -803,7 +809,7 @@ export default function CifrasApp() {
                   </div>
                 </div>
               ))}
-              {(searchQuery ? filteredSongs : songs).length === 0 && (
+              {(searchQuery ? filteredSongs : realSongs).length === 0 && (
                 <div className="text-muted-foreground text-center py-8">
                   {searchQuery ? "Nenhuma cifra encontrada para sua pesquisa." : "Nenhuma cifra ainda. Adicione com \"+ Música\"."}
                 </div>
