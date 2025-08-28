@@ -152,7 +152,7 @@ export default function GlobalSearchBar({ setlistId, onSongAdded }: GlobalSearch
   };
 
   const handleViewSong = (songId: string) => {
-    navigate(`/song/${songId}`);
+    navigate(`/show/song/${songId}`);
   };
 
   return (

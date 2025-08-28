@@ -119,7 +119,7 @@ export default function EmptySetlistSongs({ setlistId }: EmptySetlistSongsProps)
   };
 
   const handleViewSong = (songId: string) => {
-    navigate(`/song/${songId}`);
+    navigate(`/show/song/${songId}`);
   };
 
   const filterSongs = (songs: Song[]) => {
