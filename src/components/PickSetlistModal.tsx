@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Search } from 'lucide-react';
 
 interface PickSetlistModalProps {
   open: boolean;
@@ -27,6 +28,12 @@ export function PickSetlistModal({
   const [selection, setSelection] = useState<'existing' | 'new'>('existing');
   const [selectedSetlistId, setSelectedSetlistId] = useState<string>('');
   const [newSetlistName, setNewSetlistName] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+
+  // Filtrar repertórios baseado no termo de pesquisa
+  const filteredSetlists = mySetlists.filter(setlist =>
+    setlist.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleConfirm = () => {
     if (selection === 'existing' && selectedSetlistId) {
@@ -41,6 +48,7 @@ export function PickSetlistModal({
     setSelection('existing');
     setSelectedSetlistId('');
     setNewSetlistName('');
+    setSearchTerm('');
     onOpenChange(false);
   };
 
@@ -66,33 +74,51 @@ export function PickSetlistModal({
             </div>
             
             {selection === 'existing' && (
-              <div className="ml-6">
+              <div className="ml-6 space-y-3">
                 {mySetlists.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
                     Você ainda não tem repertórios.
                   </p>
                 ) : (
-                  <ScrollArea className="h-32 w-full border rounded-md p-2">
-                    <RadioGroup
-                      value={selectedSetlistId}
-                      onValueChange={setSelectedSetlistId}
-                    >
-                      {mySetlists.map((setlist) => (
-                        <div
-                          key={setlist.id}
-                          className="flex items-center space-x-2 py-1"
+                  <>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                      <Input
+                        placeholder="Pesquisar repertórios..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 bg-white border-border"
+                      />
+                    </div>
+                    
+                    {filteredSetlists.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-2">
+                        Nenhum repertório encontrado.
+                      </p>
+                    ) : (
+                      <ScrollArea className="h-32 w-full border rounded-md p-2">
+                        <RadioGroup
+                          value={selectedSetlistId}
+                          onValueChange={setSelectedSetlistId}
                         >
-                          <RadioGroupItem value={setlist.id} id={setlist.id} />
-                          <Label
-                            htmlFor={setlist.id}
-                            className="text-sm cursor-pointer flex-1"
-                          >
-                            {setlist.name}
-                          </Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  </ScrollArea>
+                          {filteredSetlists.map((setlist) => (
+                            <div
+                              key={setlist.id}
+                              className="flex items-center space-x-2 py-1"
+                            >
+                              <RadioGroupItem value={setlist.id} id={setlist.id} />
+                              <Label
+                                htmlFor={setlist.id}
+                                className="text-sm cursor-pointer flex-1"
+                              >
+                                {setlist.name}
+                              </Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      </ScrollArea>
+                    )}
+                  </>
                 )}
               </div>
             )}
