@@ -227,14 +227,15 @@ const OutrasCifras = () => {
                 <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
                   {song.artist && <span className="truncate">{song.artist}</span>}
                   {song.artist && song.genre && <span>•</span>}
-                  {song.genre && <span className="bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full text-xs">{song.genre}</span>}
-                  {song.profiles && (
-                    <>
-                      <span>•</span>
-                      <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-full text-xs">
-                        @{song.profiles.nickname || song.profiles.name || 'usuário'}
-                      </span>
-                    </>
+                  {song.genre && (
+                    <div className="flex items-center gap-1">
+                      <span className="bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full text-xs">{song.genre}</span>
+                      {song.profiles && (
+                        <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-full text-xs">
+                          @{song.profiles.nickname || song.profiles.name || 'usuário'}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
