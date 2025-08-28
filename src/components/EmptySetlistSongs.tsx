@@ -21,9 +21,10 @@ interface Song {
 
 interface EmptySetlistSongsProps {
   setlistId: string;
+  onSongAdded?: () => void;
 }
 
-export default function EmptySetlistSongs({ setlistId }: EmptySetlistSongsProps) {
+export default function EmptySetlistSongs({ setlistId, onSongAdded }: EmptySetlistSongsProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -104,8 +105,8 @@ export default function EmptySetlistSongs({ setlistId }: EmptySetlistSongsProps)
         description: `"${songTitle}" foi adicionada ao repertório.`,
       });
 
-      // Recarregar a página para mostrar a música no repertório
-      window.location.reload();
+      // Chamar callback para recarregar os dados do setlist
+      onSongAdded?.();
     } catch (error) {
       console.error('Erro ao adicionar música:', error);
       toast({

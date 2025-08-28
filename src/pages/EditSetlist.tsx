@@ -493,7 +493,7 @@ export default function EditSetlist() {
 
         {/* Songs List */}
         {songs.length === 0 ? (
-          <EmptySetlistSongs setlistId={setlistId!} />
+          <EmptySetlistSongs setlistId={setlistId!} onSongAdded={loadSetlistData} />
         ) : filteredSongs.length === 0 ? (
           <div className="text-center py-12">
             <h3 className="text-lg font-medium mb-2">Nenhuma música encontrada</h3>
