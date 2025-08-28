@@ -1,11 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import CifrasApp from '@/components/CifrasApp';
+import { SyncAlert } from '@/components/ui/sync-alert';
 
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [showSyncAlert, setShowSyncAlert] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -28,7 +30,18 @@ const Index = () => {
     return null;
   }
 
-  return <CifrasApp />;
+  return (
+    <>
+      {showSyncAlert && (
+        <div className="p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container mx-auto max-w-4xl">
+            <SyncAlert onDismiss={() => setShowSyncAlert(false)} />
+          </div>
+        </div>
+      )}
+      <CifrasApp />
+    </>
+  );
 };
 
 export default Index;
