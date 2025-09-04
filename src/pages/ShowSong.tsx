@@ -7,6 +7,7 @@ import AutoScrollControls from '@/components/AutoScrollControls';
 import { PickSetlistModal } from '@/components/PickSetlistModal';
 import { ArrowLeft, Heart, Plus, Minus, Edit, ListMusic } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSongViewSettings } from '@/hooks/useSongViewSettings';
 import { toast } from '@/hooks/use-toast';
 import {
   getSong,
@@ -26,13 +27,14 @@ export default function ShowSong() {
   const navigate = useNavigate();
   const [song, setSong] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [semitones, setSemitones] = useState(0);
-  const [fontSize, setFontSize] = useState(16);
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [showSetlistModal, setShowSetlistModal] = useState(false);
   const [mySetlists, setMySetlists] = useState<any[]>([]);
   const [setlistLoading, setSetlistLoading] = useState(false);
+  
+  // Usar hook para configurações de visualização salvas
+  const { semitones, fontSize, setSemitones, setFontSize } = useSongViewSettings(songId || '');
 
   const isOwnSong = user?.id === song?.user_id;
 
@@ -225,7 +227,7 @@ export default function ShowSong() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setSemitones(s => s - 1)}
+              onClick={() => setSemitones(semitones - 1)}
             >
               <Minus className="h-4 w-4" />
             </Button>
@@ -235,7 +237,7 @@ export default function ShowSong() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setSemitones(s => s + 1)}
+              onClick={() => setSemitones(semitones + 1)}
             >
               +
             </Button>
@@ -244,14 +246,14 @@ export default function ShowSong() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setFontSize(s => Math.max(12, s - 2))}
+              onClick={() => setFontSize(Math.max(12, fontSize - 2))}
             >
               A-
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setFontSize(s => Math.min(24, s + 2))}
+              onClick={() => setFontSize(Math.min(24, fontSize + 2))}
             >
               A+
             </Button>
