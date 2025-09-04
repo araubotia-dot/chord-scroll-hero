@@ -40,9 +40,9 @@ const OutrasCifras = () => {
   const loadSongs = async () => {
     try {
       setLoading(true);
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
       
-      let query = supabase
+      // Get all songs from all users - no filtering by user
+      const { data, error } = await supabase
         .from('songs')
         .select(`
           id, 
@@ -53,13 +53,6 @@ const OutrasCifras = () => {
           user_id
         `)
         .order('created_at', { ascending: false });
-
-      // Exclude current user's songs
-      if (currentUser) {
-        query = query.neq('user_id', currentUser.id);
-      }
-
-      const { data, error } = await query;
 
       if (error) throw error;
 
