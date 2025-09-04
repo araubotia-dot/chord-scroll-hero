@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import { normalizeNote, NOTES_SHARP, Note } from '@/lib/music-utils';
 import { ChordRenderer } from './ChordRenderer';
-import { AlignedChordRenderer } from './AlignedChordRenderer';
 import { Button } from './ui/button';
 import AutoScrollControls from './AutoScrollControls';
 import EdgeNavArrows from './EdgeNavArrows';
@@ -1143,11 +1142,11 @@ export default function CifrasApp() {
                       }}
                       className="w-full"
                     >
-                      <AlignedChordRenderer
+                      <ChordRenderer
                         text={selectedSong.content}
                         semitones={showSemitones}
                         preferFlats={preferFlats}
-                        className="w-full"
+                        className="font-mono w-full"
                       />
                     </div>
                   ) : (
