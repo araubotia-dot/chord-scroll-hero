@@ -170,7 +170,6 @@ export type Database = {
           created_at: string
           id: string
           is_imported: boolean | null
-          is_public: boolean | null
           last_viewed_at: string | null
           name: string
           origin_user_id: string | null
@@ -181,7 +180,6 @@ export type Database = {
           created_at?: string
           id?: string
           is_imported?: boolean | null
-          is_public?: boolean | null
           last_viewed_at?: string | null
           name: string
           origin_user_id?: string | null
@@ -192,7 +190,6 @@ export type Database = {
           created_at?: string
           id?: string
           is_imported?: boolean | null
-          is_public?: boolean | null
           last_viewed_at?: string | null
           name?: string
           origin_user_id?: string | null
@@ -210,7 +207,6 @@ export type Database = {
           genre: string
           id: string
           is_imported: boolean | null
-          is_public: boolean | null
           key: string | null
           kind: string
           origin_user_id: string | null
@@ -227,7 +223,6 @@ export type Database = {
           genre: string
           id?: string
           is_imported?: boolean | null
-          is_public?: boolean | null
           key?: string | null
           kind?: string
           origin_user_id?: string | null
@@ -244,7 +239,6 @@ export type Database = {
           genre?: string
           id?: string
           is_imported?: boolean | null
-          is_public?: boolean | null
           key?: string | null
           kind?: string
           origin_user_id?: string | null

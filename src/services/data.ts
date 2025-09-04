@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 // SONGS
-export async function createSong({ title, artist, genre, key, content, is_public = false }: any) {
+export async function createSong({ title, artist, genre, key, content }: any) {
   const { data: { user }, error: authErr } = await supabase.auth.getUser();
   if (authErr || !user) throw new Error('Sem sessão. Faça login.');
   
@@ -9,13 +9,12 @@ export async function createSong({ title, artist, genre, key, content, is_public
     .from('songs')
     .insert([{ 
       user_id: user.id, 
-      author_id: user.id,
+      author_id: user.id, // Adicionar author_id
       title, 
       artist, 
       genre, 
       key, 
-      content,
-      is_public
+      content 
     }])
     .select()
     .single();
@@ -27,7 +26,7 @@ export async function createSong({ title, artist, genre, key, content, is_public
 export async function listSongs() {
   const { data, error } = await supabase
     .from('songs')
-    .select('id, title, artist, genre, key, content, created_at, updated_at, user_id, is_public')
+    .select('id, title, artist, genre, key, content, created_at, updated_at, user_id')
     .order('created_at', { ascending: false });
   
   if (error) throw error;
@@ -42,7 +41,7 @@ export async function listMySongs() {
   
   const { data, error } = await supabase
     .from('songs')
-    .select('id, title, artist, genre, key, content, created_at, updated_at, user_id, is_public')
+    .select('id, title, artist, genre, key, content, created_at, updated_at, user_id')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
   
@@ -82,13 +81,13 @@ export async function deleteSong(id: string) {
 }
 
 // SETLISTS
-export async function createSetlist({ name, is_public = false }: any) {
+export async function createSetlist({ name }: any) {
   const { data: { user }, error: authErr } = await supabase.auth.getUser();
   if (authErr || !user) throw new Error('Sem sessão. Faça login.');
   
   const { data, error } = await supabase
     .from('setlists')
-    .insert([{ user_id: user.id, name, is_public }])
+    .insert([{ user_id: user.id, name }])
     .select()
     .single();
   
@@ -102,7 +101,7 @@ export async function listSetlists() {
   
   const { data, error } = await supabase
     .from('setlists')
-    .select('id, name, created_at, updated_at, user_id, is_public')
+    .select('id, name, created_at, updated_at, user_id')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
   
@@ -154,7 +153,7 @@ export async function addSongToSetlist({ setlist_id, song_id, position }: any) {
 export async function listSetlistSongs(setlist_id: string) {
   const { data, error } = await supabase
     .from('setlist_songs')
-    .select('id, position, song:songs(id, title, artist, genre, key, content, is_public)')
+    .select('id, position, song:songs(id, title, artist, genre, key, content)')
     .eq('setlist_id', setlist_id)
     .order('position', { ascending: true });
   

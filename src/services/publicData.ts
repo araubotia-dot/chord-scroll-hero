@@ -16,9 +16,8 @@ export async function getPublicProfile(userId: string) {
 export async function getPublicSongs(userId: string) {
   const { data, error } = await supabase
     .from('songs')
-    .select('id, title, artist, genre, key, content, created_at, user_id, is_public')
+    .select('id, title, artist, genre, key, content, created_at')
     .eq('user_id', userId)
-    .eq('is_public', true)
     .order('created_at', { ascending: false });
   
   if (error) throw error;
@@ -29,9 +28,8 @@ export async function getPublicSongs(userId: string) {
 export async function getPublicSetlists(userId: string) {
   const { data, error } = await supabase
     .from('setlists')
-    .select('id, name, created_at, user_id, is_public')
+    .select('id, name, created_at')
     .eq('user_id', userId)
-    .eq('is_public', true)
     .order('created_at', { ascending: false });
   
   if (error) throw error;
@@ -42,7 +40,7 @@ export async function getPublicSetlists(userId: string) {
 export async function getSong(songId: string) {
   const { data, error } = await supabase
     .from('songs')
-    .select('id, title, artist, genre, key, content, user_id, created_at, is_public')
+    .select('id, title, artist, genre, key, content, user_id, created_at')
     .eq('id', songId)
     .single();
   
@@ -54,7 +52,7 @@ export async function getSong(songId: string) {
 export async function getSetlistWithSongs(setlistId: string) {
   const { data: setlist, error: setlistError } = await supabase
     .from('setlists')
-    .select('id, name, user_id, created_at, is_public')
+    .select('id, name, user_id, created_at')
     .eq('id', setlistId)
     .single();
 
@@ -73,8 +71,7 @@ export async function getSetlistWithSongs(setlistId: string) {
         genre,
         key,
         content,
-        user_id,
-        is_public
+        user_id
       )
     `)
     .eq('setlist_id', setlistId)
@@ -200,7 +197,7 @@ export async function listFavoriteSongs() {
   const songIds = favorites.map(fav => fav.song_id);
   const { data: songs, error: songsError } = await supabase
     .from('songs')
-    .select('id, title, artist, genre, key, content, user_id, is_public')
+    .select('id, title, artist, genre, key, content, user_id')
     .in('id', songIds);
   
   if (songsError) throw songsError;
@@ -234,7 +231,7 @@ export async function listFavoriteSetlists() {
   const setlistIds = favorites.map(fav => fav.setlist_id);
   const { data: setlists, error: setlistsError } = await supabase
     .from('setlists')
-    .select('id, name, user_id, created_at, is_public')
+    .select('id, name, user_id, created_at')
     .in('id', setlistIds);
   
   if (setlistsError) throw setlistsError;
