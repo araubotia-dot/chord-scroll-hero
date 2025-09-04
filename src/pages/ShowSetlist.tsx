@@ -71,6 +71,11 @@ export default function ShowSetlist() {
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
 
+  // Aplicar fontSize às variáveis CSS globais
+  useEffect(() => {
+    document.documentElement.style.setProperty('--size-lyrics', `${fontSize}px`);
+  }, [fontSize]);
+
   useEffect(() => {
     if (!setlistId) return;
     loadSetlist();
@@ -430,17 +435,11 @@ export default function ShowSetlist() {
               <article className="show-content w-full max-w-none mx-0 rounded-lg shadow-none bg-transparent md:max-w-3xl md:mx-auto md:rounded-2xl md:shadow md:bg-card">
                 <div className="p-4 md:p-8">
                   {currentSong.songs.content ? (
-                    <div 
-                      style={{ 
-                        fontSize: `${fontSize}px`,
-                        lineHeight: '1.6'
-                      }}
-                      className="w-full"
-                    >
+                    <div className="song-content w-full">
                       <ChordRenderer
                         text={currentSong.songs.content}
                         semitones={semitones}
-                        className="font-mono w-full"
+                        className="w-full"
                       />
                     </div>
                   ) : (

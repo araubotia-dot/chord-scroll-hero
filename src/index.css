@@ -6,6 +6,14 @@
 
 @layer base {
   :root {
+    /* Typography System - Unified between Edit and Show modes */
+    --font-lyrics: ui-sans-serif, system-ui, -apple-system, "Inter", "SF Pro", Arial, sans-serif;
+    --font-chords: var(--font-lyrics);
+    --size-lyrics: 16px;
+    --size-chord: 0.95em;
+    --lineheight: 1.75;
+    --letterspacing: 0;
+
     /* Stage Performance Dark Theme */
     --background: 220 15% 6%;
     --foreground: 210 40% 98%;
@@ -127,19 +135,30 @@
     @apply border-border;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-lyrics);
+    font-size: var(--size-lyrics);
+    line-height: var(--lineheight);
+    letter-spacing: var(--letterspacing);
   }
 }
 
 /* Aligned Lyrics Ruby System - Scoped styles */
 @layer components {
   .cifra-aligned {
-    --lyrics-font-size: 1rem;
-    --chord-scale: 0.9;
     --chord-bg: hsl(var(--chord-bg, 166 62% 50% / 0.15));
     --chord-fg: hsl(var(--chord-highlight, 166 62% 50%));
-    @apply whitespace-pre-wrap leading-relaxed tracking-wide w-full;
+    @apply whitespace-pre-wrap w-full;
+    font-family: var(--font-lyrics);
+    font-size: var(--size-lyrics);
+    line-height: var(--lineheight);
+    letter-spacing: var(--letterspacing);
   }
 
   .cifra-aligned__line {
@@ -159,17 +178,17 @@
   .cifra-aligned__word {
     @apply inline;
     white-space: pre-wrap;
-    font-size: var(--lyrics-font-size);
+    font-size: var(--size-lyrics);
   }
 
   .cifra-aligned__text {
     @apply inline;
     white-space: pre-wrap;
-    font-size: var(--lyrics-font-size);
+    font-size: var(--size-lyrics);
   }
 
   .cifra-aligned__chord {
-    font-size: calc(var(--lyrics-font-size) * var(--chord-scale));
+    font-size: var(--size-chord);
     font-weight: 600;
     @apply inline;
   }
@@ -189,5 +208,24 @@
   /* Takeover mode - hide original when ruby is active */
   .cifra-aligned--takeover + * {
     @apply hidden;
+  }
+
+  /* Unified Song Content Styles */
+  .song-content {
+    font-family: var(--font-lyrics);
+    font-size: var(--size-lyrics);
+    line-height: var(--lineheight);
+    letter-spacing: var(--letterspacing);
+    @apply whitespace-pre-wrap w-full;
+  }
+
+  .song-content .chord-element {
+    font-family: var(--font-chords);
+    font-size: var(--size-chord);
+    font-weight: 600;
+    color: hsl(var(--chord-highlight));
+    background: hsl(var(--chord-bg));
+    @apply px-1 py-0.5 rounded;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.1);
   }
 }

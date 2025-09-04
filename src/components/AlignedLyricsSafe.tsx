@@ -233,13 +233,7 @@ export function AlignedLyricsSafe({
   }
 
   return (
-    <div 
-      className={`cifra-aligned ${className}`}
-      style={{
-        '--lyrics-font-size': `${fontSize}px`,
-        '--chord-scale': '0.9'
-      } as React.CSSProperties}
-    >
+    <div className={`cifra-aligned ${className}`}>
       {processedLines}
     </div>
   );

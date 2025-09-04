@@ -116,6 +116,11 @@ export default function CifrasApp() {
 
   const showRef = React.useRef<HTMLDivElement>(null);
   
+  // Aplicar fontSize às variáveis CSS globais
+  useEffect(() => {
+    document.documentElement.style.setProperty('--size-lyrics', `${showFontSize}px`);
+  }, [showFontSize]);
+  
   // Get user profile data or fallback to email/default
   const userProfile = user ? {
     id: user.id,
@@ -1040,7 +1045,7 @@ export default function CifrasApp() {
                 </div>
               </div>
               <div className="rounded-xl border border-border bg-card p-4 overflow-auto h-[300px] lg:h-[420px]">
-                <ChordRenderer text={selectedSong.content} semitones={transpose} preferFlats={preferFlats} />
+                <ChordRenderer text={selectedSong.content} semitones={transpose} preferFlats={preferFlats} className="" />
               </div>
               <button 
                 onClick={() => { setView("show"); }} 
@@ -1135,18 +1140,12 @@ export default function CifrasApp() {
               <article className="show-content w-full max-w-none mx-0 rounded-lg shadow-none bg-transparent md:max-w-3xl md:mx-auto md:rounded-2xl md:shadow md:bg-card">
                 <div className="p-4 md:p-8">
                   {selectedSong.content ? (
-                    <div 
-                      style={{ 
-                        fontSize: `${showFontSize}px`,
-                        lineHeight: '1.6'
-                      }}
-                      className="w-full"
-                    >
+                    <div className="song-content w-full">
                       <ChordRenderer
                         text={selectedSong.content}
                         semitones={showSemitones}
                         preferFlats={preferFlats}
-                        className="font-mono w-full"
+                        className="w-full"
                       />
                     </div>
                   ) : (
