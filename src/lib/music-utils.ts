@@ -49,7 +49,7 @@ const CHORD_SUFFIX = "(?:" +
   // Alterações com parênteses como m7(5-), m7(5b-), etc
   "(?:m?[0-9]+\\([0-9]+[b#+-]+\\))|" +
   // Números entre parênteses como 7(9), 7(4), 7(4)(9) - múltiplos parênteses
-  "(?:m?(?:maj)?[0-9]*(?:\\([0-9]+[b#+-]*\\))+)|" +
+  "(?:m?[0-9]+(?:\\([0-9]+\\))+)|" +
   // Suspended chords
   "sus[0-9]+|" +
   // Added tones
