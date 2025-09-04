@@ -59,10 +59,14 @@
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-    /* Typography scales for performance */
+/* Typography scales for performance */
     --text-performance-lg: 1.25rem;
     --text-performance-xl: 1.5rem;
     --leading-performance: 1.8;
+
+    /* Ruby chord alignment styles */
+    --chord-font-size: 0.85em;
+    --chord-line-height: 1;
 
     /* Sidebar colors */
     --sidebar-background: 220 15% 8%;
@@ -129,5 +133,71 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Ruby chord alignment system */
+@layer components {
+  .song-content {
+    font-family: var(--font-lyrics, ui-monospace, 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Droid Sans Mono', 'Courier New', monospace);
+    line-height: var(--leading-performance);
+    letter-spacing: 0.025em;
+  }
+  
+  .ruby-chord-container {
+    ruby-position: over;
+    ruby-align: start;
+    white-space: pre-wrap;
+    display: inline-block;
+  }
+  
+  .ruby-lyric {
+    display: inline;
+    white-space: pre-wrap;
+  }
+  
+  .ruby-chord {
+    font-size: var(--chord-font-size);
+    font-weight: 600;
+    line-height: var(--chord-line-height);
+    color: hsl(var(--chord-highlight));
+    background-color: hsl(var(--chord-bg));
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    margin: 0 0.125rem;
+    white-space: nowrap;
+    display: block;
+    text-align: center;
+    min-width: 1ch;
+  }
+  
+  /* Responsividade para dispositivos móveis */
+  @media (max-width: 640px) {
+    .ruby-chord {
+      font-size: calc(var(--chord-font-size) * 0.9);
+      padding: 0.1rem 0.2rem;
+    }
+  }
+  
+  /* Suporte para navegadores que não suportam ruby */
+  @supports not (ruby-position: over) {
+    .ruby-chord-container {
+      display: inline-grid;
+      grid-template-rows: auto auto;
+      grid-template-columns: min-content;
+      align-items: end;
+      vertical-align: bottom;
+    }
+    
+    .ruby-chord {
+      grid-row: 1;
+      grid-column: 1;
+      justify-self: start;
+    }
+    
+    .ruby-lyric {
+      grid-row: 2;
+      grid-column: 1;
+    }
   }
 }
