@@ -13,7 +13,7 @@ export function ChordRenderer({ text, semitones = 0, preferFlats = false, classN
   const lines = transposed.split(/\r?\n/);
   
   return (
-    <div className={`song-content ${className}`}>
+    <div className={`whitespace-pre-wrap leading-relaxed tracking-wide w-full ${className}`}>
       {lines.map((line, i) => {
         // Se a linha está vazia, renderiza um espaço para manter o espaçamento
         if (line.trim() === "") {
@@ -34,7 +34,7 @@ export function ChordRenderer({ text, semitones = 0, preferFlats = false, classN
           
           const chordTxt = `${root}${suffix||""}${bass?"/"+bass:""}`;
           parts.push(
-            <span key={`${i}-${start}`} className="chord-element">
+            <span key={`${i}-${start}`} className="px-1 py-0.5 rounded bg-chord-bg text-chord-highlight font-semibold">
               {chordTxt}
             </span>
           );
