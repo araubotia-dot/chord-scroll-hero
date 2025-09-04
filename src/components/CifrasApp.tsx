@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import { normalizeNote, NOTES_SHARP, Note } from '@/lib/music-utils';
-import { ResponsiveChordRenderer } from './ResponsiveChordRenderer';
+import { ChordRenderer } from './ChordRenderer';
 import { Button } from './ui/button';
 import AutoScrollControls from './AutoScrollControls';
 import EdgeNavArrows from './EdgeNavArrows';
@@ -1040,12 +1040,7 @@ export default function CifrasApp() {
                 </div>
               </div>
               <div className="rounded-xl border border-border bg-card p-4 overflow-auto h-[300px] lg:h-[420px]">
-                <ResponsiveChordRenderer 
-                  text={selectedSong.content} 
-                  semitones={transpose} 
-                  preferFlats={preferFlats}
-                  fontSize={fontSize}
-                />
+                <ChordRenderer text={selectedSong.content} semitones={transpose} preferFlats={preferFlats} />
               </div>
               <button 
                 onClick={() => { setView("show"); }} 
@@ -1147,11 +1142,10 @@ export default function CifrasApp() {
                       }}
                       className="w-full"
                     >
-                      <ResponsiveChordRenderer
+                      <ChordRenderer
                         text={selectedSong.content}
                         semitones={showSemitones}
                         preferFlats={preferFlats}
-                        fontSize={showFontSize}
                         className="font-mono w-full"
                       />
                     </div>
