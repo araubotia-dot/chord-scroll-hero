@@ -7,6 +7,7 @@ import AutoScrollControls from './AutoScrollControls';
 import EdgeNavArrows from './EdgeNavArrows';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useCifrasSettings } from '@/hooks/useCifrasSettings';
 import { UserAvatar } from './UserAvatar';
 import { UserNickname } from './UserNickname';
 import { Trash2, ChevronUp, Play, Pause, RotateCcw, Edit, Search, ArrowLeft, Minus, Plus } from 'lucide-react';
@@ -83,6 +84,32 @@ export default function CifrasApp() {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   
+  // Usar hook centralizado para configurações
+  const {
+    settings: {
+      fontSize,
+      transpose,
+      preferFlats,
+      showFontSize,
+      showSemitones,
+      scrollSpeed
+    },
+    updateFontSize,
+    updateTranspose,
+    updatePreferFlats,
+    updateShowFontSize,
+    updateShowSemitones,
+    updateScrollSpeed,
+    incrementFontSize,
+    decrementFontSize,
+    incrementTranspose,
+    decrementTranspose,
+    incrementShowFontSize,
+    decrementShowFontSize,
+    incrementShowSemitones,
+    decrementShowSemitones
+  } = useCifrasSettings();
+  
   // Check if we're in a show route to hide navigation pills on mobile
   const isShowRoute = location.pathname.startsWith('/show');
   const [songs, setSongs] = useState<Song[]>([]);
@@ -93,11 +120,8 @@ export default function CifrasApp() {
   const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
   const [currentSetlistId, setCurrentSetlistId] = useState<string | null>(null);
   const [viewingSetlistId, setViewingSetlistId] = useState<string | null>(null);
-  const [transpose, setTranspose] = useState(0);
-  const [preferFlats, setPreferFlats] = useState(false);
   const [speed, setSpeed] = useState(40);
   const [isScrolling, setIsScrolling] = useState(false);
-  const [scrollSpeed, setScrollSpeed] = useState(3); // 1-5 scale
   const [searchQuery, setSearchQuery] = useState("");
   const [showSetlistModal, setShowSetlistModal] = useState(false);
   const [showCreateSetlistModal, setShowCreateSetlistModal] = useState(false);
@@ -105,14 +129,11 @@ export default function CifrasApp() {
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [showAddToRepertoireSuccess, setShowAddToRepertoireSuccess] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const [fontSize, setFontSize] = useState(16); // Font size in px
   const [showControls, setShowControls] = useState(false); // Show/hide bottom controls
   const [activeControl, setActiveControl] = useState<string | null>(null); // Active control panel
   const [currentRepertoireId, setCurrentRepertoireId] = useState<string | null>(null); // Current repertoire being played
   const [currentSongIndex, setCurrentSongIndex] = useState(0); // Current song index in repertoire
   const [originalSong, setOriginalSong] = useState<Song | null>(null); // Track original song state for changes
-  const [showSemitones, setShowSemitones] = useState(0); // Transposition for show mode
-  const [showFontSize, setShowFontSize] = useState(16); // Font size for show mode
 
   const showRef = React.useRef<HTMLDivElement>(null);
   
@@ -154,6 +175,19 @@ export default function CifrasApp() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [activeControl]);
+
+  // Carregar configurações salvas do localStorage
+  useEffect(() => {
+    try {
+      // As configurações agora são gerenciadas pelo hook useCifrasSettings
+      // Este useEffect pode ser removido pois o hook já gerencia o localStorage
+    } catch (error) {
+      console.log('Erro ao carregar configurações salvas:', error);
+    }
+  }, []);
+
+  // Os useEffects para salvar configurações foram removidos 
+  // pois agora são gerenciados pelo hook useCifrasSettings
 
   useEffect(() => {
     const editSongId = searchParams.get('edit');
@@ -271,7 +305,7 @@ export default function CifrasApp() {
   // Auto-start scrolling when entering show view
   useEffect(() => {
     if (view === "show" && selectedSong) {
-      setScrollSpeed(2); // Start with slow speed
+      updateScrollSpeed(2); // Start with slow speed
       setIsScrolling(true);
       // Reset scroll position to top
       if (showRef.current) {
@@ -280,7 +314,7 @@ export default function CifrasApp() {
     } else {
       setIsScrolling(false);
     }
-  }, [view, selectedSong]);
+  }, [view, selectedSong, updateScrollSpeed]);
 
   // Auto-scroll effect
   useEffect(() => {
@@ -917,137 +951,193 @@ export default function CifrasApp() {
         )}
 
         {view === "editar" && selectedSong && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <input 
-                value={selectedSong.title || ""} 
-                onChange={e => updateSongField('title', e.target.value)}
-                className="w-full bg-input border border-border rounded-xl px-3 py-3 text-base" 
-                placeholder="Título"
-              />
-              <input 
-                value={selectedSong.artist || ""} 
-                onChange={e => updateSongField('artist', e.target.value)}
-                className="w-full bg-input border border-border rounded-xl px-3 py-3 text-base" 
-                placeholder="Artista"
-              />
-              <select
-                value={selectedSong.genre || ""}
-                onChange={e => updateSongField('genre', e.target.value)}
-                className="w-full bg-background border border-border rounded-xl px-3 py-3 text-foreground text-base"
-              >
-                <option value="">Selecione o ritmo...</option>
-                {MUSIC_GENRES.map(genre => (
-                  <option key={genre} value={genre} className="bg-background text-foreground">
-                    {genre}
-                  </option>
-                ))}
-              </select>
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-muted-foreground">Tom original:</label>
-                <select 
-                  value={selectedSong.key} 
-                  onChange={e => updateSongField('key', e.target.value)}
-                  className="bg-input border border-border rounded-xl px-3 py-2 text-base"
+          <div className="flex flex-col space-y-6">
+            {/* Mobile/tablet: layout vertical, Desktop: layout horizontal */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              {/* Formulário de edição */}
+              <div className="space-y-4 order-1 xl:order-1">
+                <input 
+                  value={selectedSong.title || ""} 
+                  onChange={e => updateSongField('title', e.target.value)}
+                  className="w-full bg-input border border-border rounded-xl px-4 py-3 text-base" 
+                  placeholder="Título"
+                />
+                <input 
+                  value={selectedSong.artist || ""} 
+                  onChange={e => updateSongField('artist', e.target.value)}
+                  className="w-full bg-input border border-border rounded-xl px-4 py-3 text-base" 
+                  placeholder="Artista"
+                />
+                <select
+                  value={selectedSong.genre || ""}
+                  onChange={e => updateSongField('genre', e.target.value)}
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground text-base"
                 >
-                  <option value="">Selecione o tom...</option>
-                  {ALL_KEYS.filter(key => {
-                    // Se preferFlats for true, mostrar tons com bemóis (b) e tons naturais
-                    // Se preferFlats for false, mostrar tons com sustenidos (#) e tons naturais
-                    if (preferFlats) {
-                      return !key.includes('#'); // Não mostrar sustenidos
-                    } else {
-                      return !key.includes('b'); // Não mostrar bemóis
-                    }
-                  }).map(n => <option key={n} value={n}>{n}</option>)}
+                  <option value="">Selecione o ritmo...</option>
+                  {MUSIC_GENRES.map(genre => (
+                    <option key={genre} value={genre} className="bg-background text-foreground">
+                      {genre}
+                    </option>
+                  ))}
                 </select>
-                <button
-                  onClick={() => setPreferFlats(!preferFlats)}
-                  className={`px-3 py-2 rounded-xl text-sm transition-colors ${
-                    preferFlats 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                  }`}
-                  title={preferFlats ? "Mostrar sustenidos (#)" : "Mostrar bemóis (♭)"}
-                >
-                  {preferFlats ? "♭" : "#"}
-                </button>
-              </div>
-              <textarea 
-                value={selectedSong.content} 
-                onChange={e => updateSongField('content', e.target.value)}
-                className="w-full h-[300px] lg:h-[320px] bg-input border border-border rounded-xl p-3 font-mono text-sm"
-                placeholder="Digite os acordes e letra aqui..."
-              />
-              <div className="flex gap-2 flex-wrap">
-                <button 
-                  onClick={() => saveSong(selectedSong)} 
-                  className={`px-4 py-3 lg:px-3 lg:py-2 rounded font-medium transition-colors ${
-                    songHasChanges 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary-hover' 
-                      : 'bg-muted text-muted-foreground hover:bg-muted-hover'
-                  }`}
-                >
-                  Salvar
-                </button>
-                <button 
-                  onClick={() => setShowSetlistModal(true)} 
-                  className="px-4 py-3 lg:px-3 lg:py-2 rounded bg-accent text-accent-foreground hover:bg-accent/80"
-                >
-                  Adicionar ao Repertório
-                </button>
-                <button 
-                  onClick={() => setView("home")} 
-                  className="px-4 py-3 lg:px-3 lg:py-2 rounded bg-muted text-muted-foreground hover:bg-muted-hover"
-                >
-                  Cancelar
-                </button>
-                <button 
-                  onClick={() => deleteSong(selectedSong.id)} 
-                  className="px-4 py-3 lg:px-3 lg:py-2 rounded bg-red-500 text-white hover:bg-red-600 flex items-center gap-2"
-                >
-                  <Trash2 size={16} />
-                  Excluir
-                </button>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2">
-                <div className="font-semibold">Pré-visualização</div>
-                <div className="flex items-center gap-2 text-sm flex-wrap">
-                  <span>Transpor:</span>
+                
+                {/* Tom original - responsivo */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <label className="text-sm text-muted-foreground whitespace-nowrap">Tom original:</label>
+                  <div className="flex items-center gap-2">
+                    <select 
+                      value={selectedSong.key} 
+                      onChange={e => updateSongField('key', e.target.value)}
+                      className="flex-1 bg-input border border-border rounded-xl px-3 py-2 text-base min-w-0"
+                    >
+                      <option value="">Selecione o tom...</option>
+                      {ALL_KEYS.filter(key => {
+                        if (preferFlats) {
+                          return !key.includes('#');
+                        } else {
+                          return !key.includes('b');
+                        }
+                      }).map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                    <button
+                      onClick={() => updatePreferFlats(!preferFlats)}
+                      className={`px-3 py-2 rounded-xl text-sm transition-colors flex-shrink-0 ${
+                        preferFlats 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                      }`}
+                      title={preferFlats ? "Mostrar sustenidos (#)" : "Mostrar bemóis (♭)"}
+                    >
+                      {preferFlats ? "♭" : "#"}
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Textarea - altura responsiva */}
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">Conteúdo da música:</label>
+                  <textarea 
+                    value={selectedSong.content} 
+                    onChange={e => updateSongField('content', e.target.value)}
+                    className="w-full h-[250px] sm:h-[300px] xl:h-[320px] bg-input border border-border rounded-xl p-4 font-mono text-sm leading-relaxed resize-none"
+                    placeholder="Digite os acordes e letra aqui..."
+                  />
+                </div>
+                
+                {/* Botões de ação - responsivos */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <button 
-                    onClick={() => setTranspose(t => t - 1)} 
-                    className="px-3 py-2 rounded bg-muted hover:bg-muted-hover"
+                    onClick={() => saveSong(selectedSong)} 
+                    className={`px-4 py-3 rounded-xl font-medium transition-colors ${
+                      songHasChanges 
+                        ? 'bg-primary text-primary-foreground hover:bg-primary-hover' 
+                        : 'bg-muted text-muted-foreground hover:bg-muted-hover'
+                    }`}
                   >
-                    -
+                    Salvar
                   </button>
-                  <div className="w-10 text-center">{transpose}</div>
                   <button 
-                    onClick={() => setTranspose(t => t + 1)} 
-                    className="px-3 py-2 rounded bg-muted hover:bg-muted-hover"
+                    onClick={() => setShowSetlistModal(true)} 
+                    className="px-4 py-3 rounded-xl bg-accent text-accent-foreground hover:bg-accent/80"
                   >
-                    +
+                    Adicionar ao Repertório
                   </button>
-                  <label className="ml-2 flex items-center gap-1">
-                    <input 
-                      type="checkbox" 
-                      checked={preferFlats} 
-                      onChange={e => setPreferFlats(e.target.checked)} 
-                    /> 
-                    bemóis
-                  </label>
+                  <button 
+                    onClick={() => setView("home")} 
+                    className="px-4 py-3 rounded-xl bg-muted text-muted-foreground hover:bg-muted-hover"
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    onClick={() => deleteSong(selectedSong.id)} 
+                    className="px-4 py-3 rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 flex items-center justify-center gap-2"
+                  >
+                    <Trash2 size={16} />
+                    Excluir
+                  </button>
                 </div>
               </div>
-              <div className="rounded-xl border border-border bg-card p-4 overflow-auto h-[300px] lg:h-[420px]">
-                <ChordRenderer text={selectedSong.content} semitones={transpose} preferFlats={preferFlats} />
+              
+              {/* Pré-visualização */}
+              <div className="space-y-4 order-2 xl:order-2">
+                {/* Header da pré-visualização - responsivo */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="font-semibold text-lg">Pré-visualização</div>
+                  
+                  {/* Controles de transposição - responsivos */}
+                  <div className="flex flex-wrap items-center gap-3 text-sm">
+                    <span className="text-muted-foreground">Transpor:</span>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => decrementTranspose()} 
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-muted hover:bg-muted-hover transition-colors"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
+                      <div className="w-12 text-center font-mono bg-input border border-border rounded-lg py-2">
+                        {transpose === 0 ? '0' : transpose > 0 ? `+${transpose}` : transpose}
+                      </div>
+                      <button 
+                        onClick={() => incrementTranspose()} 
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-muted hover:bg-muted-hover transition-colors"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+                    
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={preferFlats} 
+                        onChange={e => updatePreferFlats(e.target.checked)}
+                        className="rounded border-border"
+                      /> 
+                      <span className="text-muted-foreground">bemóis</span>
+                    </label>
+                  </div>
+                </div>
+                
+                {/* Container da pré-visualização - altura responsiva */}
+                <div className="rounded-xl border border-border bg-card p-4 overflow-auto h-[250px] sm:h-[300px] xl:h-[420px]">
+                  <div style={{ fontSize: `${fontSize}px`, lineHeight: '1.6' }}>
+                    <ChordRenderer 
+                      text={selectedSong.content} 
+                      semitones={transpose} 
+                      preferFlats={preferFlats}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+                
+                {/* Controles de fonte */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Fonte:</span>
+                    <button 
+                      onClick={() => decrementFontSize()} 
+                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-muted hover:bg-muted-hover transition-colors"
+                    >
+                      A-
+                    </button>
+                    <div className="w-12 text-center text-xs bg-input border border-border rounded-lg py-2">
+                      {fontSize}px
+                    </div>
+                    <button 
+                      onClick={() => incrementFontSize()} 
+                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-muted hover:bg-muted-hover transition-colors"
+                    >
+                      A+
+                    </button>
+                  </div>
+                  
+                  <button 
+                    onClick={() => { setView("show"); }} 
+                    className="flex-1 max-w-xs px-4 py-3 rounded-xl bg-accent text-accent-foreground hover:bg-accent/80 font-medium transition-colors"
+                  >
+                    Abrir no Show
+                  </button>
+                </div>
               </div>
-              <button 
-                onClick={() => { setView("show"); }} 
-                className="w-full px-3 py-3 lg:py-2 rounded bg-accent text-accent-foreground hover:bg-accent/80 font-medium"
-              >
-                Abrir no Show
-              </button>
             </div>
           </div>
         )}
@@ -1098,7 +1188,7 @@ export default function CifrasApp() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowSemitones(s => s - 1)}
+                    onClick={() => decrementShowSemitones()}
                   >
                     ♭
                   </Button>
@@ -1108,7 +1198,7 @@ export default function CifrasApp() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowSemitones(s => s + 1)}
+                    onClick={() => incrementShowSemitones()}
                   >
                     ♯
                   </Button>
@@ -1117,14 +1207,14 @@ export default function CifrasApp() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowFontSize(s => Math.max(12, s - 2))}
+                    onClick={() => decrementShowFontSize()}
                   >
                     A-
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowFontSize(s => Math.min(24, s + 2))}
+                    onClick={() => incrementShowFontSize()}
                   >
                     A+
                   </Button>

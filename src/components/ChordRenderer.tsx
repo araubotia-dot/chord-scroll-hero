@@ -13,11 +13,11 @@ export function ChordRenderer({ text, semitones = 0, preferFlats = false, classN
   const lines = transposed.split(/\r?\n/);
   
   return (
-    <div className={`whitespace-pre-wrap leading-relaxed tracking-wide w-full ${className}`}>
+    <div className={`whitespace-pre-wrap leading-relaxed tracking-wide w-full overflow-x-auto ${className}`}>
       {lines.map((line, i) => {
         // Se a linha está vazia, renderiza um espaço para manter o espaçamento
         if (line.trim() === "") {
-          return <div key={i} className="h-6">&nbsp;</div>;
+          return <div key={i} className="h-6 min-h-[1.5rem]">&nbsp;</div>;
         }
         
         const parts: React.ReactNode[] = [];
@@ -34,7 +34,7 @@ export function ChordRenderer({ text, semitones = 0, preferFlats = false, classN
           
           const chordTxt = `${root}${suffix||""}${bass?"/"+bass:""}`;
           parts.push(
-            <span key={`${i}-${start}`} className="px-1 py-0.5 rounded bg-chord-bg text-chord-highlight font-semibold">
+            <span key={`${i}-${start}`} className="inline-block px-1 py-0.5 mx-0.5 rounded bg-chord-bg text-chord-highlight font-semibold text-xs sm:text-sm whitespace-nowrap">
               {chordTxt}
             </span>
           );
@@ -42,7 +42,11 @@ export function ChordRenderer({ text, semitones = 0, preferFlats = false, classN
         }
         
         if (last < line.length) parts.push(line.slice(last));
-        return <div key={i}>{parts}</div>;
+        return (
+          <div key={i} className="min-h-[1.5rem] break-words">
+            {parts}
+          </div>
+        );
       })}
     </div>
   );
