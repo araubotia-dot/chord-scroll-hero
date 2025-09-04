@@ -120,39 +120,6 @@
     --sidebar-border: 214.3 31.8% 91.4%;
     --sidebar-ring: 166 62% 40%;
   }
-
-  /* Responsive Chords System */
-  html { font-size: var(--base, 18px); }
-  .song-view { 
-    color: hsl(var(--foreground)); 
-    background: transparent; 
-    line-height: 1.85; 
-    word-break: normal; 
-    overflow-wrap: anywhere;
-  }
-  .line { white-space: pre-wrap; }
-  .token {
-    position: relative;
-    display: inline-block;
-    white-space: pre;
-  }
-  .chord {
-    position: absolute;
-    left: 50%;
-    bottom: calc(100% + var(--chord-offset, 1.10em));
-    transform: translateX(-50%);
-    font-weight: 700;
-    font-size: var(--chord-size, 0.80em);
-    line-height: 1;
-    white-space: nowrap;
-    color: hsl(var(--chord-highlight));
-    background: hsl(var(--chord-bg));
-    border: 1px solid color-mix(in oklab, hsl(var(--chord-highlight)) 55%, transparent);
-    padding: .12em .38em;
-    border-radius: .55em;
-    pointer-events: none;
-    user-select: none;
-  }
 }
 
 @layer base {
