@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChordRenderer } from '@/components/ChordRenderer';
+import { ResponsiveChordRenderer } from '@/components/ResponsiveChordRenderer';
 import AutoScrollControls from '@/components/AutoScrollControls';
 import { PickSetlistModal } from '@/components/PickSetlistModal';
 import { ArrowLeft, Heart, Plus, Minus, Edit, ListMusic } from 'lucide-react';
@@ -321,9 +321,10 @@ export default function ShowSong() {
                 }}
                 className="w-full"
               >
-                <ChordRenderer 
+                <ResponsiveChordRenderer 
                   text={song.content} 
                   semitones={semitones}
+                  fontSize={fontSize}
                   className="font-mono w-full"
                 />
               </div>
