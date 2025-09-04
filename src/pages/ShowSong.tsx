@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChordRenderer } from '@/components/ChordRenderer';
+import { AlignedLyricsSafe } from '@/components/AlignedLyricsSafe';
 import AutoScrollControls from '@/components/AutoScrollControls';
 import { PickSetlistModal } from '@/components/PickSetlistModal';
 import { ArrowLeft, Heart, Plus, Minus, Edit, ListMusic } from 'lucide-react';
@@ -32,6 +33,9 @@ export default function ShowSong() {
   const [showSetlistModal, setShowSetlistModal] = useState(false);
   const [mySetlists, setMySetlists] = useState<any[]>([]);
   const [setlistLoading, setSetlistLoading] = useState(false);
+  
+  // Feature flag para alinhamento ruby - pode ser controlado por usuário/rota
+  const [enableRubyAlignment, setEnableRubyAlignment] = useState(false);
   
   // Usar hook para configurações de visualização salvas
   const { semitones, fontSize, setSemitones, setFontSize } = useSongViewSettings(songId || '');
@@ -257,6 +261,17 @@ export default function ShowSong() {
             >
               A+
             </Button>
+
+            {/* Ruby Alignment Toggle (Test Feature) */}
+            <Button
+              variant={enableRubyAlignment ? "default" : "outline"}
+              size="sm"
+              onClick={() => setEnableRubyAlignment(!enableRubyAlignment)}
+              className={`${enableRubyAlignment ? "bg-purple-500 hover:bg-purple-600 text-white" : "bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/20"}`}
+              title="Alinhamento Ruby (Experimental)"
+            >
+              Ruby
+            </Button>
           </div>
         </div>
 
@@ -319,14 +334,27 @@ export default function ShowSong() {
                   fontSize: `${fontSize}px`,
                   lineHeight: '1.6'
                 }}
-                className="w-full"
-              >
-                <ChordRenderer 
-                  text={song.content} 
-                  semitones={semitones}
-                  className="font-mono w-full"
-                />
-              </div>
+                 className="w-full"
+               >
+                 {/* Ruby Alignment System (when enabled) */}
+                 <AlignedLyricsSafe
+                   text={song.content}
+                   enabled={enableRubyAlignment}
+                   semitones={semitones}
+                   preferFlats={false}
+                   stylePreset="badge"
+                   fontSize={fontSize}
+                   showChords={true}
+                   className={`font-mono w-full ${enableRubyAlignment ? 'cifra-aligned--takeover' : ''}`}
+                 />
+                 
+                 {/* Original Renderer (fallback or default) */}
+                 <ChordRenderer 
+                   text={song.content} 
+                   semitones={semitones}
+                   className={`font-mono w-full ${enableRubyAlignment ? 'hidden' : ''}`}
+                 />
+               </div>
             ) : (
               <div className="text-center text-muted-foreground py-8">
                 <p>Esta música não possui conteúdo disponível.</p>

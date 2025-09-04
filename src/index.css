@@ -131,3 +131,63 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Aligned Lyrics Ruby System - Scoped styles */
+@layer components {
+  .cifra-aligned {
+    --lyrics-font-size: 1rem;
+    --chord-scale: 0.9;
+    --chord-bg: hsl(var(--chord-bg, 166 62% 50% / 0.15));
+    --chord-fg: hsl(var(--chord-highlight, 166 62% 50%));
+    @apply whitespace-pre-wrap leading-relaxed tracking-wide w-full;
+  }
+
+  .cifra-aligned__line {
+    @apply block;
+    line-height: 1.8;
+  }
+
+  .cifra-aligned__empty-line {
+    height: 1.5rem;
+  }
+
+  .cifra-aligned__ruby {
+    ruby-position: over;
+    @apply inline;
+  }
+
+  .cifra-aligned__word {
+    @apply inline;
+    white-space: pre-wrap;
+    font-size: var(--lyrics-font-size);
+  }
+
+  .cifra-aligned__text {
+    @apply inline;
+    white-space: pre-wrap;
+    font-size: var(--lyrics-font-size);
+  }
+
+  .cifra-aligned__chord {
+    font-size: calc(var(--lyrics-font-size) * var(--chord-scale));
+    font-weight: 600;
+    @apply inline;
+  }
+
+  .cifra-aligned__chord--badge {
+    color: var(--chord-fg);
+    background: var(--chord-bg);
+    @apply px-1 py-0.5 rounded font-semibold;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.1);
+  }
+
+  /* Hide chords when needed */
+  .cifra-aligned--hide-chords .cifra-aligned__chord {
+    @apply hidden;
+  }
+
+  /* Takeover mode - hide original when ruby is active */
+  .cifra-aligned--takeover + * {
+    @apply hidden;
+  }
+}
